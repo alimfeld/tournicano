@@ -1,5 +1,5 @@
-import { expect } from "@std/expect";
-import { Tournament } from "./main.ts";
+import { expect, test } from "vitest";
+import { Tournament } from "./core.ts";
 
 const players = [
   "Ace",
@@ -38,25 +38,25 @@ const runTournament = () => {
 
 const tournament = runTournament();
 
-Deno.test("should store rounds", () => {
+test("should store rounds", () => {
   expect(tournament.rounds.length).toBe(allScores.length);
 });
 
-Deno.test("should update stats from pairings", () => {
+test("should update stats from pairings", () => {
   tournament.getAllStats().forEach((stats) => {
     expect(stats.partners.reduce((acc, count) => acc + count, 0)).toBe(4);
     expect(stats.opponents.reduce((acc, count) => acc + count, 0)).toBe(8);
   });
 });
 
-Deno.test("should balance play percentage", () => {
+test("should balance play percentage", () => {
   tournament.getAllStats().forEach((stats) => {
     expect(stats.matches).toBe(4);
     expect(stats.pauses).toBe(1);
   });
 });
 
-Deno.test("should balance partners", () => {
+test("should balance partners", () => {
   tournament.getAllStats().forEach((stats) => {
     stats.partners.forEach((count) => {
       expect(count).toBeLessThanOrEqual(1);
@@ -64,7 +64,7 @@ Deno.test("should balance partners", () => {
   });
 });
 
-Deno.test("should balance opponents", () => {
+test("should balance opponents", () => {
   tournament.getAllStats().forEach((stats) => {
     stats.opponents.forEach((count) => {
       expect(count).toBeLessThanOrEqual(2);
@@ -72,11 +72,11 @@ Deno.test("should balance opponents", () => {
   });
 });
 
-Deno.test("should store scores", () => {
+test("should store scores", () => {
   expect(tournament.scores.length).toBe(5);
 });
 
-Deno.test("should distribute scores", () => {
+test("should distribute scores", () => {
   const scoreSum = allScores.reduce(
     (acc, scores) =>
       acc + scores.reduce((acc, score) => acc + score[0] + score[1], 0),
@@ -90,7 +90,7 @@ Deno.test("should distribute scores", () => {
   expect(totalMinus).toBe(totalPlus);
 });
 
-Deno.test("should distribute results", () => {
+test("should distribute results", () => {
   const decisive = allScores.reduce(
     (acc, scores) =>
       acc +

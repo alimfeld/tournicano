@@ -1,9 +1,0 @@
-{
-  "tasks": {
-    "dev": "deno run --watch main.ts"
-  },
-  "imports": {
-    "@graph-algorithm/maximum-matching": "npm:@graph-algorithm/maximum-matching@^3.0.0",
-    "@std/expect": "jsr:@std/expect@^1.0.16"
-  }
-}
