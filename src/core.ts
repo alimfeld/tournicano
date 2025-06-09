@@ -16,7 +16,19 @@ export interface EnrolledPlayer extends PlayerProps {
   readonly id: string
 }
 
-export interface CompetingPlayer extends EnrolledPlayer {
+export interface PlayerStats {
+  readonly matches: number;
+  readonly pauses: number;
+  readonly wins: number;
+  readonly losses: number;
+  readonly draws: number;
+  partners: Map<string, number>;
+  opponents: Map<string, number>;
+  readonly plus: number; // total points scored
+  readonly minus: number; // total points conceded
+}
+
+export interface CompetingPlayer extends EnrolledPlayer, PlayerStats {
   readonly matches: number;
   readonly pauses: number;
   readonly wins: number;
@@ -46,7 +58,9 @@ export class Tournament {
         rounds.forEach((round: Round, r: number) => {
           this.submitRound(round);
           round.matches.forEach((match: Match, m: number) => {
-            this.updateScore(r, m, match[2])
+            const score = match[2];
+            match[2] = null; // clear serialized score to have statistics properly updated!
+            this.updateScore(r, m, score)
           })
         })
       } catch (error) {

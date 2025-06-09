@@ -13,7 +13,7 @@ export const PlayersView: m.Component<Attrs, {}> = {
       actions.enrollPlayers(names);
       input.value = "";
     }
-    return m("section.players",
+    return m("main.players",
       m("table",
         m("thead",
           m("tr",
@@ -43,8 +43,11 @@ export const PlayersView: m.Component<Attrs, {}> = {
           )),
         ),
       ),
-      m("textarea", { id: "players", placeholder: "Enter players to enroll line by line" }),
-      m("button", { onclick: enrollPlayers }, "Enroll Players"),
+      m("details", { open: players.length < 4 },
+        m("summary", "Enroll more"),
+        m("textarea", { id: "players", placeholder: "Enter players to enroll line by line" }),
+        m("button", { onclick: enrollPlayers }, "Enroll Players"),
+      ),
     )
   }
 };

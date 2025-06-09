@@ -105,3 +105,11 @@ test("should distribute results", () => {
   expect(wins + losses).toBe(decisive * 4);
   expect(draws).toBe((10 - decisive) * 4);
 });
+
+test("should load serialized", () => {
+  const serialized = tournament.serialize();
+  const loaded = new Tournament(serialized);
+  loaded.getPlayers().forEach((player) => {
+    expect(player).toEqual(tournament.getPlayerMap().get(player.id));
+  })
+});

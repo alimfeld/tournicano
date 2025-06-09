@@ -1,16 +1,24 @@
 import { PlayerProps, Score, Tournament } from "./core.ts"
 
+export enum View {
+  PLAYERS,
+  ROUND,
+}
+
 interface StoredState {
+  view: View;
   tournament: string;
   avatarStyle: string;
 }
 
 interface State {
+  view: View;
   tournament: Tournament;
   avatarStyle: string;
 };
 
 interface Actions {
+  changeView: (view: View) => void;
   createRound: (matchCount: number) => void;
   enrollPlayers: (names: string[]) => void;
   updatePlayer: (id: string, props: PlayerProps) => void;
@@ -21,6 +29,7 @@ export const createState: () => State = () => {
   const item = localStorage.getItem("state");
   const data = item ? (JSON.parse(item) as StoredState) : null
   return {
+    view: data?.view || View.PLAYERS,
     tournament: new Tournament(data?.tournament),
     avatarStyle: data?.avatarStyle || "bottts"
   }
@@ -28,6 +37,7 @@ export const createState: () => State = () => {
 
 const storeState: (state: State) => void = (state) => {
   const data: StoredState = {
+    view: state.view,
     tournament: state.tournament.serialize(),
     avatarStyle: state.avatarStyle,
   }
@@ -37,6 +47,10 @@ const storeState: (state: State) => void = (state) => {
 
 export const createActions: (state: State) => Actions = (state) => {
   return {
+    changeView: (view: View) => {
+      state.view = view;
+      storeState(state)
+    },
     createRound: (matchCount: number) => {
       state.tournament.createRound(matchCount);
       storeState(state)
