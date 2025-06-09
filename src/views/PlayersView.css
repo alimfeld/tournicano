@@ -1,0 +1,8 @@
+section.players img.avatar {
+  height: 3em;
+  padding-right: 1ex;
+}
+
+td.player {
+  display: flex;
+}

@@ -1,0 +1,20 @@
+.round .avatar {
+  height: 5em;
+}
+
+div.match {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+div.match div {
+  justify-self: center;
+  align-self: center;
+  vertical-align: middle;
+}
+
+div.match input {
+  text-align: center;
+}
+
