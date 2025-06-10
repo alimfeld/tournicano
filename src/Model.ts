@@ -9,12 +9,16 @@ interface StoredState {
   view: View;
   tournament: string;
   avatarStyle: string;
+  roundIndex: number;
+  matchesPerRound: number;
 }
 
 interface State {
   view: View;
   tournament: Tournament;
   avatarStyle: string;
+  roundIndex: number;
+  matchesPerRound: number;
 };
 
 interface Actions {
@@ -23,15 +27,20 @@ interface Actions {
   enrollPlayers: (names: string[]) => void;
   updatePlayer: (id: string, props: PlayerProps) => void;
   updateScore: (r: number, m: number, score: Score) => void;
+  changeRound: (roundIndex: number) => void;
+  updateMatchesPerRound: (matchesPerRound: number) => void;
 }
 
 export const createState: () => State = () => {
   const item = localStorage.getItem("state");
   const data = item ? (JSON.parse(item) as StoredState) : null
+  const tournament = new Tournament(data?.tournament);
   return {
     view: data?.view || View.PLAYERS,
-    tournament: new Tournament(data?.tournament),
-    avatarStyle: data?.avatarStyle || "bottts"
+    tournament: tournament,
+    avatarStyle: data?.avatarStyle || "bottts",
+    roundIndex: data?.roundIndex || tournament.rounds.length - 1,
+    matchesPerRound: data?.matchesPerRound || Math.floor(tournament.getPlayers().length / 4),
   }
 }
 
@@ -40,6 +49,8 @@ const storeState: (state: State) => void = (state) => {
     view: state.view,
     tournament: state.tournament.serialize(),
     avatarStyle: state.avatarStyle,
+    roundIndex: state.roundIndex,
+    matchesPerRound: state.matchesPerRound,
   }
   const item = JSON.stringify(data);
   localStorage.setItem("state", item);
@@ -53,6 +64,7 @@ export const createActions: (state: State) => Actions = (state) => {
     },
     createRound: (matchCount: number) => {
       state.tournament.createRound(matchCount);
+      state.roundIndex = state.tournament.rounds.length - 1;
       storeState(state)
     },
     enrollPlayers: (names: string[]) => {
@@ -67,6 +79,14 @@ export const createActions: (state: State) => Actions = (state) => {
       state.tournament.updateScore(r, m, score);
       storeState(state)
     },
+    changeRound: (roundIndex: number) => {
+      state.roundIndex = roundIndex;
+      storeState(state)
+    },
+    updateMatchesPerRound: (matchesPerRound: number) => {
+      state.matchesPerRound = matchesPerRound;
+      storeState(state)
+    }
   }
 }
 

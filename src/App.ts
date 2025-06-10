@@ -18,19 +18,40 @@ export const App = () => {
       }
     }
   }
-  const renderFooterChildren = () => {
+  const renderHeader = () => {
     switch (state.view) {
       case View.PLAYERS: {
-        return [
-          m("div"),
-          m("button", { onclick: () => actions.changeView(View.ROUND) }, "Round >")
-        ];
+        return m("header",
+          m("h1", "Tournicano"),
+          m("button.outline", { onclick: () => actions.changeView(View.ROUND) }, "🎾"),
+        );
       }
       case View.ROUND: {
-        return [
-          m("button", { onclick: () => actions.changeView(View.PLAYERS) }, "< Players"),
-          m("button", { onclick: () => actions.createRound(1) }, "New Round!"),
-        ];
+        return m("header",
+          m("button.outline", { onclick: () => actions.changeView(View.PLAYERS) }, "👤"),
+          m("h1", `Round ${state.roundIndex + 1}`),
+        );
+      }
+    }
+  }
+  const renderFooter = () => {
+    switch (state.view) {
+      case View.PLAYERS: {
+        return m("footer");
+      }
+      case View.ROUND: {
+        return m("footer", m("button.outline", {
+          disabled: state.roundIndex == 0,
+          onclick: () => actions.changeRound(state.roundIndex - 1)
+        }, "⏪"),
+          m("button.outline", {
+            onclick: () => actions.createRound(state.matchesPerRound)
+          }, "🆕"),
+          m("button.outline", {
+            disabled: state.roundIndex == state.tournament.rounds.length - 1,
+            onclick: () => actions.changeRound(state.roundIndex + 1)
+          }, "⏩"),
+        );
       }
     }
   }
@@ -38,9 +59,9 @@ export const App = () => {
   return {
     view: () => {
       return m("div.container",
-        m("header", m("h1", "Tournicano")),
+        renderHeader(),
         renderMain(),
-        m("footer", renderFooterChildren()),
+        renderFooter(),
       )
     },
   };

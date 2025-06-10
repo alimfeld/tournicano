@@ -7,9 +7,8 @@ export const PlayersView: m.Component<Attrs, {}> = {
     const players = state.tournament.getPlayers();
     const enrollPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement
-      const value = input.value
-      const lines = value.split(/\r?\n/);
-      const names = lines.map(line => line.trim());
+      const value = input.value.trim()
+      const names = value.split(/\s+/);
       actions.enrollPlayers(names);
       input.value = "";
     }
@@ -43,10 +42,20 @@ export const PlayersView: m.Component<Attrs, {}> = {
           )),
         ),
       ),
-      m("details", { open: players.length < 4 },
-        m("summary", "Enroll more"),
-        m("textarea", { id: "players", placeholder: "Enter players to enroll line by line" }),
-        m("button", { onclick: enrollPlayers }, "Enroll Players"),
+      m("fieldset", { role: "group" },
+        m("input", { id: "players", placeholder: "Enter players separated by space..." }),
+        m("input", { type: "submit", value: "Enroll", onclick: enrollPlayers }),
+      ),
+      m("label", "Matches per round:",
+        m("input", {
+          type: "number",
+          inputmode: "numeric",
+          value: state.matchesPerRound,
+          min: 0,
+          max: Math.floor(state.tournament.getPlayers().length / 4),
+          step: 1,
+          onclick: (event: InputEvent) => actions.updateMatchesPerRound((event.target as HTMLInputElement).valueAsNumber)
+        }),
       ),
     )
   }

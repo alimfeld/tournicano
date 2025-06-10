@@ -3,15 +3,10 @@ body {
 }
 
 header {
+  display: flex;
+  justify-content: space-between;
 }
 
 main {
 }
 
-footer {
-  margin-top: 1ex;
-  padding-top: 1ex;
-  border-top: 1px solid;
-  display: flex;
-  justify-content: space-between;
-}
