@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./Leaderboard.css";
 import { Attrs } from "../Model.ts";
-import { PlayerStats } from "../core.ts";
+import { PlayerResult } from "../core.ts";
 
 export const Leaderboard: m.Component<Attrs, {}> = {
   view: ({ attrs: { state } }) => {
@@ -17,26 +17,51 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       }
       return rank.toString()
     }
-    const points: (p: PlayerStats) => number = (p) => {
+    const points: (p: PlayerResult) => number = (p) => {
       return (p.wins * 2 + p.draws);
     }
-    const decisive: (p: PlayerStats) => number = (p) => {
+    const decisive: (p: PlayerResult) => number = (p) => {
       return p.wins + p.draws + p.losses
     }
-    const average: (p: PlayerStats) => number = (p) => {
+    const average: (p: PlayerResult) => number = (p) => {
       return points(p) / decisive(p)
     }
-    const players = state.tournament.getPlayers().filter((p) => decisive(p) > 0).sort(
+    const players = state.tournament.players.values().filter((p) => decisive(p) > 0).toArray().sort(
       (p, q) => {
         const pperf = average(p);
         const qperf = average(q);
-        if (qperf == pperf) {
-          return (q.plus - q.minus) - (p.plus - p.minus);
-        } else {
-          return qperf - pperf;
+        if (pperf == qperf) {
+          const pdiff = p.plus - p.minus
+          const qdiff = q.plus - q.minus
+          if (pdiff == qdiff) {
+            return p.name.localeCompare(q.name);
+          }
+          return qdiff - pdiff
         }
+        return qperf - pperf;
       }
     );
+    console.log(players);
+    const ranks = players.reduce((acc: number[], _, i) => {
+      if (acc.length == 0) {
+        acc.push(1);
+        return acc;
+      }
+      const [p, q] = [players[i], players[i - 1]];
+      const pperf = average(p);
+      const qperf = average(q);
+      if (pperf == qperf) {
+        const pdiff = p.plus - p.minus
+        const qdiff = q.plus - q.minus
+        if (pdiff == qdiff) {
+          acc.push(i);
+          return acc;
+        }
+      }
+      acc.push(i + 1);
+      return acc;
+    }, []);
+
     return m("main.leaderboard",
       m("table.striped",
         m("thead",
@@ -48,15 +73,15 @@ export const Leaderboard: m.Component<Attrs, {}> = {
             m("th.right", { scope: "col" }, "D"),
             m("th.right", { scope: "col" }, "L"),
             m("th.right", { scope: "col" }, "P"),
-            m("th.right", { scope: "col" }, "⌀"),
             m("th.right", { scope: "col" }, "+"),
             m("th.right", { scope: "col" }, "-"),
+            m("th.right", { scope: "col" }, "⌀"),
             m("th.right", { scope: "col" }, "Δ"),
           )
         ),
         m("tbody",
           players.map((player, i) => m("tr",
-            m("td", award(i + 1)),
+            m("td", award(ranks[i])),
             m("td.player",
               m("img.avatar", { src: `https://api.dicebear.com/9.x/${state.avatarStyle}/svg?seed=${player.name}` }),
             ),
@@ -66,9 +91,9 @@ export const Leaderboard: m.Component<Attrs, {}> = {
             m("td.right", player.draws),
             m("td.right", player.losses),
             m("td.right", points(player)),
-            m("td.right", average(player).toFixed(2)),
             m("td.right", player.plus),
             m("td.right", player.minus),
+            m("td.right", average(player).toFixed(2)),
             m("td.right", player.plus - player.minus),
           )),
         ),

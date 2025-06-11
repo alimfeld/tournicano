@@ -39,7 +39,7 @@ const runTournament = (players: string[], roundScores: Score[][]) => {
 };
 
 const resultSum = (tournament: Tournament) => {
-  return tournament.getPlayers().reduce((acc: PlayerResult, result: PlayerResult) => {
+  return tournament.players.values().reduce((acc: PlayerResult, result: PlayerResult) => {
     const sum = {
       wins: acc.wins + result.wins,
       losses: acc.losses + result.losses,
@@ -60,7 +60,7 @@ test("should store rounds", () => {
 
 test("should update stats from pairings", () => {
   const tournament = runTournament(players, roundScores);
-  tournament.getPlayers().forEach((player) => {
+  tournament.players.forEach((player) => {
     expect(Array.from(player.partners, ([_, value]) => value).reduce((acc, count) => acc + count, 0)).toBe(4);
     expect(Array.from(player.opponents, ([_, value]) => value).reduce((acc, count) => acc + count, 0)).toBe(8);
   });
@@ -68,7 +68,7 @@ test("should update stats from pairings", () => {
 
 test("should balance play percentage", () => {
   const tournament = runTournament(players, roundScores);
-  tournament.getPlayers().forEach((player) => {
+  tournament.players.forEach((player) => {
     expect(player.matches).toBe(4);
     expect(player.pauses).toBe(1);
   });
@@ -76,7 +76,7 @@ test("should balance play percentage", () => {
 
 test("should balance partners", () => {
   const tournament = runTournament(players, roundScores);
-  tournament.getPlayers().forEach((player) => {
+  tournament.players.forEach((player) => {
     player.partners.forEach((count) => {
       expect(count).toBeLessThanOrEqual(1);
     });
@@ -85,7 +85,7 @@ test("should balance partners", () => {
 
 test("should balance opponents", () => {
   const tournament = runTournament(players, roundScores);
-  tournament.getPlayers().forEach((player) => {
+  tournament.players.forEach((player) => {
     player.opponents.forEach((count) => {
       expect(count).toBeLessThanOrEqual(2);
     });
@@ -121,24 +121,24 @@ test("should load serialized", () => {
   const tournament = runTournament(players, roundScores);
   const serialized = tournament.serialize();
   const loaded = new Tournament(serialized);
-  loaded.getPlayers().forEach((player) => {
-    expect(player).toEqual(tournament.getPlayerMap().get(player.id));
+  loaded.players.forEach((player) => {
+    expect(player).toEqual(tournament.players.get(player.id));
   })
 });
 
 test("should not remove competing player", () => {
   const tournament = runTournament(players, roundScores);
-  expect(tournament.getPlayers().length).toBe(players.length);
-  expect(tournament.removePlayer(tournament.getPlayers()[0].id)).toBe(false);
-  expect(tournament.getPlayers().length).toBe(players.length);
+  expect(tournament.players.size).toBe(players.length);
+  expect(tournament.removePlayer(tournament.players.values().next().value!.id)).toBe(false);
+  expect(tournament.players.size).toBe(players.length);
 });
 
 test("should remove non-competing player", () => {
   const tournament = runTournament(players, roundScores);
   const [player] = tournament.enrollPlayers(["Zed"]);
-  expect(tournament.getPlayers().length).toBe(players.length + 1);
+  expect(tournament.players.size).toBe(players.length + 1);
   expect(tournament.removePlayer(player.id)).toBe(true);
-  expect(tournament.getPlayers().length).toBe(players.length);
+  expect(tournament.players.size).toBe(players.length);
 });
 
 test("should remove round", () => {

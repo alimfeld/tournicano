@@ -5,7 +5,7 @@ import { Score } from "../core.ts";
 
 export const RoundView: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
-    const players = state.tournament.getPlayerMap();
+    const players = state.tournament.players;
     const round = state.tournament.rounds.at(state.roundIndex);
     const renderPlayer = (id: string) => {
       return m("div",
@@ -17,7 +17,6 @@ export const RoundView: m.Component<Attrs, {}> = {
       round ? [
         ...round.matches.map((match, i) =>
           m("div", { class: "match" },
-            m("div", i + 1,),
             m("div",
               renderPlayer(match[0][0]),
               renderPlayer(match[0][1])
@@ -25,7 +24,7 @@ export const RoundView: m.Component<Attrs, {}> = {
             m("div",
               m("input", {
                 type: "text",
-                placeholder: "--:--",
+                placeholder: "-- : --",
                 inputmode: "numeric",
                 oninput: (event: InputEvent) => {
                   const input = event.target as HTMLInputElement
@@ -41,7 +40,7 @@ export const RoundView: m.Component<Attrs, {}> = {
                     // keep cursor in front of colon to make backspace work!
                     input.setSelectionRange(digits.length, digits.length);
                   } else {
-                    input.value = digits.slice(0, 2) + ':' + digits.slice(2);
+                    input.value = digits.slice(0, 2) + ' : ' + digits.slice(2);
                   }
                   // @ts-ignore
                   event.redraw = false;
@@ -57,7 +56,7 @@ export const RoundView: m.Component<Attrs, {}> = {
                   const score: Score = [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))];
                   actions.updateScore(state.roundIndex, i, score);
                 },
-                value: match[2] ? `${String(match[2][0]).padStart(2, '0')}:${String(match[2][1]).padStart(2, '0')}` : null,
+                value: match[2] ? `${String(match[2][0]).padStart(2, '0')} : ${String(match[2][1]).padStart(2, '0')}` : null,
               }),
             ),
             m("div",
@@ -67,13 +66,17 @@ export const RoundView: m.Component<Attrs, {}> = {
           )
         ),
       ] : [],
-      m("div.actions", m("button.outline", {
-        disabled: state.roundIndex <= 0,
-        onclick: () => actions.changeRound(state.roundIndex - 1)
-      }, "⏪"),
+      m("div.actions",
+        m("button.outline", {
+          disabled: state.roundIndex <= 0,
+          onclick: () => actions.changeRound(state.roundIndex - 1)
+        }, "⏪"),
         m("button.outline", {
           onclick: () => actions.createRound(state.matchesPerRound)
         }, "🆕"),
+        m("button.outline", {
+          onclick: () => actions.removeRound(state.roundIndex)
+        }, "🗑️"),
         m("button.outline", {
           disabled: state.roundIndex >= state.tournament.rounds.length - 1,
           onclick: () => actions.changeRound(state.roundIndex + 1)
@@ -87,7 +90,7 @@ export const RoundView: m.Component<Attrs, {}> = {
             inputmode: "numeric",
             value: state.matchesPerRound,
             min: 0,
-            max: Math.floor(state.tournament.getPlayers().length / 4),
+            max: Math.floor(state.tournament.players.size / 4),
             step: 1,
             onclick: (event: InputEvent) => actions.updateMatchesPerRound((event.target as HTMLInputElement).valueAsNumber)
           }),

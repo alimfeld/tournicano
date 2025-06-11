@@ -4,7 +4,7 @@ import { Attrs } from "../Model.ts";
 
 export const PlayersView: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
-    const players = state.tournament.getPlayers();
+    const players = state.tournament.players.values().toArray();
     const enrollPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement
       const value = input.value
@@ -22,7 +22,7 @@ export const PlayersView: m.Component<Attrs, {}> = {
         ),
         m("tbody",
           players.map((player) => m("tr",
-            m("td.player",
+            m("td",
               m("img.avatar", { src: `https://api.dicebear.com/9.x/${state.avatarStyle}/svg?seed=${player.name}` }),
             ),
             m("td",

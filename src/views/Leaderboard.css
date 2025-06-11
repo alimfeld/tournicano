@@ -1,10 +1,5 @@
 main.leaderboard img.avatar {
   height: 2em;
-  padding-right: 1ex;
-}
-
-td.player {
-  display: flex;
 }
 
 th.right, td.right {

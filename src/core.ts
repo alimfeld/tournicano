@@ -44,7 +44,7 @@ export interface Round {
 }
 
 export class Tournament {
-  private players: Map<string, PlayerImpl> = new Map();
+  players: Map<string, PlayerImpl> = new Map();
   rounds: Round[] = [];
 
   constructor(serialized?: string) {
@@ -59,23 +59,15 @@ export class Tournament {
     }
   }
 
-  getPlayers(): Player[] {
-    return Array.from(this.players, ([_, player]) => player);
-  }
-
-  getPlayerMap(): Map<string, Player> {
-    return this.players;
-  }
-
   serialize(): string {
     return JSON.stringify({
-      players: this.getPlayers().map((player) => {
+      players: this.players.values().map((player) => {
         return {
           id: player.id,
           name: player.name,
           active: player.active,
         } as EnrolledPlayer
-      }),
+      }).toArray(),
       rounds: this.rounds,
     });
   }

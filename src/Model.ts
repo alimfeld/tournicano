@@ -25,6 +25,7 @@ interface State {
 interface Actions {
   changeView: (view: View) => void;
   createRound: (matchCount: number) => void;
+  removeRound: (r: number) => void;
   enrollPlayers: (names: string[]) => void;
   updatePlayer: (id: string, props: PlayerProps) => void;
   updateScore: (r: number, m: number, score: Score) => void;
@@ -41,7 +42,7 @@ export const createState: () => State = () => {
     tournament: tournament,
     avatarStyle: data?.avatarStyle || "bottts",
     roundIndex: data?.roundIndex || tournament.rounds.length - 1,
-    matchesPerRound: data?.matchesPerRound || Math.floor(tournament.getPlayers().length / 4),
+    matchesPerRound: data?.matchesPerRound || Math.floor(tournament.players.size / 4),
   }
 }
 
@@ -66,6 +67,13 @@ export const createActions: (state: State) => Actions = (state) => {
     createRound: (matchCount: number) => {
       state.tournament.createRound(matchCount);
       state.roundIndex = state.tournament.rounds.length - 1;
+      storeState(state)
+    },
+    removeRound: (r: number) => {
+      state.tournament.removeRound(r);
+      if (state.roundIndex == state.tournament.rounds.length) {
+        state.roundIndex = state.tournament.rounds.length - 1;
+      }
       storeState(state)
     },
     enrollPlayers: (names: string[]) => {

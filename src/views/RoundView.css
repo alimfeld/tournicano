@@ -5,7 +5,7 @@ main.round .avatar {
 div.match {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 div.match div {
