@@ -67,6 +67,32 @@ export const RoundView: m.Component<Attrs, {}> = {
           )
         ),
       ] : [],
+      m("div.actions", m("button.outline", {
+        disabled: state.roundIndex <= 0,
+        onclick: () => actions.changeRound(state.roundIndex - 1)
+      }, "⏪"),
+        m("button.outline", {
+          onclick: () => actions.createRound(state.matchesPerRound)
+        }, "🆕"),
+        m("button.outline", {
+          disabled: state.roundIndex >= state.tournament.rounds.length - 1,
+          onclick: () => actions.changeRound(state.roundIndex + 1)
+        }, "⏩"),
+      ),
+      m("details",
+        m("summary", "⚙️ Settings"),
+        m("label", "Matches per round:",
+          m("input", {
+            type: "number",
+            inputmode: "numeric",
+            value: state.matchesPerRound,
+            min: 0,
+            max: Math.floor(state.tournament.getPlayers().length / 4),
+            step: 1,
+            onclick: (event: InputEvent) => actions.updateMatchesPerRound((event.target as HTMLInputElement).valueAsNumber)
+          }),
+        ),
+      ),
     )
   }
 };

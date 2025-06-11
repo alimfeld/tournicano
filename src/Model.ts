@@ -3,6 +3,7 @@ import { PlayerProps, Score, Tournament } from "./core.ts"
 export enum View {
   PLAYERS,
   ROUND,
+  LEADERBOARD,
 }
 
 interface StoredState {

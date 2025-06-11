@@ -18,3 +18,8 @@ div.match input {
   text-align: center;
 }
 
+div.actions {
+  margin: 1em 0;
+  display: flex;
+  justify-content: space-between;
+}
