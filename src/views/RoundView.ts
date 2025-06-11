@@ -55,11 +55,11 @@ export const RoundView: m.Component<Attrs, {}> = {
                   const input = event.target as HTMLInputElement
                   // Remove non-digit characters
                   let digits = input.value.replace(/\D/g, '');
-                  if (digits.length <= 2) {
+                  const score: Score | null = digits.length > 2 ?
+                    [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))] : null;
+                  if (score == null) {
                     input.value = "";
-                    return;
                   }
-                  const score: Score = [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))];
                   actions.updateScore(state.roundIndex, i, score);
                 },
                 value: match[2] ? `${String(match[2][0]).padStart(2, '0')}:${String(match[2][1]).padStart(2, '0')}` : null,

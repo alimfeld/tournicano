@@ -29,7 +29,7 @@ interface Actions {
   enrollPlayers: (names: string[]) => void;
   updatePlayer: (id: string, props: PlayerProps) => void;
   removePlayer: (id: string) => void;
-  updateScore: (r: number, m: number, score: Score) => void;
+  updateScore: (r: number, m: number, score: Score | null) => void;
   changeRound: (roundIndex: number) => void;
   updateCourts: (courts: number) => void;
 }
@@ -87,7 +87,7 @@ export const createActions: (state: State) => Actions = (state) => {
       state.tournament.removePlayer(id);
       storeState(state)
     },
-    updateScore: (r: number, m: number, score: Score) => {
+    updateScore: (r: number, m: number, score: Score | null) => {
       state.tournament.updateScore(r, m, score);
       storeState(state)
     },
