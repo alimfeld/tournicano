@@ -7,38 +7,35 @@ export type Team = [string, string];
 export type Score = [number, number];
 export type Match = [Team, Team, Score | null];
 
+export interface PlayerId {
+  readonly id: string
+}
+
 export interface PlayerProps {
   readonly name: string;
   readonly active: boolean;
 }
 
-export interface EnrolledPlayer extends PlayerProps {
-  readonly id: string
-}
+export interface EnrolledPlayer extends PlayerId, PlayerProps { }
 
-export interface PlayerStats {
+export interface PlayerAssignment {
   readonly matches: number;
   readonly pauses: number;
+  partners: Map<string, number>;
+  opponents: Map<string, number>;
+}
+
+export interface PlayerResult {
   readonly wins: number;
   readonly losses: number;
   readonly draws: number;
-  partners: Map<string, number>;
-  opponents: Map<string, number>;
   readonly plus: number; // total points scored
   readonly minus: number; // total points conceded
 }
 
-export interface CompetingPlayer extends EnrolledPlayer, PlayerStats {
-  readonly matches: number;
-  readonly pauses: number;
-  readonly wins: number;
-  readonly losses: number;
-  readonly draws: number;
-  partners: Map<string, number>;
-  opponents: Map<string, number>;
-  readonly plus: number; // total points scored
-  readonly minus: number; // total points conceded
-}
+export interface PlayerStats extends PlayerAssignment, PlayerResult { }
+
+export interface Player extends EnrolledPlayer, PlayerStats { }
 
 export interface Round {
   readonly inactive: string[];
@@ -47,33 +44,26 @@ export interface Round {
 }
 
 export class Tournament {
-  private players: Map<string, Player> = new Map();
+  private players: Map<string, PlayerImpl> = new Map();
   rounds: Round[] = [];
 
   constructor(serialized?: string) {
     if (serialized) {
       try {
         const { players, rounds } = JSON.parse(serialized);
-        players.forEach((player: EnrolledPlayer) => this.players.set(player.id, new Player(player.id, player.name, player.active)))
-        rounds.forEach((round: Round, r: number) => {
-          this.submitRound(round);
-          round.matches.forEach((match: Match, m: number) => {
-            const score = match[2];
-            match[2] = null; // clear serialized score to have statistics properly updated!
-            this.updateScore(r, m, score)
-          })
-        })
+        players.forEach((player: EnrolledPlayer) => this.players.set(player.id, new PlayerImpl(player.id, player.name, player.active)))
+        rounds.forEach((round: Round) => this.addRound(round))
       } catch (error) {
         console.error(error);
       }
     }
   }
 
-  getPlayers(): CompetingPlayer[] {
+  getPlayers(): Player[] {
     return Array.from(this.players, ([_, player]) => player);
   }
 
-  getPlayerMap(): Map<string, CompetingPlayer> {
+  getPlayerMap(): Map<string, Player> {
     return this.players;
   }
 
@@ -90,11 +80,12 @@ export class Tournament {
     });
   }
 
-  enrollPlayers(names: string[]) {
-    names.forEach((name) => {
+  enrollPlayers(names: string[]): EnrolledPlayer[] {
+    return names.map((name) => {
       const id = crypto.randomUUID();
-      const player = new Player(id, name, true);
+      const player = new PlayerImpl(id, name, true);
       this.players.set(id, player);
+      return player;
     });
   }
 
@@ -102,13 +93,27 @@ export class Tournament {
     this.players.get(id)!.update(props);
   }
 
+  removePlayer(id: string): boolean {
+    const player = this.players.get(id)!
+    if (player.matches + player.pauses == 0) {
+      return this.players.delete(id);
+    }
+    return false;
+  }
+
   createRound(matchCount: number): number {
     const [competing, paused, inactive] = this.partitionPlayers(matchCount);
     const teams = this.teamUp(competing);
     const matches = this.pairUp(teams);
     const round = { inactive, paused, matches };
-    this.submitRound(round);
+    this.addRound(round);
     return this.rounds.length - 1;
+  }
+
+  removeRound(r: number) {
+    const round = this.rounds[r]!;
+    this.updateStatsFromRound(round, false);
+    this.rounds.splice(r, 1);
   }
 
   printRound(r: number) {
@@ -139,33 +144,16 @@ export class Tournament {
 
   updateScore(r: number, m: number, score: Score | null) {
     const match = this.rounds[r]!.matches[m];
-    const oldScore = match[2];
-    match[2] = score
-    match[0].forEach((p) => {
-      const player = this.players.get(p)!
-      if (oldScore) {
-        player.removeScore(oldScore[0], oldScore[1]);
-      }
-      if (score) {
-        player.addScore(score[0], score[1]);
-      }
-    });
-    match[1].forEach((p) => {
-      const player = this.players.get(p)!
-      if (oldScore) {
-        player.removeScore(oldScore[1], oldScore[0]);
-      }
-      if (score) {
-        player.addScore(score[1], score[0]);
-      }
-    });
+    this.updateStatsFromMatch(match, false)
+    match[2] = score;
+    this.updateStatsFromMatch(match)
   }
 
   private partitionPlayers(
     matchCount: number,
   ): [competing: string[], paused: string[], inactive: string[]] {
-    let active: Player[] = []
-    let inactive: Player[] = []
+    let active: PlayerImpl[] = []
+    let inactive: PlayerImpl[] = []
     this.players.forEach(player => {
       player.active ? active.push(player) : inactive.push(player)
     })
@@ -230,29 +218,51 @@ export class Tournament {
     ) => [teams[edge[0]], teams[edge[1]], null]);
   }
 
-  private submitRound(round: Round) {
-    round.paused.forEach((p) => this.players.get(p)!.pauses++);
+  private addRound(round: Round) {
+    this.updateStatsFromRound(round);
+    this.rounds.push(round);
+  }
+
+  private updateStatsFromRound(round: Round, positive: boolean = true) {
+    const step = positive ? 1 : -1;
+    round.paused.forEach((p) => this.players.get(p)!.pauses += step);
     round.matches.forEach((match) => {
       [match[0], match[1]].forEach((t) => {
         const p = t[0];
         const q = t[1];
-        this.players.get(p)!.matches++;
-        this.players.get(p)!.incPartner(q);
-        this.players.get(q)!.matches++;
-        this.players.get(q)!.incPartner(p);
+        this.players.get(p)!.matches += step;
+        this.players.get(p)!.incPartner(q, step);
+        this.players.get(q)!.matches += step;
+        this.players.get(q)!.incPartner(p, step);
       });
       match[0].forEach((p) => {
         match[1].forEach((q) => {
-          this.players.get(p)!.incOppenent(q);
-          this.players.get(q)!.incOppenent(p);
+          this.players.get(p)!.incOppenent(q, step);
+          this.players.get(q)!.incOppenent(p, step);
         });
       });
+      this.updateStatsFromMatch(match, positive)
     });
-    this.rounds.push(round);
+  }
+
+  private updateStatsFromMatch(match: Match, positive: boolean = true) {
+    const score = match[2];
+    match[0].forEach((p) => {
+      const player = this.players.get(p)!
+      if (score) {
+        player.updateScore(score, positive);
+      }
+    });
+    match[1].forEach((p) => {
+      const player = this.players.get(p)!
+      if (score) {
+        player.updateScore([score[1], score[0]], positive);
+      }
+    });
   }
 }
 
-class Player implements CompetingPlayer {
+class PlayerImpl implements Player {
   constructor(readonly id: string, public name: string, public active: boolean) { }
 
   update(props: PlayerProps) {
@@ -270,16 +280,16 @@ class Player implements CompetingPlayer {
     return this.partners.get(q) || 0;
   }
 
-  incPartner(q: string) {
-    this.partners.set(q, this.partnerCount(q) + 1);
+  incPartner(q: string, step: number = 1) {
+    this.partners.set(q, this.partnerCount(q) + step);
   }
 
   opponentCount(q: string) {
     return this.opponents.get(q) || 0;
   }
 
-  incOppenent(q: string) {
-    this.opponents.set(q, this.opponentCount(q) + 1);
+  incOppenent(q: string, step: number = 1) {
+    this.opponents.set(q, this.opponentCount(q) + step);
   }
 
   // updated from scores
@@ -289,27 +299,23 @@ class Player implements CompetingPlayer {
   plus: number = 0; // total points scored
   minus: number = 0; // total points conceded
 
-  addScore(plus: number, minus: number) {
+  updateScore(score: Score, positive: boolean = true) {
+    const plus = score[0];
+    const minus = score[1];
+    const step = positive ? 1 : -1;
     if (plus > minus) {
-      this.wins++;
+      this.wins += step;
     } else if (plus < minus) {
-      this.losses++;
+      this.losses += step;
     } else {
-      this.draws++;
+      this.draws += step;
     }
-    this.plus += plus;
-    this.minus += minus;
-  }
-
-  removeScore(plus: number, minus: number) {
-    if (plus > minus) {
-      this.wins--;
-    } else if (plus < minus) {
-      this.losses--;
+    if (positive) {
+      this.plus += plus;
+      this.minus += minus;
     } else {
-      this.draws--;
+      this.plus -= plus;
+      this.minus -= minus;
     }
-    this.plus -= plus;
-    this.minus -= minus;
   }
 }
