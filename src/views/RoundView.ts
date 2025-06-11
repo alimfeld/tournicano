@@ -74,12 +74,13 @@ export const RoundView: m.Component<Attrs, {}> = {
           onclick: () => actions.changeRound(state.roundIndex - 1)
         }, "⏪"),
         m("button.outline", {
+          disabled: state.matchesPerRound <= 0,
           onclick: () => actions.createRound(state.matchesPerRound)
-        }, "🆕"),
+        }, "❇️"),
         m("button.outline", {
-          disabled: state.roundIndex <= 0,
+          disabled: state.roundIndex < 0,
           onclick: () => actions.removeRound(state.roundIndex)
-        }, "🗑️"),
+        }, "❌"),
         m("button.outline", {
           disabled: state.roundIndex >= state.tournament.rounds.length - 1,
           onclick: () => actions.changeRound(state.roundIndex + 1)

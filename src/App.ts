@@ -28,19 +28,19 @@ export const App = () => {
         return m("header",
           m("div"),
           m("h1", "👤 Players"),
-          m("button.outline", { onclick: () => actions.changeView(View.ROUND) }, "🎾"),
+          m("button.outline", { onclick: () => actions.changeView(View.ROUND) }, "🚀"),
         );
       }
       case View.ROUND: {
         return m("header",
           m("button.outline", { onclick: () => actions.changeView(View.PLAYERS) }, "👤"),
-          m("h1", `🎾 Round ${state.roundIndex + 1}`),
+          state.roundIndex >= 0 ? m("h1", `🚀 Round ${state.roundIndex + 1}`) : m("h1", "🚀 Start"),
           m("button.outline", { onclick: () => actions.changeView(View.LEADERBOARD) }, "🏆"),
         );
       }
       case View.LEADERBOARD: {
         return m("header",
-          m("button.outline", { onclick: () => actions.changeView(View.ROUND) }, "🎾"),
+          m("button.outline", { onclick: () => actions.changeView(View.ROUND) }, "🚀"),
           m("h1", "🏆 Leaderboard"),
           m("div"),
         );

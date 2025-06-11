@@ -6,10 +6,9 @@ export const PlayersView: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
     const players = state.tournament.players.values().toArray();
     const enrollPlayers = () => {
-      const input = document.getElementById("players") as HTMLInputElement
-      const value = input.value
-      const lines = value.split(/\s*\n/);
-      actions.enrollPlayers(lines.map((line) => line.trim()));
+      const input = document.getElementById("players") as HTMLInputElement;
+      const value = input.value.trim();
+      actions.enrollPlayers(value.split(/\s+/));
       input.value = "";
     }
     return m("main.players",
@@ -18,6 +17,7 @@ export const PlayersView: m.Component<Attrs, {}> = {
           m("tr",
             m("th", { scope: "col", colspan: 2 }, "Player"),
             m("th", { scope: "col" }, "Active"),
+            m("th", { scope: "col" }),
           )
         ),
         m("tbody",
@@ -51,11 +51,22 @@ export const PlayersView: m.Component<Attrs, {}> = {
                 }
               }),
             ),
+            m("td",
+              m("button.outline", {
+                disabled: player.matches + player.pauses > 0,
+                onclick: () => {
+                  actions.removePlayer(player.id)
+                }
+              }, "❌"),
+            ),
           )),
         ),
       ),
-      m("textarea", { id: "players", placeholder: "Enter players line by line" }),
-      m("button", { onclick: enrollPlayers }, "Enroll Players"),
+
+      m("fieldset", { role: "group" },
+        m("input", { id: "players", placeholder: "Enter player names separated by space" }),
+        m("button", { onclick: enrollPlayers }, "Enroll"),
+      ),
     )
   }
 };

@@ -28,6 +28,7 @@ interface Actions {
   removeRound: (r: number) => void;
   enrollPlayers: (names: string[]) => void;
   updatePlayer: (id: string, props: PlayerProps) => void;
+  removePlayer: (id: string) => void;
   updateScore: (r: number, m: number, score: Score) => void;
   changeRound: (roundIndex: number) => void;
   updateMatchesPerRound: (matchesPerRound: number) => void;
@@ -71,9 +72,7 @@ export const createActions: (state: State) => Actions = (state) => {
     },
     removeRound: (r: number) => {
       state.tournament.removeRound(r);
-      if (state.roundIndex == state.tournament.rounds.length) {
-        state.roundIndex = state.tournament.rounds.length - 1;
-      }
+      state.roundIndex--;
       storeState(state)
     },
     enrollPlayers: (names: string[]) => {
@@ -82,6 +81,10 @@ export const createActions: (state: State) => Actions = (state) => {
     },
     updatePlayer: (id: string, props: PlayerProps) => {
       state.tournament.updatePlayer(id, props);
+      storeState(state)
+    },
+    removePlayer: (id: string) => {
+      state.tournament.removePlayer(id);
       storeState(state)
     },
     updateScore: (r: number, m: number, score: Score) => {
