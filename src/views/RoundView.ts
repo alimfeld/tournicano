@@ -1,4 +1,4 @@
-import m from "mithril";
+import m, { render } from "mithril";
 import "./RoundView.css";
 import { Attrs } from "../Model.ts";
 import { Score } from "../core.ts";
@@ -69,8 +69,9 @@ export const RoundView: m.Component<Attrs, {}> = {
               renderPlayer(match[1][0]),
               renderPlayer(match[1][1]),
             ),
-          )
+          ),
         ),
+        m("div.paused", round.paused.map((p) => renderPlayer(p))),
       ] : [],
       m("div.actions",
         m("button.outline", {

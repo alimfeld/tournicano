@@ -10,12 +10,15 @@ div.team {
   width: 35%;
 }
 
+div.team div.player {
+  border: .2ex solid #0062a2;
+}
+
 div.player {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: .2ex solid #0062a2;
   padding: 1ex;
 }
 
@@ -42,6 +45,11 @@ div.kitchen {
 
 div.kitchen input {
   text-align: center;
+}
+
+div.paused {
+  display: flex;
+  flex-direction: row;
 }
 
 div.actions {
