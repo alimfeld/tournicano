@@ -2,7 +2,7 @@ div.match {
   display: flex;
   flex-direction: row;
   margin: 2ex 0;
-  border: .2ex solid;
+  border: .2ex solid #0062a2;
 }
 
 div.team {
@@ -15,7 +15,7 @@ div.player {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: .2ex solid;
+  border: .2ex solid #0062a2;
   padding: 1ex;
 }
 
@@ -37,7 +37,7 @@ div.kitchen {
   align-items: center;
   justify-content: center;
   width: 30%;
-  border: .2ex solid;
+  border: .2ex solid #0062a2;
 }
 
 div.kitchen input {

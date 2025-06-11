@@ -25,16 +25,30 @@ export const App = () => {
   const renderHeader = () => {
     switch (state.view) {
       case View.PLAYERS: {
+        const [active, total] = state.tournament.players.values().reduce((acc, player) => {
+          if (player.active) {
+            acc[0]++
+          }
+          acc[1]++
+          return acc;
+        }, [0, 0])
+        const indicator = active == total ? active : `${active}/${total}`
         return m("header",
           m("div"),
-          m("h1", "👤 Players"),
+          m("h1", `👤 Players (${indicator})`),
           m("button.outline", { onclick: () => actions.changeView(View.ROUND) }, "🚀"),
         );
       }
       case View.ROUND: {
+        const title = state.roundIndex >= 0 ?
+          state.roundIndex == state.tournament.rounds.length - 1 ?
+            `🚀 Round ${state.roundIndex + 1}` :
+            `🚀 Round ${state.roundIndex + 1}/${state.tournament.rounds.length}` :
+          "🚀 Start";
+
         return m("header",
           m("button.outline", { onclick: () => actions.changeView(View.PLAYERS) }, "👤"),
-          state.roundIndex >= 0 ? m("h1", `🚀 Round ${state.roundIndex + 1}`) : m("h1", "🚀 Start"),
+          m("h1", title),
           m("button.outline", { onclick: () => actions.changeView(View.LEADERBOARD) }, "🏆"),
         );
       }

@@ -95,7 +95,6 @@ export const RoundView: m.Component<Attrs, {}> = {
             inputmode: "numeric",
             value: state.matchesPerRound,
             min: 0,
-            max: Math.floor(state.tournament.players.size / 4),
             step: 1,
             onclick: (event: InputEvent) => actions.updateMatchesPerRound((event.target as HTMLInputElement).valueAsNumber)
           }),
