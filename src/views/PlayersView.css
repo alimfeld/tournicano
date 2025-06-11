@@ -1,3 +1,7 @@
+main.players img.avatar {
+  height: 2em;
+}
+
 main.players td input {
   margin: 0;
 }

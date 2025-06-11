@@ -27,7 +27,9 @@ export const PlayersView: m.Component<Attrs, {}> = {
             ),
             m("td",
               m("input", {
-                type: "text", value: player.name,
+                type: "text",
+                name: `name-${player.id}`,
+                value: player.name,
                 onchange: (event: InputEvent) => {
                   actions.updatePlayer(player.id, {
                     name: (event.target as HTMLInputElement).value,
@@ -37,7 +39,17 @@ export const PlayersView: m.Component<Attrs, {}> = {
               }),
             ),
             m("td",
-              m("input", { type: "checkbox", role: "switch", checked: player.active, onchange: () => { actions.updatePlayer(player.id, { name: player.name, active: !player.active }) } }),
+              m("input", {
+                type: "checkbox",
+                name: `active-${player.id}`,
+                role: "switch",
+                checked: player.active,
+                onchange: () => {
+                  actions.updatePlayer(player.id, {
+                    name: player.name, active: !player.active
+                  })
+                }
+              }),
             ),
           )),
         ),

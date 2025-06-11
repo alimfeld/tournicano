@@ -1,20 +1,46 @@
-main.round .avatar {
-  height: 5em;
-}
-
 div.match {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  margin: 2ex 0;
+  border: .2ex solid;
 }
 
-div.match div {
-  justify-self: center;
-  align-self: center;
+div.team {
   vertical-align: middle;
+  width: 35%;
 }
 
-div.match input {
+div.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: .2ex solid;
+  padding: 1ex;
+}
+
+div.player img.avatar {
+  height: 3em;
+}
+
+div.player div.name {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+div.kitchen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+  border: .2ex solid;
+}
+
+div.kitchen input {
   text-align: center;
 }
 

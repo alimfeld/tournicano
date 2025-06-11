@@ -7,13 +7,13 @@ export const Leaderboard: m.Component<Attrs, {}> = {
   view: ({ attrs: { state } }) => {
     const award: (rank: number) => string = (rank) => {
       if (rank == 1) {
-        return "1 🥇"
+        return "🥇"
       }
       if (rank == 2) {
-        return "2 🥈"
+        return "🥈"
       }
       if (rank == 3) {
-        return "3 🥉"
+        return "🥉"
       }
       return rank.toString()
     }
@@ -41,7 +41,6 @@ export const Leaderboard: m.Component<Attrs, {}> = {
         return qperf - pperf;
       }
     );
-    console.log(players);
     const ranks = players.reduce((acc: number[], _, i) => {
       if (acc.length == 0) {
         acc.push(1);
@@ -66,15 +65,11 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       m("table.striped",
         m("thead",
           m("tr",
-            m("th", { scope: "col" }, "Rank"),
+            m("th", { scope: "col" }, "#"),
             m("th", { scope: "col", colspan: 2 }, "Player"),
-            m("th.right", { scope: "col" }, "M"),
-            m("th.right", { scope: "col" }, "W"),
-            m("th.right", { scope: "col" }, "D"),
-            m("th.right", { scope: "col" }, "L"),
+            m("th.right", { scope: "col" }, "W/D/L"),
             m("th.right", { scope: "col" }, "P"),
-            m("th.right", { scope: "col" }, "+"),
-            m("th.right", { scope: "col" }, "-"),
+            m("th.right", { scope: "col" }, "+/-"),
             m("th.right", { scope: "col" }, "⌀"),
             m("th.right", { scope: "col" }, "Δ"),
           )
@@ -86,13 +81,9 @@ export const Leaderboard: m.Component<Attrs, {}> = {
               m("img.avatar", { src: `https://api.dicebear.com/9.x/${state.avatarStyle}/svg?seed=${player.name}` }),
             ),
             m("td", player.name),
-            m("td.right", player.matches),
-            m("td.right", player.wins),
-            m("td.right", player.draws),
-            m("td.right", player.losses),
+            m("td.right", `${player.wins}/${player.draws}/${player.losses}`),
             m("td.right", points(player)),
-            m("td.right", player.plus),
-            m("td.right", player.minus),
+            m("td.right", `${player.plus}/${player.minus}`),
             m("td.right", average(player).toFixed(2)),
             m("td.right", player.plus - player.minus),
           )),

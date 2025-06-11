@@ -2,6 +2,10 @@ main.leaderboard img.avatar {
   height: 2em;
 }
 
+main.leaderboard td.player {
+  padding: 0;
+}
+
 th.right, td.right {
   text-align: right;
 }
