@@ -7,6 +7,10 @@ export const RoundView: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
     const players = state.tournament.players;
     const round = state.tournament.rounds.at(state.roundIndex);
+    const matchesPerRound = Math.min(
+      Math.floor(state.tournament.players.values().filter((player) => player.active).toArray().length / 4),
+      state.courts
+    );
     const renderPlayer = (id: string) => {
       return m("div.player",
         m("img.avatar", { src: `https://api.dicebear.com/9.x/${state.avatarStyle}/svg?seed=${players.get(id)!.name}` }),
@@ -74,13 +78,13 @@ export const RoundView: m.Component<Attrs, {}> = {
           onclick: () => actions.changeRound(state.roundIndex - 1)
         }, "⏪"),
         m("button.outline", {
-          disabled: state.matchesPerRound <= 0,
-          onclick: () => actions.createRound(state.matchesPerRound)
-        }, "❇️"),
-        m("button.outline", {
           disabled: state.roundIndex < 0,
           onclick: () => actions.removeRound(state.roundIndex)
         }, "❌"),
+        m("button.outline", {
+          disabled: matchesPerRound < 1,
+          onclick: () => actions.createRound(state.courts)
+        }, `❇️ (${matchesPerRound})`),
         m("button.outline", {
           disabled: state.roundIndex >= state.tournament.rounds.length - 1,
           onclick: () => actions.changeRound(state.roundIndex + 1)
@@ -88,15 +92,15 @@ export const RoundView: m.Component<Attrs, {}> = {
       ),
       m("details",
         m("summary", "⚙️ Settings"),
-        m("label", "Matches per round:",
+        m("label", "Courts:",
           m("input", {
             type: "number",
-            name: "matches-per-round",
+            name: "courts",
             inputmode: "numeric",
-            value: state.matchesPerRound,
+            value: state.courts,
             min: 0,
             step: 1,
-            onclick: (event: InputEvent) => actions.updateMatchesPerRound((event.target as HTMLInputElement).valueAsNumber)
+            onclick: (event: InputEvent) => actions.updateCourts((event.target as HTMLInputElement).valueAsNumber)
           }),
         ),
       ),

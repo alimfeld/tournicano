@@ -11,7 +11,7 @@ interface StoredState {
   tournament: string;
   avatarStyle: string;
   roundIndex: number;
-  matchesPerRound: number;
+  courts: number;
 }
 
 interface State {
@@ -19,7 +19,7 @@ interface State {
   tournament: Tournament;
   avatarStyle: string;
   roundIndex: number;
-  matchesPerRound: number;
+  courts: number;
 };
 
 interface Actions {
@@ -31,7 +31,7 @@ interface Actions {
   removePlayer: (id: string) => void;
   updateScore: (r: number, m: number, score: Score) => void;
   changeRound: (roundIndex: number) => void;
-  updateMatchesPerRound: (matchesPerRound: number) => void;
+  updateCourts: (courts: number) => void;
 }
 
 export const createState: () => State = () => {
@@ -43,7 +43,7 @@ export const createState: () => State = () => {
     tournament: tournament,
     avatarStyle: data?.avatarStyle || "bottts",
     roundIndex: data?.roundIndex || tournament.rounds.length - 1,
-    matchesPerRound: data?.matchesPerRound || Math.floor(tournament.players.size / 4),
+    courts: data?.courts || 2,
   }
 }
 
@@ -53,7 +53,7 @@ const storeState: (state: State) => void = (state) => {
     tournament: state.tournament.serialize(),
     avatarStyle: state.avatarStyle,
     roundIndex: state.roundIndex,
-    matchesPerRound: state.matchesPerRound,
+    courts: state.courts,
   }
   const item = JSON.stringify(data);
   localStorage.setItem("state", item);
@@ -95,8 +95,8 @@ export const createActions: (state: State) => Actions = (state) => {
       state.roundIndex = roundIndex;
       storeState(state)
     },
-    updateMatchesPerRound: (matchesPerRound: number) => {
-      state.matchesPerRound = matchesPerRound;
+    updateCourts: (courts: number) => {
+      state.courts = courts;
       storeState(state)
     }
   }
