@@ -95,8 +95,8 @@ export class Tournament {
 
   createRound(matchCount: number): number {
     const [competing, paused, inactive] = this.partitionPlayers(matchCount);
-    const teams = this.teamUp(competing);
-    const matches = this.pairUp(teams);
+    const teams = this.determineTeams(competing);
+    const matches = this.determineMatches(teams);
     const round = { inactive, paused, matches };
     this.addRound(round);
     return this.rounds.length - 1;
@@ -166,7 +166,7 @@ export class Tournament {
     ];
   }
 
-  private teamUp(ids: string[]): Team[] {
+  private determineTeams(ids: string[]): Team[] {
     const edges = [];
     for (let i = 0; i < ids.length - 1; i++) {
       for (let j = i + 1; j < ids.length; j++) {
@@ -175,8 +175,7 @@ export class Tournament {
         edges.push([
           i,
           j,
-          // ensure positive weight
-          this.rounds.length - this.players.get(p)!.partnerCount(q),
+          this.calculateTeamWeight(p, q)
         ]);
       }
     }
@@ -186,21 +185,23 @@ export class Tournament {
     ) => [ids[edge[0]], ids[edge[1]]]);
   }
 
-  private pairUp(teams: Team[]): Match[] {
+  private calculateTeamWeight(p: string, q: string): number {
+    const player = this.players.get(p)!;
+    const max = this.rounds.length
+    if (max == 0) {
+      return 1;
+    }
+    return (max - player.partnerCount(q)) / max;
+  }
+
+  private determineMatches(teams: Team[]): Match[] {
     const edges = [];
     for (let i = 0; i < teams.length - 1; i++) {
       for (let j = i + 1; j < teams.length; j++) {
-        let oppenentSum = 0;
-        teams[i].forEach((p) => {
-          teams[j].forEach((q) => {
-            oppenentSum += this.players.get(p)!.opponentCount(q);
-          });
-        });
         edges.push([
           i,
           j,
-          // ensure positive weight
-          4 * this.rounds.length - oppenentSum,
+          this.calculateMatchWeight([teams[i], teams[j]])
         ]);
       }
     }
@@ -208,6 +209,20 @@ export class Tournament {
     return [...iter(matching)].map((
       edge: [number, number],
     ) => [teams[edge[0]], teams[edge[1]], null]);
+  }
+
+  private calculateMatchWeight(teams: [Team, Team]): number {
+    let oppenentSum = 0;
+    teams[0].forEach((p) => {
+      teams[1].forEach((q) => {
+        oppenentSum += this.players.get(p)!.opponentCount(q);
+      });
+    });
+    const max = 4 * this.rounds.length
+    if (max == 0) {
+      return 1;
+    }
+    return (max - oppenentSum) / max;
   }
 
   private addRound(round: Round) {
