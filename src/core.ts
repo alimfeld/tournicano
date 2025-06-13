@@ -155,8 +155,7 @@ export class Tournament {
     }
     if (active.length > competitorCount) {
       active.sort((p, q) => {
-        // simple sorting based on matches only (i.e. not considering pauses)
-        return p.matches - q.matches;
+        return p.playPercentage() - q.playPercentage();
       });
     }
     return [
@@ -297,6 +296,13 @@ class PlayerImpl implements Player {
 
   incOppenent(q: string, step: number = 1) {
     this.opponents.set(q, this.opponentCount(q) + step);
+  }
+
+  playPercentage() {
+    if (this.matches == 0 && this.pauses == 0) {
+      return 0; // or 1
+    }
+    return this.matches / (this.matches + this.pauses);
   }
 
   // updated from scores
