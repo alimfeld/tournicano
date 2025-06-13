@@ -17,19 +17,16 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       }
       return rank.toString()
     }
-    const points: (p: PlayerResult) => number = (p) => {
-      return (p.wins * 2 + p.draws);
-    }
     const decisive: (p: PlayerResult) => number = (p) => {
       return p.wins + p.draws + p.losses
     }
-    const average: (p: PlayerResult) => number = (p) => {
-      return points(p) / decisive(p)
+    const winPercentage: (p: PlayerResult) => number = (p) => {
+      return (p.wins + (p.draws / 2)) / decisive(p)
     }
     const players = state.tournament.players.values().filter((p) => decisive(p) > 0).toArray().sort(
       (p, q) => {
-        const pperf = average(p);
-        const qperf = average(q);
+        const pperf = winPercentage(p);
+        const qperf = winPercentage(q);
         if (pperf == qperf) {
           const pdiff = p.plus - p.minus
           const qdiff = q.plus - q.minus
@@ -47,8 +44,8 @@ export const Leaderboard: m.Component<Attrs, {}> = {
         return acc;
       }
       const [p, q] = [players[i], players[i - 1]];
-      const pperf = average(p);
-      const qperf = average(q);
+      const pperf = winPercentage(p);
+      const qperf = winPercentage(q);
       if (pperf == qperf) {
         const pdiff = p.plus - p.minus
         const qdiff = q.plus - q.minus
@@ -68,9 +65,8 @@ export const Leaderboard: m.Component<Attrs, {}> = {
             m("th", { scope: "col" }, "#"),
             m("th", { scope: "col", colspan: 2 }, "Player"),
             m("th.right", { scope: "col" }, "W/D/L"),
-            m("th.right", { scope: "col" }, "P"),
             m("th.right", { scope: "col" }, "+/-"),
-            m("th.right", { scope: "col" }, "⌀"),
+            m("th.right", { scope: "col" }, "%"),
             m("th.right", { scope: "col" }, "Δ"),
           )
         ),
@@ -82,9 +78,8 @@ export const Leaderboard: m.Component<Attrs, {}> = {
             ),
             m("td", player.name),
             m("td.right", `${player.wins}/${player.draws}/${player.losses}`),
-            m("td.right", points(player)),
             m("td.right", `${player.plus}/${player.minus}`),
-            m("td.right", average(player).toFixed(2)),
+            m("td.right", winPercentage(player).toFixed(2)),
             m("td.right", player.plus - player.minus),
           )),
         ),
