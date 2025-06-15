@@ -45,7 +45,7 @@ export const SettingsView: m.Component<Attrs, {}> = {
             },
             "auto",
           ),
-          m("label", { htmlFor: "auto" }, "auto"),
+          m("label", { htmlFor: "auto" }, "Auto"),
           m(
             "input",
             {
@@ -58,7 +58,7 @@ export const SettingsView: m.Component<Attrs, {}> = {
             },
             "dark",
           ),
-          m("label", { htmlFor: "dark" }, "dark"),
+          m("label", { htmlFor: "dark" }, "Dark"),
           m(
             "input",
             {
@@ -71,8 +71,9 @@ export const SettingsView: m.Component<Attrs, {}> = {
             },
             "light",
           ),
-          m("label", { htmlFor: "light" }, "light"),
+          m("label", { htmlFor: "light" }, "Light"),
         ),
+        m("hr"),
         m(
           "button.reset",
           { onclick: actions.resetTournament },
