@@ -10,6 +10,7 @@ export const SettingsView: m.Component<Attrs, {}> = {
       m(Nav, { changeView: actions.changeView }),
       m(
         "main.settings.container-fluid",
+        m("h2", "Tournament"),
         m(
           "fieldset",
           m(
@@ -30,6 +31,7 @@ export const SettingsView: m.Component<Attrs, {}> = {
             m("small", "The number of courts you have available"),
           ),
         ),
+        m("h2", "UI"),
         m(
           "fieldset",
           m("legend", "Theme:"),
@@ -73,7 +75,7 @@ export const SettingsView: m.Component<Attrs, {}> = {
           ),
           m("label", { htmlFor: "light" }, "Light"),
         ),
-        m("hr"),
+        m("h2", "Danger Zone"),
         m(
           "button.reset",
           { onclick: actions.resetTournament },
