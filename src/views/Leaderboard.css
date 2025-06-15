@@ -6,10 +6,13 @@ header.leaderboard {
   th,
   td {
     padding: 0;
+    padding-left: 1ex;
   }
 
   th.right,
   td.right {
+    padding-left: 0;
+    padding-right: 1ex;
     text-align: right;
   }
 
