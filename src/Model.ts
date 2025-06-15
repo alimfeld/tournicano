@@ -60,9 +60,9 @@ export const createState: () => State = () => {
 
 const syncTheme = (theme: string) => {
   let themeToApply = theme;
-  if (theme == "auto") {
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? (themeToApply = "dark")
+  if (theme === "auto") {
+    themeToApply = window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
       : "light";
   }
   document.documentElement.setAttribute("data-theme", themeToApply);
