@@ -16,9 +16,9 @@ header.players {
 
   @media (max-width: 767px) {
     article.player {
-      /* 4 players accross with 3 gaps (margins) = 100% */
-      width: 23.5%;
-      &:not(:nth-child(4n)) {
+      /* 3 players accross with 2 gaps (margins) = 100% */
+      width: 32%;
+      &:not(:nth-child(3n)) {
         margin-right: 2%;
       }
     }
