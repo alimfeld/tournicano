@@ -111,7 +111,7 @@ export const RoundView: m.Component<Attrs, {}> = {
                       // @ts-ignore
                       event.redraw = false;
                     },
-                    onchange: (event: InputEvent) => {
+                    onblur: (event: InputEvent) => {
                       const input = event.target as HTMLInputElement;
                       // Remove non-digit characters
                       let digits = input.value.replace(/\D/g, "");
