@@ -116,7 +116,7 @@ export const RoundView: m.Component<Attrs, {}> = {
                       // Remove non-digit characters
                       let digits = input.value.replace(/\D/g, "");
                       const score: Score | null =
-                        digits.length > 2
+                        digits.length == 4
                           ? [
                               parseInt(digits.slice(0, 2)),
                               parseInt(digits.slice(2)),
