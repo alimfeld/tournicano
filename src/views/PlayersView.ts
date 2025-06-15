@@ -37,6 +37,7 @@ export const PlayersView: m.Component<Attrs, {}> = {
           m("input", {
             id: "players",
             placeholder: "Anna Ben Catherine Tyson",
+            autocapitalize: "words",
           }),
           m(
             "button",
