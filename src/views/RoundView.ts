@@ -39,8 +39,8 @@ export const RoundView: m.Component<Attrs, {}> = {
       state.config.roundIndex < 0
         ? "Rounds"
         : state.config.roundIndex + 1 == state.tournament.rounds.length
-          ? `R.${state.config.roundIndex + 1}`
-          : `R.${state.config.roundIndex + 1}/${state.tournament.rounds.length}`;
+          ? `R${state.config.roundIndex + 1}`
+          : `R${state.config.roundIndex + 1}/${state.tournament.rounds.length}`;
     return [
       m(
         "header.round.container-fluid",
@@ -90,7 +90,7 @@ export const RoundView: m.Component<Attrs, {}> = {
               ...round.matches.map((match, i) =>
                 m(
                   "section.match",
-                  m("h2", `M.${i + 1}`),
+                  m("h2", `M${i + 1}`),
                   renderTeams(match),
                   m("input.score", {
                     name: `score-${i}`,
