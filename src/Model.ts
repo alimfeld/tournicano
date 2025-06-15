@@ -51,11 +51,21 @@ export const createState: () => State = () => {
     config.roundIndex = tournament.rounds.length - 1;
   }
   // theme state is synced to DOM
-  document.documentElement.setAttribute("data-theme", config.theme);
+  syncTheme(config.theme);
   return {
     tournament,
     config,
   };
+};
+
+const syncTheme = (theme: string) => {
+  let themeToApply = theme;
+  if (theme == "auto") {
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? (themeToApply = "dark")
+      : "light";
+  }
+  document.documentElement.setAttribute("data-theme", themeToApply);
 };
 
 const storeTournament = (tournament: Tournament) => {
@@ -124,7 +134,7 @@ export const createActions: (state: State) => Actions = (state) => {
     },
     setTheme: (theme: string) => {
       state.config.theme = theme;
-      document.documentElement.setAttribute("data-theme", theme);
+      syncTheme(theme);
       storeConfig(state.config);
     },
   };
