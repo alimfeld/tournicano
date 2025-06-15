@@ -1,9 +1,35 @@
 body {
-  font-family: sans-serif;
+  padding-bottom: 5rem; // allow space for fixed nav
 }
 
 header {
-  display: flex;
-  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--pico-background-color);
+  border-bottom: 1px solid;
+  border-color: var(--pico-muted-border-color);
 }
 
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid;
+  border-color: var(--pico-muted-border-color);
+  background: var(--pico-background-color);
+  z-index: 1;
+}
+
+@scope (nav) {
+  ul {
+    width: 100%;
+    justify-content: space-evenly;
+    font-size: 2em;
+  }
+
+  li {
+    text-align: center;
+    cursor: pointer;
+  }
+}

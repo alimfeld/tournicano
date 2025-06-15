@@ -1,7 +1,60 @@
-main.players img.avatar {
-  height: 2em;
+header.players {
+  text-align: center;
 }
 
-main.players td input {
-  margin: 0;
+@scope (main.players) {
+  section.players {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  article.player {
+    position: relative;
+    padding: 1ex;
+    margin-bottom: 2%;
+  }
+
+  @media (max-width: 768px) {
+    article.player {
+      width: 23%;
+      &:not(:nth-child(4n)) {
+        margin-right: 2%;
+      }
+    }
+  }
+
+  @media (min-width: 768px) {
+    article.player {
+      width: 18%;
+      &:not(:nth-child(5n)) {
+        margin-right: 2%;
+      }
+    }
+  }
+
+  @scope (article.player) {
+    img.avatar.inactive {
+      opacity: 0.4;
+    }
+
+    p.name {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    button.delete {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-color: var(--pico-form-element-invalid-focus-color);
+      background: var(--pico-form-element-invalid-focus-color);
+      padding: 0.2ex 1ex;
+    }
+
+    input.active {
+      float: right;
+    }
+  }
 }

@@ -1,11 +1,39 @@
-main.leaderboard img.avatar {
-  height: 2em;
+header.leaderboard {
+  text-align: center;
 }
 
-main.leaderboard td.player {
-  padding: 0;
-}
+@scope (main.leaderboard) {
+  th,
+  td {
+    padding: 0;
+  }
 
-th.right, td.right {
-  text-align: right;
+  th.right,
+  td.right {
+    text-align: right;
+  }
+
+  img.avatar {
+    min-width: 3em;
+    width: 3em;
+  }
+
+  p.name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    p.name {
+      max-width: 12ex;
+    }
+  }
+
+  @media (min-width: 768px) {
+    p.name {
+      max-width: 20ex;
+    }
+  }
 }

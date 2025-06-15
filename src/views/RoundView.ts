@@ -1,110 +1,147 @@
-import m, { render } from "mithril";
+import m from "mithril";
 import "./RoundView.css";
 import { Attrs } from "../Model.ts";
-import { Score } from "../core.ts";
+import { Score, Team } from "../core.ts";
+import { Avatar } from "./Avatar.ts";
+import { Nav } from "./Nav.ts";
 
 export const RoundView: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
     const players = state.tournament.players;
     const round = state.tournament.rounds.at(state.roundIndex);
     const matchesPerRound = Math.min(
-      Math.floor(state.tournament.players.values().filter((player) => player.active).toArray().length / 4),
-      state.courts
+      Math.floor(
+        state.tournament.players
+          .values()
+          .filter((player) => player.active)
+          .toArray().length / 4,
+      ),
+      state.courts,
     );
     const renderPlayer = (id: string) => {
-      return m("div.player",
-        m("img.avatar", { src: `https://api.dicebear.com/9.x/${state.avatarStyle}/svg?seed=${players.get(id)!.name}` }),
-        m("div.name", players.get(id)!.name)
+      const player = players.get(id)!;
+      return m(
+        "article.player",
+        m(Avatar, { player: player }),
+        m("p.name", player.name),
       );
-    }
-    return m("main.round",
-      round ? [
-        ...round.matches.map((match, i) =>
-          m("div.match",
-            m("div.team",
-              renderPlayer(match[0][0]),
-              renderPlayer(match[0][1])
-            ),
-            m("div.kitchen",
-              m("h2", i + 1),
-              m("input", {
-                name: `score-${i}`,
-                type: "text",
-                placeholder: "--:--",
-                inputmode: "numeric",
-                oninput: (event: InputEvent) => {
-                  const input = event.target as HTMLInputElement
-                  // Remove non-digit characters
-                  let digits = input.value.replace(/\D/g, '');
-                  // Limit to 4 digits
-                  if (digits.length > 4) {
-                    digits = digits.slice(0, 4);
-                  }
-                  // Format as XX:YY
-                  if (digits.length <= 2) {
-                    input.value = digits;
-                    // keep cursor in front of colon to make backspace work!
-                    input.setSelectionRange(digits.length, digits.length);
-                  } else {
-                    input.value = digits.slice(0, 2) + ':' + digits.slice(2);
-                  }
-                  // @ts-ignore
-                  event.redraw = false;
-                },
-                onchange: (event: InputEvent) => {
-                  const input = event.target as HTMLInputElement
-                  // Remove non-digit characters
-                  let digits = input.value.replace(/\D/g, '');
-                  const score: Score | null = digits.length > 2 ?
-                    [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))] : null;
-                  if (score == null) {
-                    input.value = "";
-                  }
-                  actions.updateScore(state.roundIndex, i, score);
-                },
-                value: match[2] ? `${String(match[2][0]).padStart(2, '0')}:${String(match[2][1]).padStart(2, '0')}` : null,
-              }),
-            ),
-            m("div.team",
-              renderPlayer(match[1][0]),
-              renderPlayer(match[1][1]),
-            ),
+    };
+    const renderTeam = (team: Team) => {
+      return m("article.team", renderPlayer(team[0]), renderPlayer(team[1]));
+    };
+    const title =
+      state.roundIndex < 0
+        ? "Start"
+        : state.roundIndex + 1 == state.tournament.rounds.length
+          ? `R${state.roundIndex + 1}`
+          : `R${state.roundIndex + 1}/${state.tournament.rounds.length}`;
+    return [
+      m(
+        "header.round.container-fluid",
+        m(
+          "button.delete",
+          {
+            disabled: state.roundIndex < 0,
+            onclick: () => actions.removeRound(state.roundIndex),
+          },
+          "X",
+        ),
+        m("h1", title),
+        m(
+          "div",
+          m(
+            "button.prev",
+            {
+              disabled: state.roundIndex <= 0,
+              onclick: () => actions.changeRound(state.roundIndex - 1),
+            },
+            "<",
+          ),
+          m(
+            "button.next",
+            {
+              disabled: state.roundIndex >= state.tournament.rounds.length - 1,
+              onclick: () => actions.changeRound(state.roundIndex + 1),
+            },
+            ">",
+          ),
+          m(
+            "button.add",
+            {
+              disabled: matchesPerRound < 1,
+              onclick: () => actions.createRound(state.courts),
+            },
+            `+ (${matchesPerRound})`,
           ),
         ),
-        m("div.paused", round.paused.map((p) => renderPlayer(p))),
-      ] : [],
-      m("div.actions",
-        m("button.outline", {
-          disabled: state.roundIndex <= 0,
-          onclick: () => actions.changeRound(state.roundIndex - 1)
-        }, "⏪"),
-        m("button.outline", {
-          disabled: state.roundIndex < 0,
-          onclick: () => actions.removeRound(state.roundIndex)
-        }, "❌"),
-        m("button.outline", {
-          disabled: matchesPerRound < 1,
-          onclick: () => actions.createRound(state.courts)
-        }, `❇️ (${matchesPerRound})`),
-        m("button.outline", {
-          disabled: state.roundIndex >= state.tournament.rounds.length - 1,
-          onclick: () => actions.changeRound(state.roundIndex + 1)
-        }, "⏩"),
       ),
-      m("details",
-        m("summary", "⚙️ Settings"),
-        m("label", "Courts:",
-          m("input", {
-            type: "number",
-            name: "courts",
-            inputmode: "numeric",
-            value: state.courts,
-            min: 0,
-            step: 1,
-            onclick: (event: InputEvent) => actions.updateCourts((event.target as HTMLInputElement).valueAsNumber)
-          }),
-        ),
+      m(Nav, { changeView: actions.changeView }),
+      m(
+        "main.round.container-fluid",
+        round
+          ? [
+              ...round.matches.map((match, i) =>
+                m(
+                  "section.match",
+                  m("h2", i + 1),
+                  renderTeam(match[0]),
+                  renderTeam(match[1]),
+                  m("input.score", {
+                    name: `score-${i}`,
+                    type: "text",
+                    placeholder: "--:--",
+                    inputmode: "numeric",
+                    oninput: (event: InputEvent) => {
+                      const input = event.target as HTMLInputElement;
+                      // Remove non-digit characters
+                      let digits = input.value.replace(/\D/g, "");
+                      // Limit to 4 digits
+                      if (digits.length > 4) {
+                        digits = digits.slice(0, 4);
+                      }
+                      // Format as XX:YY
+                      if (digits.length <= 2) {
+                        input.value = digits;
+                        // keep cursor in front of colon to make backspace work!
+                        input.setSelectionRange(digits.length, digits.length);
+                      } else {
+                        input.value =
+                          digits.slice(0, 2) + ":" + digits.slice(2);
+                      }
+                      // @ts-ignore
+                      event.redraw = false;
+                    },
+                    onchange: (event: InputEvent) => {
+                      const input = event.target as HTMLInputElement;
+                      // Remove non-digit characters
+                      let digits = input.value.replace(/\D/g, "");
+                      const score: Score | null =
+                        digits.length > 2
+                          ? [
+                              parseInt(digits.slice(0, 2)),
+                              parseInt(digits.slice(2)),
+                            ]
+                          : null;
+                      if (score == null) {
+                        input.value = "";
+                      }
+                      actions.updateScore(state.roundIndex, i, score);
+                    },
+                    value: match[2]
+                      ? `${String(match[2][0]).padStart(2, "0")}:${String(match[2][1]).padStart(2, "0")}`
+                      : null,
+                  }),
+                ),
+              ),
+              round.paused.length > 0
+                ? m(
+                    "article.paused",
+                    round.paused.map((p) => renderPlayer(p)),
+                  )
+                : null,
+            ]
+          : [],
       ),
-    )
-  }
+    ];
+  },
 };

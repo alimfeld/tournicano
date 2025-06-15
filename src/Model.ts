@@ -1,6 +1,7 @@
-import { PlayerProps, Score, Tournament } from "./core.ts"
+import { PlayerProps, Score, Tournament } from "./core.ts";
 
 export enum View {
+  SETTINGS,
   PLAYERS,
   ROUND,
   LEADERBOARD,
@@ -20,7 +21,7 @@ interface State {
   avatarStyle: string;
   roundIndex: number;
   courts: number;
-};
+}
 
 interface Actions {
   changeView: (view: View) => void;
@@ -36,16 +37,16 @@ interface Actions {
 
 export const createState: () => State = () => {
   const item = localStorage.getItem("state");
-  const data = item ? (JSON.parse(item) as StoredState) : null
+  const data = item ? (JSON.parse(item) as StoredState) : null;
   const tournament = new Tournament(data?.tournament);
   return {
-    view: data?.view || View.PLAYERS,
+    view: data ? data.view : View.PLAYERS,
     tournament: tournament,
     avatarStyle: data?.avatarStyle || "bottts",
     roundIndex: data?.roundIndex || tournament.rounds.length - 1,
     courts: data?.courts || 2,
-  }
-}
+  };
+};
 
 const storeState: (state: State) => void = (state) => {
   const data: StoredState = {
@@ -54,56 +55,57 @@ const storeState: (state: State) => void = (state) => {
     avatarStyle: state.avatarStyle,
     roundIndex: state.roundIndex,
     courts: state.courts,
-  }
+  };
   const item = JSON.stringify(data);
   localStorage.setItem("state", item);
-}
+};
 
 export const createActions: (state: State) => Actions = (state) => {
   return {
     changeView: (view: View) => {
       state.view = view;
-      storeState(state)
+      storeState(state);
     },
     createRound: (matchCount: number) => {
       state.tournament.createRound(matchCount);
       state.roundIndex = state.tournament.rounds.length - 1;
-      storeState(state)
+      storeState(state);
     },
     removeRound: (r: number) => {
       state.tournament.removeRound(r);
-      state.roundIndex--;
-      storeState(state)
+      if (state.roundIndex >= state.tournament.rounds.length) {
+        state.roundIndex--;
+      }
+      storeState(state);
     },
     enrollPlayers: (names: string[]) => {
       state.tournament.enrollPlayers(names);
-      storeState(state)
+      storeState(state);
     },
     updatePlayer: (id: string, props: PlayerProps) => {
       state.tournament.updatePlayer(id, props);
-      storeState(state)
+      storeState(state);
     },
     removePlayer: (id: string) => {
       state.tournament.removePlayer(id);
-      storeState(state)
+      storeState(state);
     },
     updateScore: (r: number, m: number, score: Score | null) => {
       state.tournament.updateScore(r, m, score);
-      storeState(state)
+      storeState(state);
     },
     changeRound: (roundIndex: number) => {
       state.roundIndex = roundIndex;
-      storeState(state)
+      storeState(state);
     },
     updateCourts: (courts: number) => {
       state.courts = courts;
-      storeState(state)
-    }
-  }
-}
+      storeState(state);
+    },
+  };
+};
 
 export interface Attrs {
-  state: State
-  actions: Actions
+  state: State;
+  actions: Actions;
 }
-
