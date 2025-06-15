@@ -1,6 +1,6 @@
 {
   "name": "Tournicano",
-  "display": "fullscreen"
+  "display": "fullscreen",
   "icons": [
     {
       "src": "/icons/android-chrome-192x192.png",
@@ -12,5 +12,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
+  ]
 }
