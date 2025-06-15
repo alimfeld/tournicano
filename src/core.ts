@@ -8,7 +8,7 @@ export type Score = [number, number];
 export type Match = [Team, Team, Score | null];
 
 export interface PlayerId {
-  readonly id: string
+  readonly id: string;
 }
 
 export interface PlayerProps {
@@ -16,7 +16,7 @@ export interface PlayerProps {
   readonly active: boolean;
 }
 
-export interface EnrolledPlayer extends PlayerId, PlayerProps { }
+export interface EnrolledPlayer extends PlayerId, PlayerProps {}
 
 export interface PlayerAssignment {
   readonly matches: number;
@@ -33,9 +33,9 @@ export interface PlayerResult {
   readonly minus: number; // total points conceded
 }
 
-export interface PlayerStats extends PlayerAssignment, PlayerResult { }
+export interface PlayerStats extends PlayerAssignment, PlayerResult {}
 
-export interface Player extends EnrolledPlayer, PlayerStats { }
+export interface Player extends EnrolledPlayer, PlayerStats {}
 
 export interface Round {
   readonly inactive: string[];
@@ -51,8 +51,13 @@ export class Tournament {
     if (serialized) {
       try {
         const { players, rounds } = JSON.parse(serialized);
-        players.forEach((player: EnrolledPlayer) => this.players.set(player.id, new PlayerImpl(player.id, player.name, player.active)))
-        rounds.forEach((round: Round) => this.addRound(round))
+        players.forEach((player: EnrolledPlayer) =>
+          this.players.set(
+            player.id,
+            new PlayerImpl(player.id, player.name, player.active),
+          ),
+        );
+        rounds.forEach((round: Round) => this.addRound(round));
       } catch (error) {
         console.error(error);
       }
@@ -61,13 +66,16 @@ export class Tournament {
 
   serialize(): string {
     return JSON.stringify({
-      players: this.players.values().map((player) => {
-        return {
-          id: player.id,
-          name: player.name,
-          active: player.active,
-        } as EnrolledPlayer
-      }).toArray(),
+      players: this.players
+        .values()
+        .map((player) => {
+          return {
+            id: player.id,
+            name: player.name,
+            active: player.active,
+          } as EnrolledPlayer;
+        })
+        .toArray(),
       rounds: this.rounds,
     });
   }
@@ -86,7 +94,7 @@ export class Tournament {
   }
 
   removePlayer(id: string): boolean {
-    const player = this.players.get(id)!
+    const player = this.players.get(id)!;
     if (player.matches + player.pauses == 0) {
       return this.players.delete(id);
     }
@@ -115,8 +123,9 @@ export class Tournament {
       const q0 = match[0][1];
       const p1 = match[1][0];
       const q1 = match[1][1];
-      let line = `${this.players.get(p0)!.name} & ${this.players.get(q0)!.name} vs. ${this.players.get(p1)!.name
-        } & ${this.players.get(q1)!.name}`;
+      let line = `${this.players.get(p0)!.name} & ${this.players.get(q0)!.name} vs. ${
+        this.players.get(p1)!.name
+      } & ${this.players.get(q1)!.name}`;
       if (match[2]) {
         line += ` - ${match[2][0]} : ${match[2][1]}`;
       }
@@ -127,8 +136,10 @@ export class Tournament {
   printPlayers() {
     this.players.forEach((player) => {
       console.log(
-        `${player.name} R${player.matches}/${player.matches + player.pauses
-        }|W${player.wins}|D${player.draws}|L${player.losses}|Δ${player.plus - player.minus
+        `${player.name} R${player.matches}/${
+          player.matches + player.pauses
+        }|W${player.wins}|D${player.draws}|L${player.losses}|Δ${
+          player.plus - player.minus
         }`,
       );
     });
@@ -136,19 +147,26 @@ export class Tournament {
 
   updateScore(r: number, m: number, score: Score | null) {
     const match = this.rounds[r]!.matches[m];
-    this.updateStatsFromMatch(match, false)
+    this.updateStatsFromMatch(match, false);
     match[2] = score;
-    this.updateStatsFromMatch(match)
+    this.updateStatsFromMatch(match);
+  }
+
+  reset() {
+    this.rounds = [];
+    this.players.values().forEach((player) => {
+      player.reset();
+    });
   }
 
   private partitionPlayers(
     matchCount: number,
   ): [competing: string[], paused: string[], inactive: string[]] {
-    let active: PlayerImpl[] = []
-    let inactive: PlayerImpl[] = []
-    this.players.forEach(player => {
-      player.active ? active.push(player) : inactive.push(player)
-    })
+    let active: PlayerImpl[] = [];
+    let inactive: PlayerImpl[] = [];
+    this.players.forEach((player) => {
+      player.active ? active.push(player) : inactive.push(player);
+    });
     let competitorCount = matchCount * 4;
     if (active.length < competitorCount) {
       competitorCount = active.length - (active.length % 4);
@@ -159,9 +177,9 @@ export class Tournament {
       });
     }
     return [
-      active.slice(0, competitorCount).map(p => p.id),
-      active.slice(competitorCount).map(p => p.id),
-      inactive.map(p => p.id),
+      active.slice(0, competitorCount).map((p) => p.id),
+      active.slice(competitorCount).map((p) => p.id),
+      inactive.map((p) => p.id),
     ];
   }
 
@@ -171,22 +189,19 @@ export class Tournament {
       for (let j = i + 1; j < ids.length; j++) {
         const p = ids[i];
         const q = ids[j];
-        edges.push([
-          i,
-          j,
-          this.calculateTeamWeight(p, q)
-        ]);
+        edges.push([i, j, this.calculateTeamWeight(p, q)]);
       }
     }
     const matching = maximumMatching(edges);
-    return [...iter(matching)].map((
-      edge: [number, number],
-    ) => [ids[edge[0]], ids[edge[1]]]);
+    return [...iter(matching)].map((edge: [number, number]) => [
+      ids[edge[0]],
+      ids[edge[1]],
+    ]);
   }
 
   private calculateTeamWeight(p: string, q: string): number {
     const player = this.players.get(p)!;
-    const max = this.rounds.length
+    const max = this.rounds.length;
     if (max == 0) {
       return 1;
     }
@@ -197,17 +212,15 @@ export class Tournament {
     const edges = [];
     for (let i = 0; i < teams.length - 1; i++) {
       for (let j = i + 1; j < teams.length; j++) {
-        edges.push([
-          i,
-          j,
-          this.calculateMatchWeight([teams[i], teams[j]])
-        ]);
+        edges.push([i, j, this.calculateMatchWeight([teams[i], teams[j]])]);
       }
     }
     const matching = maximumMatching(edges);
-    return [...iter(matching)].map((
-      edge: [number, number],
-    ) => [teams[edge[0]], teams[edge[1]], null]);
+    return [...iter(matching)].map((edge: [number, number]) => [
+      teams[edge[0]],
+      teams[edge[1]],
+      null,
+    ]);
   }
 
   private calculateMatchWeight(teams: [Team, Team]): number {
@@ -217,7 +230,7 @@ export class Tournament {
         oppenentSum += this.players.get(p)!.opponentCount(q);
       });
     });
-    const max = 4 * this.rounds.length
+    const max = 4 * this.rounds.length;
     if (max == 0) {
       return 1;
     }
@@ -231,7 +244,7 @@ export class Tournament {
 
   private updateStatsFromRound(round: Round, positive: boolean = true) {
     const step = positive ? 1 : -1;
-    round.paused.forEach((p) => this.players.get(p)!.pauses += step);
+    round.paused.forEach((p) => (this.players.get(p)!.pauses += step));
     round.matches.forEach((match) => {
       [match[0], match[1]].forEach((t) => {
         const p = t[0];
@@ -247,20 +260,20 @@ export class Tournament {
           this.players.get(q)!.incOppenent(p, step);
         });
       });
-      this.updateStatsFromMatch(match, positive)
+      this.updateStatsFromMatch(match, positive);
     });
   }
 
   private updateStatsFromMatch(match: Match, positive: boolean = true) {
     const score = match[2];
     match[0].forEach((p) => {
-      const player = this.players.get(p)!
+      const player = this.players.get(p)!;
       if (score) {
         player.updateScore(score, positive);
       }
     });
     match[1].forEach((p) => {
-      const player = this.players.get(p)!
+      const player = this.players.get(p)!;
       if (score) {
         player.updateScore([score[1], score[0]], positive);
       }
@@ -269,7 +282,11 @@ export class Tournament {
 }
 
 class PlayerImpl implements Player {
-  constructor(readonly id: string, public name: string, public active: boolean) { }
+  constructor(
+    readonly id: string,
+    public name: string,
+    public active: boolean,
+  ) {}
 
   update(props: PlayerProps) {
     this.name = props.name;
@@ -311,6 +328,18 @@ class PlayerImpl implements Player {
   draws: number = 0;
   plus: number = 0; // total points scored
   minus: number = 0; // total points conceded
+
+  reset() {
+    this.matches = 0;
+    this.pauses = 0;
+    this.partners = new Map();
+    this.opponents = new Map();
+    this.wins = 0;
+    this.losses = 0;
+    this.draws = 0;
+    this.plus = 0;
+    this.minus = 0;
+  }
 
   updateScore(score: Score, positive: boolean = true) {
     const plus = score[0];

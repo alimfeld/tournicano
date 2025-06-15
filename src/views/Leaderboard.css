@@ -28,7 +28,7 @@ header.leaderboard {
     margin: 0;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     p.name {
       max-width: 12ex;
     }

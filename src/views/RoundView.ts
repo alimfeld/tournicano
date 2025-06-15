@@ -1,14 +1,14 @@
 import m from "mithril";
 import "./RoundView.css";
 import { Attrs } from "../Model.ts";
-import { Score, Team } from "../core.ts";
+import { Match, Score, Team } from "../core.ts";
 import { Avatar } from "./Avatar.ts";
 import { Nav } from "./Nav.ts";
 
 export const RoundView: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
     const players = state.tournament.players;
-    const round = state.tournament.rounds.at(state.roundIndex);
+    const round = state.tournament.rounds.at(state.config.roundIndex);
     const matchesPerRound = Math.min(
       Math.floor(
         state.tournament.players
@@ -16,33 +16,39 @@ export const RoundView: m.Component<Attrs, {}> = {
           .filter((player) => player.active)
           .toArray().length / 4,
       ),
-      state.courts,
+      state.config.courts,
     );
-    const renderPlayer = (id: string) => {
+    const renderPlayer = (id: string, c: string) => {
       const player = players.get(id)!;
       return m(
-        "article.player",
+        `article.player.${c}`,
         m(Avatar, { player: player }),
         m("p.name", player.name),
       );
     };
-    const renderTeam = (team: Team) => {
-      return m("article.team", renderPlayer(team[0]), renderPlayer(team[1]));
+    const renderPlayers = (team: Team) => {
+      return [renderPlayer(team[0], "first"), renderPlayer(team[1], "second")];
+    };
+    const renderTeams = (match: Match) => {
+      return [
+        m("section.team.first", renderPlayers(match[0])),
+        m("section.team.second", renderPlayers(match[1])),
+      ];
     };
     const title =
-      state.roundIndex < 0
-        ? "Start"
-        : state.roundIndex + 1 == state.tournament.rounds.length
-          ? `R${state.roundIndex + 1}`
-          : `R${state.roundIndex + 1}/${state.tournament.rounds.length}`;
+      state.config.roundIndex < 0
+        ? "Rounds"
+        : state.config.roundIndex + 1 == state.tournament.rounds.length
+          ? `R.${state.config.roundIndex + 1}`
+          : `R.${state.config.roundIndex + 1}/${state.tournament.rounds.length}`;
     return [
       m(
         "header.round.container-fluid",
         m(
           "button.delete",
           {
-            disabled: state.roundIndex < 0,
-            onclick: () => actions.removeRound(state.roundIndex),
+            disabled: state.config.roundIndex < 0,
+            onclick: () => actions.removeRound(state.config.roundIndex),
           },
           "X",
         ),
@@ -52,16 +58,17 @@ export const RoundView: m.Component<Attrs, {}> = {
           m(
             "button.prev",
             {
-              disabled: state.roundIndex <= 0,
-              onclick: () => actions.changeRound(state.roundIndex - 1),
+              disabled: state.config.roundIndex <= 0,
+              onclick: () => actions.changeRound(state.config.roundIndex - 1),
             },
             "<",
           ),
           m(
             "button.next",
             {
-              disabled: state.roundIndex >= state.tournament.rounds.length - 1,
-              onclick: () => actions.changeRound(state.roundIndex + 1),
+              disabled:
+                state.config.roundIndex >= state.tournament.rounds.length - 1,
+              onclick: () => actions.changeRound(state.config.roundIndex + 1),
             },
             ">",
           ),
@@ -69,7 +76,7 @@ export const RoundView: m.Component<Attrs, {}> = {
             "button.add",
             {
               disabled: matchesPerRound < 1,
-              onclick: () => actions.createRound(state.courts),
+              onclick: () => actions.createRound(state.config.courts),
             },
             `+ (${matchesPerRound})`,
           ),
@@ -83,9 +90,8 @@ export const RoundView: m.Component<Attrs, {}> = {
               ...round.matches.map((match, i) =>
                 m(
                   "section.match",
-                  m("h2", i + 1),
-                  renderTeam(match[0]),
-                  renderTeam(match[1]),
+                  m("h2", `M.${i + 1}`),
+                  renderTeams(match),
                   m("input.score", {
                     name: `score-${i}`,
                     type: "text",
@@ -125,7 +131,7 @@ export const RoundView: m.Component<Attrs, {}> = {
                       if (score == null) {
                         input.value = "";
                       }
-                      actions.updateScore(state.roundIndex, i, score);
+                      actions.updateScore(state.config.roundIndex, i, score);
                     },
                     value: match[2]
                       ? `${String(match[2][0]).padStart(2, "0")}:${String(match[2][1]).padStart(2, "0")}`
@@ -135,12 +141,12 @@ export const RoundView: m.Component<Attrs, {}> = {
               ),
               round.paused.length > 0
                 ? m(
-                    "article.paused",
-                    round.paused.map((p) => renderPlayer(p)),
+                    "section.paused",
+                    round.paused.map((p) => renderPlayer(p, "paused")),
                   )
                 : null,
             ]
-          : [],
+          : [m("p", "No rounds created (yet)!")],
       ),
     ];
   },

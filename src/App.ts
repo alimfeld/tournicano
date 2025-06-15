@@ -13,7 +13,7 @@ export const App = () => {
 
   return {
     view: () => {
-      switch (state.view) {
+      switch (state.config.view) {
         case View.SETTINGS: {
           return m(SettingsView, { state, actions });
         }

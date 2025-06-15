@@ -67,32 +67,34 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       m(Nav, { changeView: actions.changeView }),
       m(
         "main.leaderboard.container-fluid",
-        m(
-          "table.striped",
-          m(
-            "thead",
-            m(
-              "tr",
-              m("th", "#"),
-              m("th", { colspan: 2 }, "🤖"),
-              m("th.right", "%"),
-              m("th.right", "+/-"),
-            ),
-          ),
-          m(
-            "tbody",
-            players.map((player, i) =>
+        players.length > 0
+          ? m(
+              "table.striped",
               m(
-                "tr",
-                m("td", award(ranks[i])),
-                m("td", m(Avatar, { player })),
-                m("td", m("p.name", player.name)),
-                m("td.right", (winPercentage(player) * 100).toFixed(0)),
-                m("td.right", player.plus - player.minus),
+                "thead",
+                m(
+                  "tr",
+                  m("th", "#"),
+                  m("th", { colspan: 2 }, "🤖"),
+                  m("th.right", "%"),
+                  m("th.right", "+/-"),
+                ),
               ),
-            ),
-          ),
-        ),
+              m(
+                "tbody",
+                players.map((player, i) =>
+                  m(
+                    "tr",
+                    m("td", award(ranks[i])),
+                    m("td", m(Avatar, { player })),
+                    m("td", m("p.name", player.name)),
+                    m("td.right", (winPercentage(player) * 100).toFixed(0)),
+                    m("td.right", player.plus - player.minus),
+                  ),
+                ),
+              ),
+            )
+          : m("p", "No scores submitted (yet)!"),
       ),
     ];
   },

@@ -20,7 +20,6 @@ header.round {
     display: flex;
     flex-direction: row;
     position: relative;
-    justify-content: space-between;
     &:not(:last-child) {
       border-bottom: 1px solid;
       border-color: var(--pico-muted-border-color);
@@ -30,51 +29,55 @@ header.round {
   @scope (section.match) {
     h2 {
       position: absolute;
-      top: 1em;
+      top: 20%;
       left: 50%;
-      transform: translate(-50%, 0);
+      transform: translate(-50%, -50%);
     }
 
-    article.team {
+    section.team {
       display: flex;
-      padding: 1ex;
+      width: 50%;
+    }
+
+    section.team.second {
+      justify-content: flex-end;
+      align-items: flex-end;
     }
 
     article.player {
-      margin: 1ex;
+      padding: 1ex;
     }
 
-    @media (max-width: 390px) {
-      article.player {
-        width: 7em;
-      }
-    }
-
-    @media (min-width: 390px) {
-      article.player {
-        width: 7.5em;
-      }
-    }
-
-    @media (max-width: 768px) {
-      article.team {
+    @media (max-width: 767px) {
+      section.team {
         flex-direction: column;
+      }
+
+      article.player {
+        width: 46.8%;
+      }
+
+      article.player.first {
+        margin-bottom: 4%;
+      }
+
+      article.player.second {
+        margin-bottom: 0;
       }
     }
 
     @media (min-width: 768px) {
-      article.team {
+      section.team {
         flex-direction: row;
       }
 
       article.player {
-        width: 8em;
+        width: 36.8%;
+        margin-bottom: 0;
       }
-    }
 
-    @media (min-width: 1024px) {
-      article.player {
-        width: 10em;
+      article.player.first {
+        margin-right: 4%;
       }
     }
 
@@ -96,15 +99,26 @@ header.round {
     }
   }
 
-  article.paused {
+  section.paused {
     display: flex;
   }
 
-  @scope (article.paused) {
+  @scope (section.paused) {
     article.player {
-      width: 6em;
       margin-bottom: 0;
-      margin-right: 1ex;
+      margin-right: 2%;
+    }
+
+    @media (max-width: 767px) {
+      article.player {
+        width: 23.4%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      article.player {
+        width: 18.4%;
+      }
     }
 
     @scope (article.player) {

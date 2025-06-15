@@ -7,20 +7,16 @@ export enum View {
   LEADERBOARD,
 }
 
-interface StoredState {
+interface Config {
   view: View;
-  tournament: string;
-  avatarStyle: string;
   roundIndex: number;
   courts: number;
+  theme: string; // auto | dark | light
 }
 
 interface State {
-  view: View;
   tournament: Tournament;
-  avatarStyle: string;
-  roundIndex: number;
-  courts: number;
+  config: Config;
 }
 
 interface Actions {
@@ -33,74 +29,103 @@ interface Actions {
   updateScore: (r: number, m: number, score: Score | null) => void;
   changeRound: (roundIndex: number) => void;
   updateCourts: (courts: number) => void;
+  resetTournament: () => void;
+  resetAll: () => void;
+  setTheme: (theme: string) => void;
 }
 
 export const createState: () => State = () => {
-  const item = localStorage.getItem("state");
-  const data = item ? (JSON.parse(item) as StoredState) : null;
-  const tournament = new Tournament(data?.tournament);
+  const serialized = localStorage.getItem("tournament");
+  const configItem = localStorage.getItem("config");
+  const config = configItem
+    ? (JSON.parse(configItem) as Config)
+    : {
+        view: View.PLAYERS,
+        roundIndex: -1,
+        courts: 2,
+        theme: "auto",
+      };
+  const tournament = new Tournament(serialized ? serialized : undefined);
+  // ensure roundIndex is within bounds
+  if (config.roundIndex >= tournament.rounds.length) {
+    config.roundIndex = tournament.rounds.length - 1;
+  }
+  // theme state is synced to DOM
+  document.documentElement.setAttribute("data-theme", config.theme);
   return {
-    view: data ? data.view : View.PLAYERS,
-    tournament: tournament,
-    avatarStyle: data?.avatarStyle || "bottts",
-    roundIndex: data?.roundIndex || tournament.rounds.length - 1,
-    courts: data?.courts || 2,
+    tournament,
+    config,
   };
 };
 
-const storeState: (state: State) => void = (state) => {
-  const data: StoredState = {
-    view: state.view,
-    tournament: state.tournament.serialize(),
-    avatarStyle: state.avatarStyle,
-    roundIndex: state.roundIndex,
-    courts: state.courts,
-  };
-  const item = JSON.stringify(data);
-  localStorage.setItem("state", item);
+const storeTournament = (tournament: Tournament) => {
+  localStorage.setItem("tournament", tournament.serialize());
+};
+
+const storeConfig = (config: Config) => {
+  localStorage.setItem("config", JSON.stringify(config));
 };
 
 export const createActions: (state: State) => Actions = (state) => {
   return {
     changeView: (view: View) => {
-      state.view = view;
-      storeState(state);
+      state.config.view = view;
+      storeConfig(state.config);
     },
     createRound: (matchCount: number) => {
       state.tournament.createRound(matchCount);
-      state.roundIndex = state.tournament.rounds.length - 1;
-      storeState(state);
+      state.config.roundIndex = state.tournament.rounds.length - 1;
+      storeTournament(state.tournament);
+      storeConfig(state.config);
     },
     removeRound: (r: number) => {
       state.tournament.removeRound(r);
-      if (state.roundIndex >= state.tournament.rounds.length) {
-        state.roundIndex--;
+      if (state.config.roundIndex >= state.tournament.rounds.length) {
+        state.config.roundIndex--;
+        storeConfig(state.config);
       }
-      storeState(state);
+      storeTournament(state.tournament);
     },
     enrollPlayers: (names: string[]) => {
       state.tournament.enrollPlayers(names);
-      storeState(state);
+      storeTournament(state.tournament);
     },
     updatePlayer: (id: string, props: PlayerProps) => {
       state.tournament.updatePlayer(id, props);
-      storeState(state);
+      storeTournament(state.tournament);
     },
     removePlayer: (id: string) => {
       state.tournament.removePlayer(id);
-      storeState(state);
+      storeTournament(state.tournament);
     },
     updateScore: (r: number, m: number, score: Score | null) => {
       state.tournament.updateScore(r, m, score);
-      storeState(state);
+      storeTournament(state.tournament);
     },
     changeRound: (roundIndex: number) => {
-      state.roundIndex = roundIndex;
-      storeState(state);
+      state.config.roundIndex = roundIndex;
+      storeConfig(state.config);
     },
     updateCourts: (courts: number) => {
-      state.courts = courts;
-      storeState(state);
+      state.config.courts = courts;
+      storeConfig(state.config);
+    },
+    resetTournament: () => {
+      state.tournament.reset();
+      state.config.roundIndex = -1;
+      storeConfig(state.config);
+      storeTournament(state.tournament);
+    },
+    resetAll: () => {
+      state.tournament = new Tournament();
+      state.config.roundIndex = -1;
+      storeConfig(state.config);
+      storeTournament(state.tournament);
+    },
+    setTheme: (theme: string) => {
+      state.config.theme = theme;
+      document.documentElement.setAttribute("data-theme", theme);
+      storeConfig(state.config);
     },
   };
 };
