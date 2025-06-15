@@ -54,7 +54,7 @@ export const Leaderboard: m.Component<Attrs, {}> = {
         const pdiff = p.plus - p.minus;
         const qdiff = q.plus - q.minus;
         if (pdiff == qdiff) {
-          acc.push(i);
+          acc.push(acc[i - 1]);
           return acc;
         }
       }
