@@ -63,6 +63,10 @@ header.round {
     }
 
     @media (min-width: 768px) {
+      h2 {
+        top: 15%;
+      }
+
       section.team {
         flex-direction: row;
       }
