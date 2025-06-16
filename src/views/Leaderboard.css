@@ -3,7 +3,7 @@ header.leaderboard {
 }
 
 @scope (main.leaderboard) {
-  section.entry {
+  section {
     display: flex;
     align-items: center;
     &:not(:last-child) {
@@ -12,58 +12,100 @@ header.leaderboard {
     }
   }
 
-  @media (max-width: 767px) {
-    article.player {
-      width: 32%;
+  @scope (section.header) {
+    @media (max-width: 767px) {
+      p.player {
+        width: 32%;
+        text-align: center;
+      }
+      p.rank {
+        width: 23.8%;
+        padding-left: 6.8%;
+      }
+      p.win-percentage {
+        width: 23.8%;
+        text-align: center;
+      }
+      p.plus-minus {
+        width: 20.4%;
+        text-align: center;
+      }
+    }
+
+    @media (min-width: 768px) {
+      p.player {
+        width: 18.4%;
+        text-align: center;
+      }
+      p.rank {
+        width: 28.56%;
+        padding-left: 8.16%;
+      }
+      p.win-percentage {
+        width: 28.56%;
+        text-align: center;
+      }
+      p.plus-minus {
+        width: 24.48%;
+        text-align: center;
+      }
+    }
+  }
+
+  @scope (section.entry) {
+    @media (max-width: 767px) {
+      article.player {
+        width: 32%;
+      }
+
+      div.result {
+        width: 68%;
+      }
+    }
+
+    @media (min-width: 768px) {
+      article.player {
+        width: 18.4%;
+      }
+      div.result {
+        width: 81.6%;
+      }
     }
 
     div.result {
-      width: 68%;
+      display: flex;
+      font-size: 1.5em;
     }
-  }
 
-  @media (min-width: 768px) {
-    article.player {
-      width: 18.4%;
+    p.rank {
+      width: 35%;
+      text-align: left;
+      padding-left: 10%;
     }
-    div.result {
-      width: 81.6%;
+
+    p.win-percentage {
+      position: relative;
+      width: 35%;
+      text-align: center;
+      border: 1px solid;
+      border-color: var(--pico-muted-border-color);
+      border-radius: 1ex;
     }
-  }
 
-  div.result {
-    display: flex;
-    font-size: 1.5em;
-  }
+    div.progressbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--pico-muted-color);
+      border-width: 0;
+      border-radius: 1ex;
+      opacity: 0.3;
+    }
 
-  p.award {
-    width: 35%;
-    text-align: left;
-    padding-left: 10%;
-  }
-
-  p.win-percentage {
-    position: relative;
-    width: 35%;
-    text-align: center;
-    border: 1px solid;
-    border-color: var(--pico-muted-border-color);
-    border-radius: 1ex;
-  }
-
-  div.progressbar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: var(--pico-muted-color);
-    border-width: 0;
-    border-radius: 1ex;
-    opacity: 0.3;
-  }
-
-  p.plus-minus {
-    width: 30%;
-    text-align: center;
+    p.plus-minus {
+      width: 30%;
+      text-align: center;
+    }
   }
 }

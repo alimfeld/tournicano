@@ -75,28 +75,37 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       m(
         "main.leaderboard.container-fluid",
         players.length > 0
-          ? players.map((player, i) =>
+          ? [
               m(
-                "section.entry",
+                "section.header",
+                m("p.player", "Player"),
+                m("p.rank", "#"),
+                m("p.win-percentage", "win %"),
+                m("p.plus-minus", "+/-"),
+              ),
+              ...players.map((player, i) =>
                 m(
-                  "article.player",
-                  m(Avatar, { player }),
-                  m("p.name", player.name),
-                ),
-                m(
-                  "div.result",
-                  m("p.award", award(ranks[i])),
+                  "section.entry",
                   m(
-                    "p.win-percentage",
-                    `${(winPercentage(player) * 100).toFixed(0)}%`,
-                    m("div.progressbar", {
-                      style: `width: ${winPercentage(player) * 100}%`,
-                    }),
+                    "article.player",
+                    m(Avatar, { player }),
+                    m("p.name", player.name),
                   ),
-                  m("p.plus-minus", renderPlusMinus(player)),
+                  m(
+                    "div.result",
+                    m("p.rank", award(ranks[i])),
+                    m(
+                      "p.win-percentage",
+                      `${(winPercentage(player) * 100).toFixed(0)}%`,
+                      m("div.progressbar", {
+                        style: `width: ${winPercentage(player) * 100}%`,
+                      }),
+                    ),
+                    m("p.plus-minus", renderPlusMinus(player)),
+                  ),
                 ),
               ),
-            )
+            ]
           : m("p", "No scores submitted (yet)!"),
       ),
     ];
