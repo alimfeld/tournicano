@@ -10,7 +10,6 @@ header.players {
 
   article.player {
     position: relative;
-    padding: 1ex;
     margin-bottom: 2%;
   }
 
@@ -35,20 +34,8 @@ header.players {
   }
 
   @scope (article.player) {
-    img.avatar {
-      padding: 0.5ex;
-    }
-
     img.avatar.inactive {
       opacity: 0.4;
-    }
-
-    p.name {
-      font-size: 1.5em;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      text-align: center;
     }
 
     button.delete {
@@ -61,6 +48,7 @@ header.players {
     }
 
     input.active {
+      margin-top: 1ex;
       float: right;
     }
   }

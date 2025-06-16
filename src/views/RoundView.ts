@@ -37,7 +37,7 @@ export const RoundView: m.Component<Attrs, {}> = {
     };
     const title =
       state.config.roundIndex < 0
-        ? "Rounds"
+        ? "Rs"
         : state.config.roundIndex + 1 == state.tournament.rounds.length
           ? `R${state.config.roundIndex + 1}`
           : `R${state.config.roundIndex + 1}/${state.tournament.rounds.length}`;

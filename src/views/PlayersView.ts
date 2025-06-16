@@ -36,7 +36,7 @@ export const PlayersView: m.Component<Attrs, {}> = {
           { role: "group" },
           m("input", {
             id: "players",
-            placeholder: "e.g. Anna Ben Catherine Tyson",
+            placeholder: "Anna Ben Paris Tyson",
             autocapitalize: "words",
           }),
           m(

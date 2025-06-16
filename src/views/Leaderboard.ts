@@ -9,15 +9,22 @@ export const Leaderboard: m.Component<Attrs, {}> = {
   view: ({ attrs: { state, actions } }) => {
     const award: (rank: number) => string = (rank) => {
       if (rank == 1) {
-        return "🥇";
+        return "1 🥇";
       }
       if (rank == 2) {
-        return "🥈";
+        return "2 🥈";
       }
       if (rank == 3) {
-        return "🥉";
+        return "3 🥉";
       }
       return rank.toString();
+    };
+    const renderPlusMinus: (p: PlayerResult) => string = (p) => {
+      const diff = p.plus - p.minus;
+      if (diff > 0) {
+        return `+${diff}`;
+      }
+      return `${diff}`;
     };
     const decisiveCount: (p: PlayerResult) => number = (p) => {
       return p.wins + p.draws + p.losses;
@@ -68,29 +75,25 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       m(
         "main.leaderboard.container-fluid",
         players.length > 0
-          ? m(
-              "table.striped",
+          ? players.map((player, i) =>
               m(
-                "thead",
+                "section.entry",
                 m(
-                  "tr",
-                  m("th", "#"),
-                  m("th", { colspan: 2 }, "🤖"),
-                  m("th.right", "%"),
-                  m("th.right", "+/-"),
+                  "article.player",
+                  m(Avatar, { player }),
+                  m("p.name", player.name),
                 ),
-              ),
-              m(
-                "tbody",
-                players.map((player, i) =>
+                m(
+                  "div.result",
+                  m("p.award", award(ranks[i])),
                   m(
-                    "tr",
-                    m("td", award(ranks[i])),
-                    m("td", m(Avatar, { player })),
-                    m("td", m("p.name", player.name)),
-                    m("td.right", (winPercentage(player) * 100).toFixed(0)),
-                    m("td.right", player.plus - player.minus),
+                    "p.win-percentage",
+                    `${(winPercentage(player) * 100).toFixed(0)}%`,
+                    m("div.progressbar", {
+                      style: `width: ${winPercentage(player) * 100}%`,
+                    }),
                   ),
+                  m("p.plus-minus", renderPlusMinus(player)),
                 ),
               ),
             )
