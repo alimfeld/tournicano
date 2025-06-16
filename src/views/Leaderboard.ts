@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./Leaderboard.css";
 import { Attrs } from "../Model.ts";
-import { PlayerResult } from "../core.ts";
+import { ParticipantResult } from "../core.ts";
 import { Nav } from "./Nav.ts";
 import { Avatar } from "./Avatar.ts";
 
@@ -19,26 +19,20 @@ export const Leaderboard: m.Component<Attrs, {}> = {
       }
       return rank.toString();
     };
-    const renderPlusMinus: (p: PlayerResult) => string = (p) => {
+    const renderPlusMinus: (p: ParticipantResult) => string = (p) => {
       const diff = p.plus - p.minus;
       if (diff > 0) {
         return `+${diff}`;
       }
       return `${diff}`;
     };
-    const decisiveCount: (p: PlayerResult) => number = (p) => {
-      return p.wins + p.draws + p.losses;
-    };
-    const winPercentage: (p: PlayerResult) => number = (p) => {
-      return (p.wins + p.draws / 2) / decisiveCount(p);
-    };
     const players = state.tournament.players
       .values()
-      .filter((p) => decisiveCount(p) > 0)
+      .filter((p) => p.scoredMatchesCount() > 0)
       .toArray()
       .sort((p, q) => {
-        const pperf = winPercentage(p);
-        const qperf = winPercentage(q);
+        const pperf = p.winPercentage();
+        const qperf = q.winPercentage();
         if (pperf == qperf) {
           const pdiff = p.plus - p.minus;
           const qdiff = q.plus - q.minus;
@@ -55,8 +49,8 @@ export const Leaderboard: m.Component<Attrs, {}> = {
         return acc;
       }
       const [p, q] = [players[i], players[i - 1]];
-      const pperf = winPercentage(p);
-      const qperf = winPercentage(q);
+      const pperf = p.winPercentage();
+      const qperf = q.winPercentage();
       if (pperf == qperf) {
         const pdiff = p.plus - p.minus;
         const qdiff = q.plus - q.minus;
@@ -96,9 +90,9 @@ export const Leaderboard: m.Component<Attrs, {}> = {
                     m("p.rank", award(ranks[i])),
                     m(
                       "p.win-percentage",
-                      `${(winPercentage(player) * 100).toFixed(0)}%`,
+                      `${(player.winPercentage() * 100).toFixed(0)}%`,
                       m("div.progressbar", {
-                        style: `width: ${winPercentage(player) * 100}%`,
+                        style: `width: ${player.winPercentage() * 100}%`,
                       }),
                     ),
                     m("p.plus-minus", renderPlusMinus(player)),

@@ -7,16 +7,14 @@ export type Team = [string, string];
 export type Score = [number, number];
 export type Match = [Team, Team, Score | null];
 
-export interface PlayerId {
-  readonly id: string;
-}
-
 export interface PlayerProps {
   readonly name: string;
   readonly active: boolean;
 }
 
-export interface EnrolledPlayer extends PlayerId, PlayerProps {}
+export interface EnrolledPlayer extends PlayerProps {
+  readonly id: string;
+}
 
 export interface PlayerAssignment {
   readonly matches: number;
@@ -25,15 +23,75 @@ export interface PlayerAssignment {
   opponents: Map<string, number>;
 }
 
-export interface PlayerResult {
-  readonly wins: number;
-  readonly losses: number;
-  readonly draws: number;
-  readonly plus: number; // total points scored
-  readonly minus: number; // total points conceded
+class TeamImpl {
+  constructor(
+    readonly p: PlayerImpl,
+    readonly q: PlayerImpl,
+  ) {}
+
+  results(): ParticipantResult {
+    return this.p.toCombined(this.q);
+  }
+
+  opponentSum(u: TeamImpl) {
+    return (
+      this.p.opponentCount(u.p.id) +
+      this.p.opponentCount(u.q.id) +
+      this.q.opponentCount(u.p.id) +
+      this.q.opponentCount(u.q.id)
+    );
+  }
+
+  toTeam(): Team {
+    return [this.p.id, this.q.id];
+  }
 }
 
-export interface PlayerStats extends PlayerAssignment, PlayerResult {}
+export class ParticipantResult {
+  wins: number = 0;
+  losses: number = 0;
+  draws: number = 0;
+  plus: number = 0; // total points scored
+  minus: number = 0; // total points conceded
+
+  scoredMatchesCount() {
+    return this.wins + this.losses + this.draws;
+  }
+
+  winPercentage() {
+    const c = this.scoredMatchesCount();
+    if (c == 0) {
+      return 0.5;
+    }
+    return (this.wins + this.draws / 2) / c;
+  }
+
+  compare(other: ParticipantResult): number {
+    const pperf = this.winPercentage();
+    const qperf = other.winPercentage();
+    if (pperf == qperf) {
+      const pdiff = this.plus - this.minus;
+      const qdiff = other.plus - other.minus;
+      if (pdiff == qdiff) {
+        return 0;
+      }
+      return qdiff - pdiff;
+    }
+    return qperf - pperf;
+  }
+
+  toCombined(other: ParticipantResult): ParticipantResult {
+    const result = new ParticipantResult();
+    result.wins = this.wins + other.wins;
+    result.losses = this.losses + other.losses;
+    result.draws = this.draws + other.draws;
+    result.plus = this.plus + other.plus;
+    result.minus = this.minus + other.minus;
+    return result;
+  }
+}
+
+export interface PlayerStats extends PlayerAssignment, ParticipantResult {}
 
 export interface Player extends EnrolledPlayer, PlayerStats {}
 
@@ -101,11 +159,15 @@ export class Tournament {
     return false;
   }
 
-  createRound(matchCount: number): number {
+  createRound(matchCount: number, perfRatio: number = 0): number {
     const [competing, paused, inactive] = this.partitionPlayers(matchCount);
-    const teams = this.determineTeams(competing);
-    const matches = this.determineMatches(teams);
-    const round = { inactive, paused, matches };
+    const teams = this.determineTeams(competing, perfRatio);
+    const matches = this.determineMatches(teams, perfRatio);
+    const round = {
+      inactive: inactive.map((p) => p.id),
+      paused: paused.map((p) => p.id),
+      matches,
+    };
     this.addRound(round);
     return this.rounds.length - 1;
   }
@@ -161,7 +223,7 @@ export class Tournament {
 
   private partitionPlayers(
     matchCount: number,
-  ): [competing: string[], paused: string[], inactive: string[]] {
+  ): [competing: PlayerImpl[], paused: PlayerImpl[], inactive: PlayerImpl[]] {
     let active: PlayerImpl[] = [];
     let inactive: PlayerImpl[] = [];
     this.players.forEach((player) => {
@@ -177,64 +239,123 @@ export class Tournament {
       });
     }
     return [
-      active.slice(0, competitorCount).map((p) => p.id),
-      active.slice(competitorCount).map((p) => p.id),
-      inactive.map((p) => p.id),
+      active.slice(0, competitorCount),
+      active.slice(competitorCount),
+      inactive,
     ];
   }
 
-  private determineTeams(ids: string[]): Team[] {
+  private determineTeams(players: PlayerImpl[], perfRatio: number): TeamImpl[] {
+    const ranked = players.toSorted((p, q) => p.compare(q));
     const edges = [];
-    for (let i = 0; i < ids.length - 1; i++) {
-      for (let j = i + 1; j < ids.length; j++) {
-        const p = ids[i];
-        const q = ids[j];
-        edges.push([i, j, this.calculateTeamWeight(p, q)]);
+    for (let i = 0; i < ranked.length - 1; i++) {
+      for (let j = i + 1; j < ranked.length; j++) {
+        const p = ranked[i];
+        const q = ranked[j];
+        edges.push([
+          i,
+          j,
+          this.calculateTeamWeight(p, q, j - i, ranked.length, perfRatio),
+        ]);
       }
     }
     const matching = maximumMatching(edges);
-    return [...iter(matching)].map((edge: [number, number]) => [
-      ids[edge[0]],
-      ids[edge[1]],
-    ]);
+    return [...iter(matching)].map(
+      (edge: [number, number]) =>
+        new TeamImpl(ranked[edge[0]], ranked[edge[1]]),
+    );
   }
 
-  private calculateTeamWeight(p: string, q: string): number {
-    const player = this.players.get(p)!;
+  private calculateTeamWeight(
+    p: PlayerImpl,
+    q: PlayerImpl,
+    rankDiff: number,
+    playerCount: number,
+    perfRatio: number,
+  ): number {
+    let weight = 1;
+    if (perfRatio < 1) {
+      weight += (1 - perfRatio) * this.calculateTeamWeightAmericano(p, q);
+    }
+    if (perfRatio > 0) {
+      weight +=
+        perfRatio * this.calculateTeamWeightMexicano(rankDiff, playerCount);
+    }
+    return weight;
+  }
+
+  private calculateTeamWeightAmericano(p: PlayerImpl, q: PlayerImpl): number {
     const max = this.rounds.length;
     if (max == 0) {
       return 1;
     }
-    return (max - player.partnerCount(q)) / max;
+    return (max - p.partnerCount(q.id)) / max;
   }
 
-  private determineMatches(teams: Team[]): Match[] {
+  private calculateTeamWeightMexicano(
+    rankDiff: number,
+    playerCount: number,
+  ): number {
+    return 1 - Math.abs(rankDiff - 2) / (playerCount - 3);
+  }
+
+  private determineMatches(teams: TeamImpl[], perfRatio: number): Match[] {
+    const ranked = teams.toSorted((t, u) => t.results().compare(u.results()));
     const edges = [];
-    for (let i = 0; i < teams.length - 1; i++) {
-      for (let j = i + 1; j < teams.length; j++) {
-        edges.push([i, j, this.calculateMatchWeight([teams[i], teams[j]])]);
+    for (let i = 0; i < ranked.length - 1; i++) {
+      for (let j = i + 1; j < ranked.length; j++) {
+        edges.push([
+          i,
+          j,
+          this.calculateMatchWeight(
+            ranked[i],
+            ranked[j],
+            j - i,
+            ranked.length,
+            perfRatio,
+          ),
+        ]);
       }
     }
     const matching = maximumMatching(edges);
     return [...iter(matching)].map((edge: [number, number]) => [
-      teams[edge[0]],
-      teams[edge[1]],
+      ranked[edge[0]].toTeam(),
+      ranked[edge[1]].toTeam(),
       null,
     ]);
   }
 
-  private calculateMatchWeight(teams: [Team, Team]): number {
-    let oppenentSum = 0;
-    teams[0].forEach((p) => {
-      teams[1].forEach((q) => {
-        oppenentSum += this.players.get(p)!.opponentCount(q);
-      });
-    });
+  private calculateMatchWeight(
+    t: TeamImpl,
+    u: TeamImpl,
+    rankDiff: number,
+    teamCount: number,
+    perfRatio: number,
+  ): number {
+    let weight = 1;
+    if (perfRatio < 1) {
+      weight += (1 - perfRatio) * this.calculateMatchWeightAmericano(t, u);
+    }
+    if (perfRatio > 0) {
+      weight +=
+        perfRatio * this.calculateMatchWeightMexicano(rankDiff, teamCount);
+    }
+    return weight;
+  }
+
+  private calculateMatchWeightAmericano(t: TeamImpl, u: TeamImpl): number {
     const max = 4 * this.rounds.length;
     if (max == 0) {
       return 1;
     }
-    return (max - oppenentSum) / max;
+    return (max - t.opponentSum(u)) / max;
+  }
+
+  private calculateMatchWeightMexicano(
+    rankDiff: number,
+    teamCount: number,
+  ): number {
+    return 1 - (rankDiff - 1) / (teamCount - 1);
   }
 
   private addRound(round: Round) {
@@ -281,12 +402,14 @@ export class Tournament {
   }
 }
 
-class PlayerImpl implements Player {
+class PlayerImpl extends ParticipantResult implements Player {
   constructor(
     readonly id: string,
     public name: string,
     public active: boolean,
-  ) {}
+  ) {
+    super();
+  }
 
   update(props: PlayerProps) {
     this.name = props.name;
@@ -321,13 +444,6 @@ class PlayerImpl implements Player {
     }
     return this.matches / (this.matches + this.pauses);
   }
-
-  // updated from scores
-  wins: number = 0;
-  losses: number = 0;
-  draws: number = 0;
-  plus: number = 0; // total points scored
-  minus: number = 0; // total points conceded
 
   reset() {
     this.matches = 0;

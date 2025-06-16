@@ -76,7 +76,7 @@ export const RoundView: m.Component<Attrs, {}> = {
             "button.add",
             {
               disabled: matchesPerRound < 1,
-              onclick: () => actions.createRound(state.config.courts),
+              onclick: () => actions.createRound(),
             },
             `+ (${matchesPerRound})`,
           ),

@@ -12,6 +12,7 @@ interface Config {
   roundIndex: number;
   courts: number;
   theme: string; // auto | dark | light
+  perfRatio: number;
 }
 
 interface State {
@@ -21,7 +22,7 @@ interface State {
 
 interface Actions {
   changeView: (view: View) => void;
-  createRound: (matchCount: number) => void;
+  createRound: () => void;
   removeRound: (r: number) => void;
   enrollPlayers: (names: string[]) => void;
   updatePlayer: (id: string, props: PlayerProps) => void;
@@ -32,6 +33,7 @@ interface Actions {
   resetTournament: () => void;
   resetAll: () => void;
   setTheme: (theme: string) => void;
+  setPerfRatio: (perfRatio: number) => void;
 }
 
 export const createState: () => State = () => {
@@ -44,6 +46,7 @@ export const createState: () => State = () => {
         roundIndex: -1,
         courts: 2,
         theme: "auto",
+        perfRatio: 0,
       };
   const tournament = new Tournament(serialized ? serialized : undefined);
   // ensure roundIndex is within bounds
@@ -82,8 +85,8 @@ export const createActions: (state: State) => Actions = (state) => {
       state.config.view = view;
       storeConfig(state.config);
     },
-    createRound: (matchCount: number) => {
-      state.tournament.createRound(matchCount);
+    createRound: () => {
+      state.tournament.createRound(state.config.courts, state.config.perfRatio);
       state.config.roundIndex = state.tournament.rounds.length - 1;
       storeTournament(state.tournament);
       storeConfig(state.config);
@@ -135,6 +138,10 @@ export const createActions: (state: State) => Actions = (state) => {
     setTheme: (theme: string) => {
       state.config.theme = theme;
       syncTheme(theme);
+      storeConfig(state.config);
+    },
+    setPerfRatio: (perfRatio: number) => {
+      state.config.perfRatio = perfRatio;
       storeConfig(state.config);
     },
   };
