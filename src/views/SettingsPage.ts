@@ -1,13 +1,21 @@
 import m from "mithril";
-import "./SettingsView.css";
-import { Attrs } from "../Model.ts";
-import { Nav } from "./Nav.ts";
+import "./SettingsPage.css";
+import { NavView } from "./NavView.ts";
+import { Settings } from "../model/Settings.ts";
+import { Page } from "../App.ts";
+import { Tournament } from "../model/Tournament.ts";
 
-export const SettingsView: m.Component<Attrs, {}> = {
-  view: ({ attrs: { state, actions } }) => {
+export interface SettingsAttrs {
+  settings: Settings;
+  tournament: Tournament;
+  nav: (page: Page) => void;
+}
+
+export const SettingsPage: m.Component<SettingsAttrs> = {
+  view: ({ attrs: { settings, tournament, nav } }) => {
     return [
       m("header.settings.container-fluid", m("h1", "Settings")),
-      m(Nav, { changeView: actions.changeView }),
+      m(NavView, { nav }),
       m(
         "main.settings.container-fluid",
         m("h2", "Tournament"),
@@ -22,11 +30,11 @@ export const SettingsView: m.Component<Attrs, {}> = {
                 type: "number",
                 name: "courts",
                 inputmode: "numeric",
-                value: state.config.courts,
+                value: settings.courts,
                 min: 0,
                 step: 1,
-                onclick: (event: InputEvent) =>
-                  actions.updateCourts(
+                onblur: (event: InputEvent) =>
+                  settings.setCourts(
                     (event.target as HTMLInputElement).valueAsNumber,
                   ),
               }),
@@ -37,22 +45,22 @@ export const SettingsView: m.Component<Attrs, {}> = {
               "Tournicano Ratio",
               m("input", {
                 type: "range",
-                value: state.config.perfRatio * 100,
+                value: settings.mexicanoRatio * 100,
                 onchange: (event: InputEvent) => {
-                  actions.setPerfRatio(
+                  settings.setMexicanoRatio(
                     (event.target as HTMLInputElement).valueAsNumber / 100,
                   );
                 },
               }),
-              m("small", `Americano vs. Mexicano (${state.config.perfRatio})`),
+              m("small", `Americano vs. Mexicano (${settings.mexicanoRatio})`),
             ),
           ),
           m(
             "button.reset",
-            { onclick: actions.resetTournament },
+            { onclick: () => tournament.clearRounds() },
             "Reset Tournament",
           ),
-          m("button.reset", { onclick: actions.resetAll }, "Reset All"),
+          m("button.reset", { onclick: () => tournament.reset() }, "Reset All"),
         ),
         m("h2", "UI"),
         m(
@@ -65,9 +73,9 @@ export const SettingsView: m.Component<Attrs, {}> = {
               {
                 type: "radio",
                 id: "auto",
-                checked: state.config.theme == "auto",
+                checked: settings.theme == "auto",
                 onchange: () => {
-                  actions.setTheme("auto");
+                  settings.setTheme("auto");
                 },
               },
               "auto",
@@ -78,9 +86,9 @@ export const SettingsView: m.Component<Attrs, {}> = {
               {
                 type: "radio",
                 id: "dark",
-                checked: state.config.theme == "dark",
+                checked: settings.theme == "dark",
                 onchange: () => {
-                  actions.setTheme("dark");
+                  settings.setTheme("dark");
                 },
               },
               "dark",
@@ -91,9 +99,9 @@ export const SettingsView: m.Component<Attrs, {}> = {
               {
                 type: "radio",
                 id: "light",
-                checked: state.config.theme == "light",
+                checked: settings.theme == "light",
                 onchange: () => {
-                  actions.setTheme("light");
+                  settings.setTheme("light");
                 },
               },
               "light",

@@ -4,35 +4,35 @@
 
 @media (min-width: 576px) {
   :root {
-    --pico-font-size: 120%;
+    --pico-font-size: 110%;
     /* Original: 106.25% */
   }
 }
 
 @media (min-width: 768px) {
   :root {
-    --pico-font-size: 140%;
+    --pico-font-size: 120%;
     /* Original: 112.5% */
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --pico-font-size: 180%;
+    --pico-font-size: 130%;
     /* Original: 118.75% */
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --pico-font-size: 220%;
+    --pico-font-size: 140%;
     /* Original: 125% */
   }
 }
 
 @media (min-width: 1536px) {
   :root {
-    --pico-font-size: 240%;
+    --pico-font-size: 150%;
     /* Original: 131.25% */
   }
 }
@@ -48,6 +48,10 @@ header {
   background: var(--pico-background-color);
   border-bottom: 1px solid;
   border-color: var(--pico-muted-border-color);
+}
+
+header h1 {
+  margin: 0;
 }
 
 nav {
@@ -76,15 +80,21 @@ nav {
 /* Global player styles */
 
 article.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 1ex;
 }
 
 @scope (article.player) {
-  img.avatar {
+  img {
     padding: 0.5ex;
+    width: 4rem;
+    height: 4rem;
   }
 
-  p.name {
+  p {
+    width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

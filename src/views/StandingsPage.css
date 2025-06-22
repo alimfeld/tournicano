@@ -1,0 +1,46 @@
+header.standings {
+  display: flex;
+  justify-content: space-between;
+}
+
+header.standings button {
+  padding: 1rex;
+}
+
+@scope (main.standings) {
+  section {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr 1.5fr;
+    align-items: center;
+    border-bottom: 1px solid;
+    border-color: var(--pico-muted-border-color);
+  }
+
+  @scope (section.entry) {
+    div.record {
+      padding: 1em;
+      text-align: center;
+    }
+
+    p.win-percentage {
+      position: relative;
+      border: 1px solid;
+      border-color: var(--pico-form-element-valid-focus-color);
+      border-radius: 0.5ex;
+    }
+
+    div.progressbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--pico-form-element-valid-focus-color);
+      border-width: 0;
+      opacity: 0.3;
+    }
+
+    div.points {
+      text-align: center;
+    }
+  }
+}
