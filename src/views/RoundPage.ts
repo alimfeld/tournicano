@@ -24,10 +24,12 @@ export const RoundPage: m.Component<RoundAttrs> = {
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
     const renderTeam = (team: Team) => {
-      return [
+      return m(
+        "section.team",
         m(PlayerView, { player: team.player1 }),
+        m("p", "&"),
         m(PlayerView, { player: team.player2 }),
-      ];
+      );
     };
     const renderMatch = (match: Match, i: number) => {
       return [
@@ -35,12 +37,16 @@ export const RoundPage: m.Component<RoundAttrs> = {
         m("h2", `M${i + 1}`),
         renderTeam(match.teamB),
         m(
-          "div.score",
+          "section.score",
           m("input.score", {
+            "aria-invalid": match.score ? "false" : "true",
             type: "text",
             name: "score",
             placeholder: "--:--",
             inputmode: "numeric",
+            value: match.score
+              ? `${String(match.score[0]).padStart(2, "0")}:${String(match.score[1]).padStart(2, "0")}`
+              : null,
             oninput: (event: InputEvent) => {
               const input = event.target as HTMLInputElement;
               // Remove non-digit characters
@@ -73,9 +79,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
               }
               match.submitScore(score);
             },
-            value: match.score
-              ? `${String(match.score[0]).padStart(2, "0")}:${String(match.score[1]).padStart(2, "0")}`
-              : null,
           }),
         ),
       ];

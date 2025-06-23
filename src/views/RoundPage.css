@@ -18,19 +18,45 @@ header.round button {
   section.match {
     display: grid;
     column-gap: var(--pico-spacing);
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     border-bottom: 1px solid;
     border-color: var(--pico-muted-border-color);
   }
 
-  div.score {
-    display: flex;
+  section.team {
+    position: relative;
+    display: grid;
+    column-gap: var(--pico-spacing);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  div.score input {
-    align-self: center;
+  section.team article.player {
+    margin: 0;
+  }
+
+  section.team > p {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
-    margin-bottom: var(--pico-spacing);
+    margin: 0;
+    border: 1px solid;
+    width: 2rem;
+    border-radius: 1rem;
+    background: var(--pico-background-color);
+    color: var(--pico-muted-color);
+    border-color: var(--pico-muted-border-color);
+  }
+
+  section.score {
+    display: flex;
+    align-items: center;
+  }
+
+  section.score input {
+    text-align: center;
+    margin: 0;
   }
 
   section.paused {
@@ -47,7 +73,7 @@ header.round button {
 
   @media (min-width: 1024px) {
     section.match {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 2fr) minmax(0, 1fr));
     }
 
     section.paused {
@@ -62,11 +88,11 @@ header.round button {
 
   @scope (section.actions) {
     button.delete {
-      border-color: var(--pico-form-element-invalid-focus-color);
+      border-color: var(--pico-form-element-invalid-border-color);
       background: var(--pico-form-element-invalid-focus-color);
     }
     button.add {
-      border-color: var(--pico-form-element-valid-focus-color);
+      border-color: var(--pico-form-element-valid-border-color);
       background: var(--pico-form-element-valid-focus-color);
     }
   }

@@ -10,7 +10,7 @@ header.standings button {
 @scope (main.standings) {
   section {
     display: grid;
-    grid-template-columns: 1fr 2fr 2fr 1.5fr;
+    grid-template-columns: 1fr 4fr 4fr 2fr;
     align-items: center;
     border-bottom: 1px solid;
     border-color: var(--pico-muted-border-color);
@@ -18,8 +18,8 @@ header.standings button {
 
   @scope (section.entry) {
     div.record {
-      padding: 1rem;
       text-align: center;
+      padding: 0 10% 0 20%;
     }
 
     p.win-percentage {

@@ -1,41 +1,6 @@
 :root {
   --pico-font-size: 100%;
-  --pico-spacing: 1rex;
-}
-
-@media (min-width: 576px) {
-  :root {
-    --pico-font-size: 110%;
-    /* Original: 106.25% */
-  }
-}
-
-@media (min-width: 768px) {
-  :root {
-    --pico-font-size: 120%;
-    /* Original: 112.5% */
-  }
-}
-
-@media (min-width: 1024px) {
-  :root {
-    --pico-font-size: 130%;
-    /* Original: 118.75% */
-  }
-}
-
-@media (min-width: 1280px) {
-  :root {
-    --pico-font-size: 140%;
-    /* Original: 125% */
-  }
-}
-
-@media (min-width: 1536px) {
-  :root {
-    --pico-font-size: 150%;
-    /* Original: 131.25% */
-  }
+  /* --pico-spacing: 1rex; */
 }
 
 body {
