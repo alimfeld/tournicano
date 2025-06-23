@@ -42,17 +42,21 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             ),
             m(
               "label",
-              "Tournicano Ratio",
+              "Flavor:",
               m("input", {
                 type: "range",
                 value: settings.mexicanoRatio * 100,
+                step: 25,
                 onchange: (event: InputEvent) => {
                   settings.setMexicanoRatio(
                     (event.target as HTMLInputElement).valueAsNumber / 100,
                   );
                 },
               }),
-              m("small", `Americano vs. Mexicano (${settings.mexicanoRatio})`),
+              m(
+                "small",
+                `Americano vs. Mexicano (${((1 - settings.mexicanoRatio) * 100).toFixed(0)}/${(settings.mexicanoRatio * 100).toFixed(0)})`,
+              ),
             ),
           ),
           m(
