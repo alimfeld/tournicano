@@ -5,7 +5,7 @@ header.players {
 @scope (main.players) {
   section.players {
     display: grid;
-    column-gap: 1rem;
+    column-gap: var(--pico-spacing);
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -50,7 +50,7 @@ header.players {
     flex-direction: row-reverse;
     justify-content: space-between;
     align-items: flex-start;
-    margin-top: 1rex;
+    margin-top: var(--pico-spacing);
   }
 
   button.delete {
@@ -59,7 +59,7 @@ header.players {
     left: 0;
     border-color: var(--pico-form-element-invalid-focus-color);
     background: var(--pico-form-element-invalid-focus-color);
-    padding: 0 1ex;
+    padding: 0 1rex;
   }
 
   input.active {

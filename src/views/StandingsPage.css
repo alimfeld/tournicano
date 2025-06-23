@@ -18,7 +18,7 @@ header.standings button {
 
   @scope (section.entry) {
     div.record {
-      padding: 1em;
+      padding: 1rem;
       text-align: center;
     }
 

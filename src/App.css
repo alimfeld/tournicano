@@ -1,5 +1,6 @@
 :root {
   --pico-font-size: 100%;
+  --pico-spacing: 1rex;
 }
 
 @media (min-width: 576px) {
@@ -83,12 +84,11 @@ article.player {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1ex;
+  padding: 1rex;
 }
 
 @scope (article.player) {
   img {
-    padding: 0.5ex;
     width: 4rem;
     height: 4rem;
   }

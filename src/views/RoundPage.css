@@ -10,14 +10,14 @@ header.round button {
 @scope (main.round) {
   h2 {
     margin: 0;
-    margin-bottom: 1rem;
+    margin-bottom: var(--pico-spacing);
     justify-self: center;
     align-self: center;
   }
 
   section.match {
     display: grid;
-    column-gap: 1rem;
+    column-gap: var(--pico-spacing);
     grid-template-columns: repeat(3, minmax(0, 1fr));
     border-bottom: 1px solid;
     border-color: var(--pico-muted-border-color);
@@ -30,12 +30,12 @@ header.round button {
   div.score input {
     align-self: center;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: var(--pico-spacing);
   }
 
   section.paused {
     display: grid;
-    column-gap: 1rem;
+    column-gap: var(--pico-spacing);
     grid-template-columns: repeat(3, minmax(0, 1fr));
     border-bottom: 1px solid;
     border-color: var(--pico-muted-border-color);
