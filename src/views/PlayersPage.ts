@@ -50,7 +50,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             {
               onclick: registerPlayers,
             },
-            "Register",
+            "Add",
           ),
         ),
         m(

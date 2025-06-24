@@ -27,21 +27,18 @@ export const RoundPage: m.Component<RoundAttrs> = {
       return m(
         "section.team",
         m(PlayerView, { player: team.player1 }),
-        m("p", "&"),
         m(PlayerView, { player: team.player2 }),
       );
     };
     const renderMatch = (match: Match, i: number) => {
       return [
         renderTeam(match.teamA),
-        m("h2", `M${i + 1}`),
-        renderTeam(match.teamB),
         m(
           "section.score",
           m("input.score", {
             "aria-invalid": match.score ? "false" : "true",
             type: "text",
-            name: "score",
+            name: `score${i}`,
             placeholder: "--:--",
             inputmode: "numeric",
             value: match.score
@@ -80,7 +77,9 @@ export const RoundPage: m.Component<RoundAttrs> = {
               match.submitScore(score);
             },
           }),
+          m("small", match.score ? "submitted" : "enter 4 digits"),
         ),
+        renderTeam(match.teamB),
       ];
     };
     return [
@@ -100,7 +99,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             ? roundIndex + 1 == roundCount
               ? `Round ${roundIndex + 1}`
               : `Round ${roundIndex + 1}/${roundCount}`
-            : "-",
+            : "Rounds",
         ),
         m(
           "button.outline.next",
@@ -116,14 +115,18 @@ export const RoundPage: m.Component<RoundAttrs> = {
         "main.round.container-fluid",
         round
           ? [
-              ...round.matches.map((match, i) =>
+              ...round.matches.map((match, i) => [
+                m("h2", `Match ${i + 1}`),
                 m("section.match", renderMatch(match, i)),
-              ),
+              ]),
               round.paused.length > 0
-                ? m(
-                    "section.paused",
-                    round.paused.map((player) => m(PlayerView, { player })),
-                  )
+                ? [
+                    m("h2", "Paused"),
+                    m(
+                      "section.paused",
+                      round.paused.map((player) => m(PlayerView, { player })),
+                    ),
+                  ]
                 : null,
             ]
           : [m("p", "No rounds created (yet)!")],
@@ -157,7 +160,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
                 changeRound(roundCount);
               },
             },
-            `Create Round (${matchesPerRound} Matches)`,
+            `New Round (${matchesPerRound} Matches)`,
           ),
         ),
       ),

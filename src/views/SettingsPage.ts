@@ -46,7 +46,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               m("input", {
                 type: "range",
                 value: settings.mexicanoRatio * 100,
-                step: 25,
+                step: 10,
                 onchange: (event: InputEvent) => {
                   settings.setMexicanoRatio(
                     (event.target as HTMLInputElement).valueAsNumber / 100,

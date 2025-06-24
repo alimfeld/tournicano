@@ -9,54 +9,42 @@ header.round button {
 
 @scope (main.round) {
   h2 {
+    font-size: 80%;
     margin: 0;
     margin-bottom: var(--pico-spacing);
-    justify-self: center;
-    align-self: center;
   }
 
   section.match {
     display: grid;
     column-gap: var(--pico-spacing);
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     border-bottom: 1px solid;
     border-color: var(--pico-muted-border-color);
   }
 
   section.team {
-    position: relative;
     display: grid;
+    row-gap: var(--pico-spacing);
     column-gap: var(--pico-spacing);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
   }
 
   section.team article.player {
     margin: 0;
   }
 
-  section.team > p {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    margin: 0;
-    border: 1px solid;
-    width: 2rem;
-    border-radius: 1rem;
-    background: var(--pico-background-color);
-    color: var(--pico-muted-color);
-    border-color: var(--pico-muted-border-color);
-  }
-
   section.score {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
   }
 
   section.score input {
     text-align: center;
-    margin: 0;
+  }
+
+  section.score small {
+    margin-bottom: 0;
   }
 
   section.paused {
@@ -71,13 +59,18 @@ header.round button {
     opacity: 0.4;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 768px) {
     section.match {
-      grid-template-columns: repeat(2, minmax(0, 2fr) minmax(0, 1fr));
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
+    }
+
+    section.team {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: minmax(0, 1fr);
     }
 
     section.paused {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
     }
   }
 
@@ -90,10 +83,6 @@ header.round button {
     button.delete {
       border-color: var(--pico-form-element-invalid-border-color);
       background: var(--pico-form-element-invalid-focus-color);
-    }
-    button.add {
-      border-color: var(--pico-form-element-valid-border-color);
-      background: var(--pico-form-element-valid-focus-color);
     }
   }
 }
