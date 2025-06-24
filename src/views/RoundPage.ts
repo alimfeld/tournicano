@@ -2,9 +2,10 @@ import m from "mithril";
 import "./RoundPage.css";
 import { PlayerView } from "./PlayerView.ts";
 import { NavView } from "./NavView.ts";
-import { Match, Score, Team, Tournament } from "../model/Tournament.ts";
+import { Tournament } from "../model/Tournament.ts";
 import { Page } from "../App.ts";
 import { Settings } from "../model/Settings.ts";
+import { MatchView } from "./MatchView.ts";
 
 export interface RoundAttrs {
   settings: Settings;
@@ -13,6 +14,9 @@ export interface RoundAttrs {
   changeRound: (index: number) => void;
   nav: (page: Page) => void;
 }
+
+let touchStartX = 0;
+let touchStartY = 0;
 
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({ attrs: { settings, tournament, roundIndex, changeRound, nav } }) => {
@@ -23,65 +27,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
-    const renderTeam = (team: Team) => {
-      return m(
-        "section.team",
-        m(PlayerView, { player: team.player1 }),
-        m(PlayerView, { player: team.player2 }),
-      );
-    };
-    const renderMatch = (match: Match, i: number) => {
-      return [
-        renderTeam(match.teamA),
-        m(
-          "section.score",
-          m("input.score", {
-            "aria-invalid": match.score ? "false" : "true",
-            type: "text",
-            name: `score${i}`,
-            placeholder: "--:--",
-            inputmode: "numeric",
-            value: match.score
-              ? `${String(match.score[0]).padStart(2, "0")}:${String(match.score[1]).padStart(2, "0")}`
-              : null,
-            oninput: (event: InputEvent) => {
-              const input = event.target as HTMLInputElement;
-              // Remove non-digit characters
-              let digits = input.value.replace(/\D/g, "");
-              // Limit to 4 digits
-              if (digits.length > 4) {
-                digits = digits.slice(0, 4);
-              }
-              // Format as XX:YY
-              if (digits.length <= 2) {
-                input.value = digits;
-                // keep cursor in front of colon to make backspace work!
-                input.setSelectionRange(digits.length, digits.length);
-              } else {
-                input.value = digits.slice(0, 2) + ":" + digits.slice(2);
-              }
-              // @ts-ignore
-              event.redraw = false;
-            },
-            onblur: (event: InputEvent) => {
-              const input = event.target as HTMLInputElement;
-              // Remove non-digit characters
-              let digits = input.value.replace(/\D/g, "");
-              const score: Score | undefined =
-                digits.length == 4
-                  ? [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))]
-                  : undefined;
-              if (score == undefined) {
-                input.value = "";
-              }
-              match.submitScore(score);
-            },
-          }),
-          m("small", match.score ? "submitted" : "enter 4 digits"),
-        ),
-        renderTeam(match.teamB),
-      ];
-    };
     return [
       m(
         "header.round.container-fluid",
@@ -113,12 +58,30 @@ export const RoundPage: m.Component<RoundAttrs> = {
       m(NavView, { nav }),
       m(
         "main.round.container-fluid",
+        {
+          ontouchstart: (event: TouchEvent) => {
+            touchStartX = event.changedTouches[0].screenX;
+            touchStartY = event.changedTouches[0].screenY;
+          },
+          ontouchend: (event: TouchEvent) => {
+            const touchEndX = event.changedTouches[0].screenX;
+            if (touchEndX - touchStartX > 100) {
+              if (roundIndex > 0) {
+                changeRound(roundIndex - 1);
+              }
+            }
+            if (touchEndX - touchStartX < -100) {
+              if (roundIndex + 1 < roundCount) {
+                changeRound(roundIndex + 1);
+              }
+            }
+          },
+        },
         round
           ? [
-              ...round.matches.map((match, i) => [
-                m("h2", `Match ${i + 1}`),
-                m("section.match", renderMatch(match, i)),
-              ]),
+              ...round.matches.map((match, matchIndex) =>
+                m(MatchView, { match, matchIndex }),
+              ),
               round.paused.length > 0
                 ? [
                     m("h2", "Paused"),

@@ -56,7 +56,7 @@ header.round button {
   }
 
   section.paused article {
-    opacity: 0.4;
+    opacity: 0.5;
   }
 
   @media (min-width: 768px) {

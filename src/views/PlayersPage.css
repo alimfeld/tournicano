@@ -40,7 +40,7 @@ header.players {
   }
 
   div.player.inactive article {
-    opacity: 0.4;
+    opacity: 0.5;
   }
 
   div.player div.actions {
