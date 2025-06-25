@@ -6,6 +6,7 @@ import { Tournament } from "../model/Tournament.ts";
 import { Page } from "../App.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
+import { Swipeable } from "./Swipeable.ts";
 
 export interface RoundAttrs {
   settings: Settings;
@@ -14,9 +15,6 @@ export interface RoundAttrs {
   changeRound: (index: number) => void;
   nav: (page: Page) => void;
 }
-
-let touchStartX = 0;
-let touchStartY = 0;
 
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({ attrs: { settings, tournament, roundIndex, changeRound, nav } }) => {
@@ -57,23 +55,17 @@ export const RoundPage: m.Component<RoundAttrs> = {
       ),
       m(NavView, { nav }),
       m(
-        "main.round.container-fluid",
+        Swipeable,
         {
-          ontouchstart: (event: TouchEvent) => {
-            touchStartX = event.changedTouches[0].screenX;
-            touchStartY = event.changedTouches[0].screenY;
-          },
-          ontouchend: (event: TouchEvent) => {
-            const touchEndX = event.changedTouches[0].screenX;
-            if (touchEndX - touchStartX > 100) {
-              if (roundIndex > 0) {
-                changeRound(roundIndex - 1);
-              }
+          element: "main.round.container-fluid",
+          onswipeleft: () => {
+            if (roundIndex > 0) {
+              changeRound(roundIndex - 1);
             }
-            if (touchEndX - touchStartX < -100) {
-              if (roundIndex + 1 < roundCount) {
-                changeRound(roundIndex + 1);
-              }
+          },
+          onswiperight: () => {
+            if (roundIndex + 1 < roundCount) {
+              changeRound(roundIndex + 1);
             }
           },
         },
