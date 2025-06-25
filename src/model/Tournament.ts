@@ -73,8 +73,8 @@ export type TournicanoFlavor = {
 };
 
 export type RoundSpec = {
-  maxMatches: number | undefined;
-  flavor: TournicanoFlavor | undefined;
+  maxMatches?: number;
+  flavor?: TournicanoFlavor;
 };
 
 export interface TournamentListener {
@@ -85,7 +85,7 @@ export interface Tournament {
   readonly rounds: Round[];
   readonly players: RegisteredPlayer[];
   registerPlayers(names: string[]): void;
-  createRound(spec: RoundSpec | undefined): Round;
+  createRound(spec?: RoundSpec): Round;
   clearRounds(): void;
   reset(): void;
   serialize(): string;

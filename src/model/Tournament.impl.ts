@@ -299,9 +299,9 @@ class RoundImpl implements Round {
   addPerformance(id: PlayerId, performance: Performance) {
     this.playerMap.get(id)!.add(performance);
     const r = this.tournament.rounds.indexOf(this);
-    this.tournament.rounds
-      .slice(r + 1)
-      .forEach((nextRound) => nextRound.addPerformance(id, performance));
+    if (r + 1 < this.tournament.rounds.length) {
+      this.tournament.rounds.at(r + 1)?.addPerformance(id, performance);
+    }
   }
 
   toString() {

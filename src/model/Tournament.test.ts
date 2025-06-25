@@ -160,3 +160,22 @@ test("should serialize tournament", () => {
     expect(round.toString()).toBe(tournament.rounds[i]!.toString());
   });
 });
+
+test("should update performance through rounds", () => {
+  const tournament = runTournament(names);
+  tournament.createRound();
+  tournament.createRound();
+  tournament.createRound();
+  const firstRound = tournament.rounds.at(0)!;
+  firstRound.matches.forEach((match, i) => match.submitScore(scores[0][i]));
+  const firstRoundPerf = firstRound
+    .standings()
+    .map((player) => [player.winRatio(), player.plusMinus()]);
+  tournament.rounds.forEach((round) =>
+    expect(
+      round
+        .standings()
+        .map((player) => [player.winRatio(), player.plusMinus()]),
+    ).toStrictEqual(firstRoundPerf),
+  );
+});
