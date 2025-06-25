@@ -49,7 +49,9 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
               1 - Math.min(dx, SWIPE_THRESHOLD) / SWIPE_THRESHOLD,
             );
             document.getElementById(ID)!.style =
-              `transform: translateX(${tx}px); opacity: ${tx != 0 ? opacity : 1}`;
+              tx != 0
+                ? `transform: translateX(${tx}px); opacity: ${opacity}`
+                : "";
             event.preventDefault();
           }
         },
@@ -59,8 +61,7 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
           }
           isSwiping = false;
           vnode.attrs.onswiping(false);
-          document.getElementById(ID)!.style =
-            "transform: translateX(0); opacity: 1";
+          document.getElementById(ID)!.style = "";
           const touchEndX = event.changedTouches[0].screenX;
           if (
             touchEndX - touchStartX > SWIPE_THRESHOLD &&
