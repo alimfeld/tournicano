@@ -64,7 +64,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           "<",
         ),
         m(
-          "h1",
+          "h1#title",
           roundIndex + 1 < roundCount
             ? `Standings (${roundIndex + 1}/${roundCount})`
             : `Standings`,
@@ -84,7 +84,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         {
           element: "main.standings.container-fluid",
           onswiping: (swiping) => {
-            document.getElementsByTagName("header")[0].style =
+            document.getElementById("title")!.style =
               `opacity: ${swiping ? 0.5 : 1}`;
           },
           onswipeleft:

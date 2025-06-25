@@ -37,7 +37,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           "<",
         ),
         m(
-          "h1",
+          "h1#title",
           round
             ? roundIndex + 1 == roundCount
               ? `Round ${roundIndex + 1}`
@@ -59,7 +59,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
         {
           element: "main.round.container-fluid",
           onswiping: (swiping) => {
-            document.getElementsByTagName("header")[0].style =
+            document.getElementById("title")!.style =
               `opacity: ${swiping ? 0.5 : 1}`;
           },
           onswipeleft:
