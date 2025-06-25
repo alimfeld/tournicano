@@ -4,6 +4,7 @@ import { NavView } from "./NavView.ts";
 import { PlayerView } from "./PlayerView.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { Page } from "../App.ts";
+import { Swipeable } from "./Swipeable.ts";
 
 export interface StandingsAttrs {
   tournament: Tournament;
@@ -79,7 +80,20 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       ),
       m(NavView, { nav }),
       m(
-        "main.standings.container-fluid",
+        Swipeable,
+        {
+          element: "main.standings.container-fluid",
+          onswipeleft: () => {
+            if (roundIndex > 0) {
+              changeRound(roundIndex - 1);
+            }
+          },
+          onswiperight: () => {
+            if (roundIndex + 1 < roundCount) {
+              changeRound(roundIndex + 1);
+            }
+          },
+        },
         players.length > 0
           ? [
               ...players.map((player, i) =>
