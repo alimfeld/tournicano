@@ -3,7 +3,8 @@
 }
 
 body {
-  padding-bottom: 5rem; /* leave room for the fixed nav */
+  margin-bottom: 5rem; /* leave room for the fixed nav */
+  min-height: 100vh;
 }
 
 header {

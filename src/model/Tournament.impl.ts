@@ -433,7 +433,7 @@ class TournamentImpl implements Mutable<Tournament> {
     return round;
   }
 
-  clearRounds() {
+  restart() {
     this.rounds = [];
     this.notifyChange();
   }

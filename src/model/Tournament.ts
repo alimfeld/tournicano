@@ -86,7 +86,7 @@ export interface Tournament {
   readonly players: RegisteredPlayer[];
   registerPlayers(names: string[]): void;
   createRound(spec?: RoundSpec): Round;
-  clearRounds(): void;
+  restart(): void;
   reset(): void;
   serialize(): string;
   addListener(listener: TournamentListener): void;

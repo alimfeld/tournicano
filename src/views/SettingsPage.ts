@@ -4,6 +4,7 @@ import { NavView } from "./NavView.ts";
 import { Settings } from "../model/Settings.ts";
 import { Page } from "../App.ts";
 import { Tournament } from "../model/Tournament.ts";
+import { InvalidatePayload } from "vite";
 
 export interface SettingsAttrs {
   settings: Settings;
@@ -60,11 +61,90 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             ),
           ),
           m(
-            "button.reset",
-            { onclick: () => tournament.clearRounds() },
-            "Reset Tournament",
+            "button.danger",
+            {
+              onclick: (event: InputEvent) => {
+                document
+                  .getElementById("dialog-restart")!
+                  .setAttribute("open", "true");
+                event.preventDefault();
+              },
+            },
+            "Restart",
           ),
-          m("button.reset", { onclick: () => tournament.reset() }, "Reset All"),
+          m(
+            "dialog#dialog-restart",
+            m(
+              "article",
+              m("h3", "Restart Tournament?"),
+              m(
+                "p",
+                "This will delete all rounds but keep the registered players.",
+              ),
+              m(
+                "footer",
+                m(
+                  "button",
+                  {
+                    class: "secondary",
+                    onclick: (event: InputEvent) => {
+                      document
+                        .getElementById("dialog-restart")!
+                        .setAttribute("open", "false");
+                      event.preventDefault();
+                    },
+                  },
+                  "Cancel",
+                ),
+                m(
+                  "button.danger",
+                  { onclick: () => tournament.restart() },
+                  "Confirm",
+                ),
+              ),
+            ),
+          ),
+          m(
+            "button.danger",
+            {
+              onclick: (event: InputEvent) => {
+                document
+                  .getElementById("dialog-reset")!
+                  .setAttribute("open", "true");
+                event.preventDefault();
+              },
+            },
+            "Reset",
+          ),
+          m(
+            "dialog#dialog-reset",
+            m(
+              "article",
+              m("h3", "Reset Tournament?"),
+              m("p", "This will delete all rounds and registered players."),
+              m(
+                "footer",
+                m(
+                  "button",
+                  {
+                    class: "secondary",
+                    onclick: (event: InputEvent) => {
+                      document
+                        .getElementById("dialog-reset")!
+                        .setAttribute("open", "false"),
+                        event.preventDefault();
+                    },
+                  },
+                  "Cancel",
+                ),
+                m(
+                  "button.danger",
+                  { onclick: () => tournament.reset() },
+                  "Confirm",
+                ),
+              ),
+            ),
+          ),
         ),
         m("h2", "UI"),
         m(

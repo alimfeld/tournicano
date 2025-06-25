@@ -7,7 +7,7 @@ header.settings {
     margin-right: 1ex;
   }
 
-  button.reset {
+  button.danger {
     border-color: var(--pico-form-element-invalid-focus-color);
     background: var(--pico-form-element-invalid-focus-color);
   }

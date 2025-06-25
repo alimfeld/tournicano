@@ -97,14 +97,53 @@ export const RoundPage: m.Component<RoundAttrs> = {
             "button.delete",
             {
               disabled: !(round && round.isLast()),
-              onclick: () => {
-                if (round) {
-                  round.delete();
-                  changeRound(roundIndex - 1);
-                }
+              onclick: (event: InputEvent) => {
+                document
+                  .getElementById("dialog-delete")!
+                  .setAttribute("open", "true");
+                event.preventDefault();
               },
             },
             "Delete",
+          ),
+          m(
+            "dialog#dialog-delete",
+            m(
+              "article",
+              m("h3", "Delete Round?"),
+              m("p", "This will delete the current round."),
+              m(
+                "footer",
+                m(
+                  "button",
+                  {
+                    class: "secondary",
+                    onclick: (event: InputEvent) => {
+                      document
+                        .getElementById("dialog-delete")!
+                        .setAttribute("open", "false");
+                      event.preventDefault();
+                    },
+                  },
+                  "Cancel",
+                ),
+                m(
+                  "button.delete",
+                  {
+                    onclick: () => {
+                      if (round) {
+                        round.delete();
+                        changeRound(roundIndex - 1);
+                      }
+                      document
+                        .getElementById("dialog-delete")!
+                        .setAttribute("open", "false");
+                    },
+                  },
+                  "Confirm",
+                ),
+              ),
+            ),
           ),
           m(
             "button.add",
