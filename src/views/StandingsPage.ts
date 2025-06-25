@@ -83,16 +83,22 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         Swipeable,
         {
           element: "main.standings.container-fluid",
-          onswipeleft: () => {
-            if (roundIndex > 0) {
-              changeRound(roundIndex - 1);
-            }
+          onswiping: (swiping) => {
+            document.getElementsByTagName("header")[0].style =
+              `opacity: ${swiping ? 0.5 : 1}`;
           },
-          onswiperight: () => {
-            if (roundIndex + 1 < roundCount) {
-              changeRound(roundIndex + 1);
-            }
-          },
+          onswipeleft:
+            roundIndex > 0
+              ? () => {
+                  changeRound(roundIndex - 1);
+                }
+              : undefined,
+          onswiperight:
+            roundIndex + 1 < roundCount
+              ? () => {
+                  changeRound(roundIndex + 1);
+                }
+              : undefined,
         },
         players.length > 0
           ? [

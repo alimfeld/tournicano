@@ -58,16 +58,22 @@ export const RoundPage: m.Component<RoundAttrs> = {
         Swipeable,
         {
           element: "main.round.container-fluid",
-          onswipeleft: () => {
-            if (roundIndex > 0) {
-              changeRound(roundIndex - 1);
-            }
+          onswiping: (swiping) => {
+            document.getElementsByTagName("header")[0].style =
+              `opacity: ${swiping ? 0.5 : 1}`;
           },
-          onswiperight: () => {
-            if (roundIndex + 1 < roundCount) {
-              changeRound(roundIndex + 1);
-            }
-          },
+          onswipeleft:
+            roundIndex > 0
+              ? () => {
+                  changeRound(roundIndex - 1);
+                }
+              : undefined,
+          onswiperight:
+            roundIndex + 1 < roundCount
+              ? () => {
+                  changeRound(roundIndex + 1);
+                }
+              : undefined,
         },
         round
           ? [
