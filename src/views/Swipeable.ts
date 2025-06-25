@@ -44,7 +44,10 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
               // left
               tx = vnode.attrs.onswiperight ? -dx : 0;
             }
-            const opacity = 1 - Math.min(dx, SWIPE_THRESHOLD) / SWIPE_THRESHOLD;
+            const opacity = Math.max(
+              0.1,
+              1 - Math.min(dx, SWIPE_THRESHOLD) / SWIPE_THRESHOLD,
+            );
             document.getElementById(ID)!.style =
               `transform: translateX(${tx}px); opacity: ${tx != 0 ? opacity : 1}`;
             event.preventDefault();
