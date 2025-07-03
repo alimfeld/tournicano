@@ -7,6 +7,7 @@ import { Page } from "../App.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
 import { Swipeable } from "./Swipeable.ts";
+import { ActionWithConfirmation } from "./ActionWithConfirmation.ts";
 
 export interface RoundAttrs {
   settings: Settings;
@@ -93,70 +94,24 @@ export const RoundPage: m.Component<RoundAttrs> = {
           : [m("p", "No rounds created (yet)!")],
         m(
           "section.actions",
-          m(
-            "button.delete",
-            {
-              disabled: !(round && round.isLast()),
-              onclick: (event: InputEvent) => {
-                document
-                  .getElementById("dialog-delete")!
-                  .setAttribute("open", "true");
-                event.preventDefault();
-              },
+          m(ActionWithConfirmation, {
+            action: "Delete",
+            disabled: !(round && round.isLast()),
+            title: "Delete Round?",
+            description: "This will delete the current round.",
+            onconfirm: () => {
+              if (round) {
+                round.delete();
+                changeRound(roundIndex - 1);
+              }
             },
-            "Delete",
-          ),
-          m(
-            "dialog#dialog-delete",
-            m(
-              "article",
-              m("h3", "Delete Round?"),
-              m("p", "This will delete the current round."),
-              m(
-                "footer",
-                m(
-                  "button",
-                  {
-                    class: "secondary",
-                    onclick: (event: InputEvent) => {
-                      document
-                        .getElementById("dialog-delete")!
-                        .setAttribute("open", "false");
-                      event.preventDefault();
-                    },
-                  },
-                  "Cancel",
-                ),
-                m(
-                  "button.delete",
-                  {
-                    onclick: () => {
-                      if (round) {
-                        round.delete();
-                        changeRound(roundIndex - 1);
-                      }
-                      document
-                        .getElementById("dialog-delete")!
-                        .setAttribute("open", "false");
-                    },
-                  },
-                  "Confirm",
-                ),
-              ),
-            ),
-          ),
+          }),
           m(
             "button.add",
             {
               disabled: matchesPerRound < 1,
               onclick: () => {
-                tournament.createRound({
-                  maxMatches: matchesPerRound,
-                  flavor: {
-                    americanoFactor: 1 - settings.mexicanoRatio,
-                    mexicanoFactor: settings.mexicanoRatio,
-                  },
-                });
+                tournament.createRound(settings.matchingSpec, matchesPerRound);
                 changeRound(roundCount);
               },
             },

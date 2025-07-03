@@ -3,38 +3,44 @@ header.players {
 }
 
 @scope (main.players) {
-  section.players {
+  h2 {
+    font-size: 80%;
+    margin: 0;
+    margin-bottom: var(--pico-spacing);
+  }
+
+  section.group {
     display: grid;
     column-gap: var(--pico-spacing);
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   @media (min-width: 576px) {
-    section.players {
+    section.group {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 
   @media (min-width: 768px) {
-    section.players {
+    section.group {
       grid-template-columns: repeat(5, minmax(0, 1fr));
     }
   }
 
   @media (min-width: 1024px) {
-    section.players {
+    section.group {
       grid-template-columns: repeat(6, minmax(0, 1fr));
     }
   }
 
   @media (min-width: 1280px) {
-    section.players {
+    section.group {
       grid-template-columns: repeat(7, minmax(0, 1fr));
     }
   }
 
   @media (min-width: 1536px) {
-    section.players {
+    section.group {
       grid-template-columns: repeat(8, minmax(0, 1fr));
     }
   }

@@ -1,5 +1,12 @@
 import { Mutable } from "./Mutable";
-import { Settings, SettingsFactory, SettingsListener, Theme } from "./Settings";
+import {
+  Settings,
+  SettingsData,
+  SettingsFactory,
+  SettingsListener,
+  Theme,
+} from "./Settings";
+import { Americano, MatchingSpec } from "./Tournament.matching";
 
 export const settingsFactory: SettingsFactory = {
   create(serialized?: string) {
@@ -7,29 +14,27 @@ export const settingsFactory: SettingsFactory = {
   },
 };
 
-type CompactSettings = [number, Theme, number];
-
 class SettingsImpl implements Mutable<Settings> {
   private listeners: SettingsListener[] = [];
   courts = 2;
   theme: Theme = "auto";
-  mexicanoRatio = 0;
+  matchingSpec: MatchingSpec = Americano;
 
   constructor(serialized?: string) {
     if (serialized) {
-      const settings = JSON.parse(serialized) as CompactSettings;
-      this.courts = settings[0];
-      this.theme = settings[1];
-      this.mexicanoRatio = settings[2];
+      const data = JSON.parse(serialized) as SettingsData;
+      this.courts = data.courts;
+      this.theme = data.theme;
+      this.matchingSpec = data.matchingSpec;
     }
   }
 
   serialize(): string {
-    return JSON.stringify([
-      this.courts,
-      this.theme,
-      this.mexicanoRatio,
-    ] as CompactSettings);
+    return JSON.stringify({
+      courts: this.courts,
+      theme: this.theme,
+      matchingSpec: this.matchingSpec,
+    } as SettingsData);
   }
 
   setCourts(courts: number): void {
@@ -42,8 +47,8 @@ class SettingsImpl implements Mutable<Settings> {
     this.notifyChange();
   }
 
-  setMexicanoRatio(ratio: number): void {
-    this.mexicanoRatio = ratio;
+  setMatchingSpec(matchingSpec: MatchingSpec): void {
+    this.matchingSpec = matchingSpec;
     this.notifyChange();
   }
 

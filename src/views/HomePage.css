@@ -1,0 +1,6 @@
+header.home {
+  text-align: center;
+}
+
+@scope (main.home) {
+}

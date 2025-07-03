@@ -37,11 +37,11 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         return acc;
       }
       const [p, q] = [players[i], players[i - 1]];
-      const pperf = p.winRatio();
-      const qperf = q.winRatio();
+      const pperf = p.winRatio;
+      const qperf = q.winRatio;
       if (pperf == qperf) {
-        const pdiff = p.plusMinus();
-        const qdiff = q.plusMinus();
+        const pdiff = p.plusMinus;
+        const qdiff = q.plusMinus;
         if (pdiff == qdiff) {
           acc.push(acc[i - 1]);
           return acc;
@@ -111,9 +111,9 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                     "div.record",
                     m(
                       "p.win-percentage",
-                      `${(player.winRatio() * 100).toFixed(0)}%`,
+                      `${(player.winRatio * 100).toFixed(0)}%`,
                       m("div.progressbar", {
-                        style: `width: ${player.winRatio() * 100}%`,
+                        style: `width: ${player.winRatio * 100}%`,
                       }),
                     ),
                     m(
@@ -125,7 +125,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                     "div.points",
                     m(
                       "p.plus-minus",
-                      (player.plusMinus() >= 0 ? "+" : "") + player.plusMinus(),
+                      (player.plusMinus >= 0 ? "+" : "") + player.plusMinus,
                     ),
                     m(
                       "small",

@@ -11,6 +11,7 @@ export const NavView: m.Component<NavAttrs, {}> = {
       "nav",
       m(
         "ul",
+        m("li", { onclick: () => nav(Page.HOME) }, "🏠"),
         m("li", { onclick: () => nav(Page.SETTINGS) }, "⚙️"),
         m("li", { onclick: () => nav(Page.PLAYERS) }, "🤖"),
         m("li", { onclick: () => nav(Page.ROUNDS) }, "🚀"),

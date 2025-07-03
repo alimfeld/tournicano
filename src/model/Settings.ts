@@ -1,17 +1,22 @@
+import { MatchingSpec } from "./Tournament.matching";
+
 export type Theme = "auto" | "dark" | "light";
 
 export interface SettingsListener {
   onchange: (settings: Settings) => void;
 }
 
-export interface Settings {
+export interface SettingsData {
   readonly courts: number;
   readonly theme: Theme;
-  readonly mexicanoRatio: number;
+  readonly matchingSpec: MatchingSpec;
+}
+
+export interface Settings extends SettingsData {
   serialize(): string;
   setCourts(courts: number): void;
   setTheme(theme: Theme): void;
-  setMexicanoRatio(ratio: number): void;
+  setMatchingSpec(matchingSpec: MatchingSpec): void;
   addListener(listener: SettingsListener): void;
 }
 

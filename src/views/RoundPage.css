@@ -78,11 +78,4 @@ header.round button {
     display: flex;
     justify-content: space-between;
   }
-
-  @scope (section.actions) {
-    button.delete {
-      border-color: var(--pico-form-element-invalid-border-color);
-      background: var(--pico-form-element-invalid-focus-color);
-    }
-  }
 }

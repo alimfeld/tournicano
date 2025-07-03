@@ -1,9 +1,9 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { PlayerView } from "./PlayerView.ts";
 import { NavView } from "./NavView.ts";
 import { Page } from "../App.ts";
-import { Tournament } from "../model/Tournament.ts";
+import { RegisteredPlayer, Tournament } from "../model/Tournament.ts";
+import { GroupView } from "./GroupView.ts";
 
 export interface PlayersAttrs {
   tournament: Tournament;
@@ -14,11 +14,16 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
   view: ({ attrs: { tournament, nav } }) => {
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
-      const value = input.value.trim();
-      if (value) {
-        tournament.registerPlayers(value.split(/\s+/));
-        input.value = "";
-      }
+      const groups = input.value.split(/\n/);
+      groups.forEach((group, i) => {
+        const line = group.trim();
+        if (line) {
+          console.log(line);
+          const names = line.trim().split(/\s+/);
+          tournament.registerPlayers(names, i);
+        }
+      });
+      input.value = "";
     };
     const [active, total] = tournament.players.values().reduce(
       (acc, player) => {
@@ -38,60 +43,29 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       m(
         "main.players.container-fluid",
         m(
-          "fieldset",
-          { role: "group" },
-          m("input", {
-            id: "players",
-            placeholder: "Anna Ben Paris Tyson",
-            autocapitalize: "words",
-          }),
-          m(
-            "button",
-            {
-              onclick: registerPlayers,
-            },
-            "Add",
-          ),
-        ),
-        m(
           "section.players",
           tournament.players
-            .toSorted((p, q) => p.name.localeCompare(q.name))
-            .map((player) =>
-              m(
-                "div.player",
-                {
-                  class: player.active ? "active" : "inactive",
-                  onclick: () => player.activate(!player.active),
-                },
-                m(
-                  PlayerView,
-                  { player },
-                  m(
-                    "div.actions",
-                    m("input.active", {
-                      type: "checkbox",
-                      name: "active",
-                      role: "switch",
-                      checked: player.active,
-                    }),
-                    player.isParticipating()
-                      ? null
-                      : m(
-                          "button.delete",
-                          {
-                            onclick: (e: InputEvent) => {
-                              player.withdraw();
-                              // Stop event from also triggering activation / deactivation
-                              e.stopPropagation();
-                            },
-                          },
-                          "X",
-                        ),
-                  ),
-                ),
-              ),
-            ),
+            .reduce((acc: RegisteredPlayer[][], player) => {
+              const group = acc[player.group] || [];
+              group.push(player);
+              acc[player.group] = group;
+              return acc;
+            }, [])
+            .map((group, i) => m(GroupView, { players: group, groupIndex: i })),
+        ),
+        m(
+          "form",
+          { onsubmit: (event: InputEvent) => event.preventDefault() },
+          m("textarea", {
+            id: "players",
+            placeholder: "Separate players by space and groups by newline...",
+            autocapitalize: "words",
+          }),
+          m("input", {
+            type: "submit",
+            value: "Add",
+            onclick: registerPlayers,
+          }),
         ),
       ),
     ];

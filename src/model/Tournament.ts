@@ -1,8 +1,11 @@
+import { MatchingSpec } from "./Tournament.matching";
+
 export type PlayerId = string;
 
 export interface Player {
   readonly id: PlayerId;
   readonly name: string;
+  readonly group: number;
 }
 
 export interface RegisteredPlayer extends Player {
@@ -39,9 +42,9 @@ export interface PlayerStats
     Matchings,
     Participation,
     Performance {
-  playRatio(): number;
-  winRatio(): number;
-  plusMinus(): number;
+  readonly playRatio: number;
+  readonly winRatio: number;
+  readonly plusMinus: number;
 }
 
 export interface Team {
@@ -64,17 +67,12 @@ export interface Round {
   standings(): PlayerStats[];
   isLast(): boolean;
   delete(): boolean;
-  toString(): void;
+  toString(): string;
 }
 
 export type TournicanoFlavor = {
   americanoFactor: number;
   mexicanoFactor: number;
-};
-
-export type RoundSpec = {
-  maxMatches?: number;
-  flavor?: TournicanoFlavor;
 };
 
 export interface TournamentListener {
@@ -84,8 +82,8 @@ export interface TournamentListener {
 export interface Tournament {
   readonly rounds: Round[];
   readonly players: RegisteredPlayer[];
-  registerPlayers(names: string[]): void;
-  createRound(spec?: RoundSpec): Round;
+  registerPlayers(names: string[], group?: number): void;
+  createRound(spec?: MatchingSpec, maxMatches?: number): Round;
   restart(): void;
   reset(): void;
   serialize(): string;

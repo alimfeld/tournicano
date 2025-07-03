@@ -9,8 +9,15 @@ import { Tournament, TournamentListener } from "./model/Tournament.ts";
 import { Settings, SettingsListener, Theme } from "./model/Settings.ts";
 import { tournamentFactory } from "./model/Tournament.impl.ts";
 import { settingsFactory } from "./model/Settings.impl.ts";
+import { HomePage } from "./views/HomePage.ts";
+
+const PAGE_KEY = "page";
+const SETTINGS_KEY = "settings";
+const ROUND_KEY = "round";
+const TOURNAMENT_KEY = "tournament";
 
 export enum Page {
+  HOME,
   SETTINGS,
   PLAYERS,
   ROUNDS,
@@ -37,11 +44,13 @@ const syncTheme = (theme: Theme) => {
 const createState: () => State = () => {
   const state = {
     tournament: tournamentFactory.create(
-      localStorage.getItem("t") || undefined,
+      localStorage.getItem(TOURNAMENT_KEY) || undefined,
     ),
-    settings: settingsFactory.create(localStorage.getItem("s") || undefined),
-    page: parseInt(localStorage.getItem("p") || `${Page.PLAYERS}`),
-    roundIndex: parseInt(localStorage.getItem("r") || "-1"),
+    settings: settingsFactory.create(
+      localStorage.getItem(SETTINGS_KEY) || undefined,
+    ),
+    page: parseInt(localStorage.getItem(PAGE_KEY) || `${Page.HOME}`),
+    roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -50,14 +59,14 @@ const createState: () => State = () => {
 
 const settingsListener: SettingsListener = {
   onchange: (settings) => {
-    localStorage.setItem("s", settings.serialize());
+    localStorage.setItem(SETTINGS_KEY, settings.serialize());
     syncTheme(settings.theme);
   },
 };
 
 const tournamentListener: TournamentListener = {
   onchange: (tournament) => {
-    localStorage.setItem("t", tournament.serialize());
+    localStorage.setItem(TOURNAMENT_KEY, tournament.serialize());
   },
 };
 
@@ -67,16 +76,21 @@ export const App = () => {
   state.tournament.addListener(tournamentListener);
   const nav = (page: Page) => {
     state.page = page;
-    localStorage.setItem("p", `${page}`);
+    localStorage.setItem(PAGE_KEY, `${page}`);
   };
   const changeRound = (index: number) => {
     state.roundIndex = index;
-    localStorage.setItem("r", `${index}`);
+    localStorage.setItem(ROUND_KEY, `${index}`);
   };
 
   return {
     view: () => {
       switch (state.page) {
+        case Page.HOME: {
+          return m(HomePage, {
+            nav,
+          });
+        }
         case Page.SETTINGS: {
           return m(SettingsPage, {
             settings: state.settings,

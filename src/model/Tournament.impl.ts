@@ -10,10 +10,9 @@ import {
   Team,
   Tournament,
   TournamentFactory,
-  RoundSpec,
   TournamentListener,
 } from "./Tournament";
-import { matchUp } from "./Tournament.matching";
+import { Americano, MatchingSpec, matchUp } from "./Tournament.matching";
 
 export const tournamentFactory: TournamentFactory = {
   create(serialized?: string) {
@@ -26,6 +25,7 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
     private tournament: TournamentImpl,
     readonly id: string,
     public name: string,
+    public group: number = 0,
     public active = true,
   ) {}
 
@@ -66,7 +66,7 @@ class PerformanceImpl implements Mutable<Performance> {
   pointsFor: number = 0;
   pointsAgainst: number = 0;
 
-  winRatio() {
+  get winRatio() {
     const total = this.wins + this.losses + this.draws;
     if (total == 0) {
       return 0.5;
@@ -74,7 +74,7 @@ class PerformanceImpl implements Mutable<Performance> {
     return (this.wins + this.draws / 2) / total;
   }
 
-  plusMinus() {
+  get plusMinus() {
     return this.pointsFor - this.pointsAgainst;
   }
 
@@ -107,11 +107,11 @@ class PerformanceImpl implements Mutable<Performance> {
   }
 
   compare(other: PerformanceImpl): number {
-    const pperf = this.winRatio();
-    const qperf = other.winRatio();
+    const pperf = this.winRatio;
+    const qperf = other.winRatio;
     if (pperf == qperf) {
-      const pdiff = this.plusMinus();
-      const qdiff = other.plusMinus();
+      const pdiff = this.plusMinus;
+      const qdiff = other.plusMinus;
       if (pdiff == qdiff) {
         return 0;
       }
@@ -139,7 +139,11 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
     return this.tournament.playerMap.get(this.id)!.name;
   }
 
-  playRatio() {
+  get group() {
+    return this.tournament.playerMap.get(this.id)!.group;
+  }
+
+  get playRatio() {
     const roundCount = this.matchCount + this.pauseCount;
     if (roundCount == 0) {
       return 0; // or 1
@@ -197,7 +201,7 @@ class MatchImpl implements Mutable<Match> {
     readonly teamB: TeamImpl,
   ) {}
 
-  submitScore(score: Score | undefined) {
+  submitScore(score?: Score) {
     const diffA = new PerformanceImpl();
     const diffB = new PerformanceImpl();
     if (score) {
@@ -311,7 +315,7 @@ class RoundImpl implements Round {
     this.matches.forEach((match) => {
       const a1 = match.teamA.player1;
       const a2 = match.teamA.player2;
-      const b1 = match.teamB.player2;
+      const b1 = match.teamB.player1;
       const b2 = match.teamB.player2;
       let line = `${a1.name} & ${a2.name} vs. ${b1.name} & ${b2.name}`;
       if (match.score) {
@@ -321,14 +325,14 @@ class RoundImpl implements Round {
     });
     result += `Standings ${r + 1}\n`;
     this.standings().forEach((p) => {
-      let line = `${p.name} M${p.matchCount}/${p.matchCount + p.pauseCount} W${p.wins}|D${p.draws}|L${p.losses} +${p.pointsFor}/-${p.pointsAgainst} %${(p.winRatio() * 100).toFixed(1)} (${p.plusMinus() >= 0 ? "+" + p.plusMinus() : "" + p.plusMinus()})\n`;
+      let line = `${p.name} M${p.matchCount}/${p.matchCount + p.pauseCount} W${p.wins}|D${p.draws}|L${p.losses} +${p.pointsFor}/-${p.pointsAgainst} %${(p.winRatio * 100).toFixed(1)} (${p.plusMinus >= 0 ? "+" + p.plusMinus : "" + p.plusMinus})\n`;
       result += line;
     });
     return result;
   }
 }
 
-type CompactPlayer = [PlayerId, string, boolean];
+type CompactPlayer = [PlayerId, string, number, boolean];
 
 type CompactTeam = [PlayerId, PlayerId];
 
@@ -351,7 +355,13 @@ class TournamentImpl implements Mutable<Tournament> {
     if (serialized) {
       const compact = JSON.parse(serialized) as CompactTournament;
       compact[0].forEach((cp) => {
-        const player = new RegisteredPlayerImpl(this, cp[0], cp[1], cp[2]);
+        const player = new RegisteredPlayerImpl(
+          this,
+          cp[0],
+          cp[1],
+          cp[2],
+          cp[3],
+        );
         this.playerMap.set(player.id, player);
       });
       compact[1].forEach((cr) => {
@@ -381,16 +391,16 @@ class TournamentImpl implements Mutable<Tournament> {
     return this.playerMap.values().toArray();
   }
 
-  registerPlayers(names: string[]) {
+  registerPlayers(names: string[], group: number) {
     names.forEach((name) => {
       const id = crypto.randomUUID();
-      const player = new RegisteredPlayerImpl(this, id, name);
+      const player = new RegisteredPlayerImpl(this, id, name, group);
       this.playerMap.set(player.id, player);
     });
     this.notifyChange();
   }
 
-  createRound(spec: RoundSpec | undefined): RoundImpl {
+  createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
     // Determine participating players for this round:
     // Any players participating in the previous round (along with their stats) plus
     // active registered players not yet competing!
@@ -417,7 +427,7 @@ class TournamentImpl implements Mutable<Tournament> {
       },
       [[], []],
     );
-    const [matched, paused] = matchUp(competing, this.rounds.length, spec);
+    const [matched, paused] = matchUp(competing, spec || Americano, maxMatches);
     const round = new RoundImpl(
       this,
       participating,
@@ -449,7 +459,7 @@ class TournamentImpl implements Mutable<Tournament> {
       this.players
         .values()
         .toArray()
-        .map((p) => [p.id, p.name, p.active]),
+        .map((p) => [p.id, p.name, p.group, p.active]),
       this.rounds.map((round) => [
         round.matches.map((match) => [
           [match.teamA.player1.id, match.teamA.player2.id],
