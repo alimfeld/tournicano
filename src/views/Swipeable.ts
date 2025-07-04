@@ -16,6 +16,12 @@ let isSwiping = false;
 
 export const Swipeable: m.Component<SwipeableAttrs> = {
   view: (vnode) => {
+    const fadeIn = () => {
+      const main = document.getElementsByTagName("main")[0]!;
+      main.classList.remove("fade-in");
+      main.offsetWidth;
+      main.classList.add("fade-in");
+    };
     return m(
       vnode.attrs.element,
       {
@@ -68,12 +74,14 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
             vnode.attrs.onswipeleft
           ) {
             vnode.attrs.onswipeleft();
+            fadeIn();
           }
           if (
             touchEndX - touchStartX < -SWIPE_THRESHOLD &&
             vnode.attrs.onswiperight
           ) {
             vnode.attrs.onswiperight();
+            fadeIn();
           }
         },
       },

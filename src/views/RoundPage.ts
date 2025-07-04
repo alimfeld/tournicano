@@ -26,7 +26,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
-    return [
+    return m.fragment({ key: `round-${roundIndex}` }, [
       m(
         "header.round.container-fluid",
         m(
@@ -61,7 +61,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           element: "main.round.container-fluid",
           onswiping: (swiping) => {
             document.getElementById("title")!.style =
-              `opacity: ${swiping ? 0.5 : 1}`;
+              `opacity: ${swiping ? 0.1 : 1}`;
           },
           onswipeleft:
             roundIndex > 0
@@ -119,6 +119,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
           ),
         ),
       ),
-    ];
+    ]);
   },
 };

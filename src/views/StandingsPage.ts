@@ -85,7 +85,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           element: "main.standings.container-fluid",
           onswiping: (swiping) => {
             document.getElementById("title")!.style =
-              `opacity: ${swiping ? 0.5 : 1}`;
+              `opacity: ${swiping ? 0.1 : 1}`;
           },
           onswipeleft:
             roundIndex > 0

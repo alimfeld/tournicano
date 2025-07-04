@@ -75,3 +75,18 @@ button.confirm {
   border-color: var(--pico-form-element-invalid-border-color);
   background: var(--pico-form-element-invalid-focus-color);
 }
+
+/* Global animations */
+
+.fade-in {
+  animation: fade-in 1s;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
