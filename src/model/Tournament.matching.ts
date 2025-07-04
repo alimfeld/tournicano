@@ -42,14 +42,14 @@ interface MatchUpSpec {
 
 export const Americano: MatchingSpec = {
   teamUp: {
-    groupFactor: 0,
+    groupFactor: 100,
     varietyFactor: 100,
     performanceFactor: 0,
-    groupMode: TeamUpGroupMode.ADJACENT, // not relevant
+    groupMode: TeamUpGroupMode.ADJACENT,
     performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
   },
   matchUp: {
-    groupFactor: 0,
+    groupFactor: 100,
     varietyFactor: 100,
     performanceFactor: 0,
   },
@@ -57,14 +57,14 @@ export const Americano: MatchingSpec = {
 
 export const Mexicano: MatchingSpec = {
   teamUp: {
-    groupFactor: 0,
+    groupFactor: 100,
     varietyFactor: 0,
     performanceFactor: 100,
-    groupMode: TeamUpGroupMode.ADJACENT, // not relevant
+    groupMode: TeamUpGroupMode.ADJACENT,
     performanceMode: TeamUpPerformanceMode.MEXICANO_1324,
   },
   matchUp: {
-    groupFactor: 0,
+    groupFactor: 100,
     varietyFactor: 0,
     performanceFactor: 100,
   },

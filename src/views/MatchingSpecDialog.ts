@@ -19,7 +19,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
       name: string,
       value: number,
       label: string,
-      description: string,
+      description?: string,
     ) => {
       return m(
         "label",
@@ -27,9 +27,10 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
         m("input", {
           type: "range",
           name: name,
+          step: 25,
           value: value,
         }),
-        m("small", description),
+        description ? m("small", description) : null,
       );
     };
     const radios = (
@@ -80,29 +81,35 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
             range(
               "team-up-variety-factor",
               matchingSpec.teamUp.varietyFactor,
-              "By variety:",
-              "The factor to apply to the variety weight",
+              "Rotating partners:",
+              "",
             ),
             range(
               "team-up-performance-factor",
               matchingSpec.teamUp.performanceFactor,
               "By performance:",
-              "The factor to apply to the performance weight",
+              "Select the performance mode below",
             ),
             radios(
               "team-up-performance-mode",
               matchingSpec.teamUp.performanceMode,
               "Performance mode:",
               [
-                { value: TeamUpPerformanceMode.AVERAGE, label: "Average" },
-                { value: TeamUpPerformanceMode.EQUAL, label: "Equal" },
+                {
+                  value: TeamUpPerformanceMode.AVERAGE,
+                  label: "Average team performance",
+                },
+                {
+                  value: TeamUpPerformanceMode.EQUAL,
+                  label: "Players with equal performance",
+                },
                 {
                   value: TeamUpPerformanceMode.MEXICANO_1324,
-                  label: "Mexicano1324",
+                  label: "Mexicano (1st & 3rd vs. 2nd & 4th)",
                 },
                 {
                   value: TeamUpPerformanceMode.MEXICANO_1423,
-                  label: "Mexicano1423",
+                  label: "Mexicano (1st & 4th vs. 2nd & 3rd)",
                 },
               ],
             ),
@@ -110,35 +117,38 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
               "team-up-group-factor",
               matchingSpec.teamUp.groupFactor,
               "By group:",
-              "The factor to apply to the group weight",
+              "Select the group mode below",
             ),
             radios(
               "team-up-group-mode",
               matchingSpec.teamUp.groupMode,
               "Group mode:",
               [
-                { value: TeamUpGroupMode.ADJACENT, label: "Adjacent" },
-                { value: TeamUpGroupMode.SAME, label: "Same" },
+                {
+                  value: TeamUpGroupMode.ADJACENT,
+                  label: "Players from adjacent group (mixed)",
+                },
+                {
+                  value: TeamUpGroupMode.SAME,
+                  label: "Players from same group",
+                },
               ],
             ),
             m("h4", "Match up"),
             range(
               "match-up-variety-factor",
               matchingSpec.matchUp.varietyFactor,
-              "By variety:",
-              "The factor to apply to the variety weight",
+              "Rotating opponents:",
             ),
             range(
               "match-up-performance-factor",
               matchingSpec.matchUp.performanceFactor,
-              "By performance:",
-              "The factor to apply to the performance weight",
+              "Similar team performance:",
             ),
             range(
               "match-up-group-factor",
               matchingSpec.matchUp.groupFactor,
-              "By group:",
-              "The factor to apply to the group weight",
+              "Similar group composition:",
             ),
           ),
           m(
