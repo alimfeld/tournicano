@@ -165,7 +165,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
               "Cancel",
             ),
             m(
-              "button.confirm",
+              "button",
               {
                 onclick: (event: InputEvent) => {
                   const form = document.getElementById(
@@ -207,7 +207,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                   event.preventDefault();
                 },
               },
-              "Confirm",
+              "OK",
             ),
           ),
         ),
