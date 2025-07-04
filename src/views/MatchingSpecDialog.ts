@@ -126,7 +126,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
               [
                 {
                   value: TeamUpGroupMode.ADJACENT,
-                  label: "Players from adjacent group (mixed)",
+                  label: "Players from adjacent groups (mixed)",
                 },
                 {
                   value: TeamUpGroupMode.SAME,
