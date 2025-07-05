@@ -30,6 +30,11 @@ nav {
   z-index: 1;
 }
 
+nav ul:first-of-type,
+nav ul:last-of-type {
+  margin: 0;
+}
+
 @scope (nav) {
   ul {
     width: 100%;
@@ -37,6 +42,7 @@ nav {
   }
 
   li {
+    width: 100%;
     text-align: center;
     cursor: pointer;
     font-size: 200%;
