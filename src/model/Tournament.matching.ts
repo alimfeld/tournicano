@@ -43,31 +43,31 @@ interface MatchUpSpec {
 
 export const Americano: MatchingSpec = {
   teamUp: {
-    groupFactor: 100,
     varietyFactor: 100,
     performanceFactor: 0,
-    groupMode: TeamUpGroupMode.ADJACENT,
     performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.ADJACENT,
   },
   matchUp: {
-    groupFactor: 100,
     varietyFactor: 100,
     performanceFactor: 0,
+    groupFactor: 100,
   },
 };
 
 export const Mexicano: MatchingSpec = {
   teamUp: {
-    groupFactor: 100,
     varietyFactor: 0,
     performanceFactor: 100,
-    groupMode: TeamUpGroupMode.ADJACENT,
     performanceMode: TeamUpPerformanceMode.MEXICANO_1324,
+    groupFactor: 0,
+    groupMode: TeamUpGroupMode.ADJACENT, // not relevant
   },
   matchUp: {
-    groupFactor: 100,
     varietyFactor: 0,
     performanceFactor: 100,
+    groupFactor: 0,
   },
 };
 
