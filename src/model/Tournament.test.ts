@@ -13,6 +13,7 @@ class Player {
   playRatio: number = 0;
   winRatio: number = 0;
   plusMinus: number = 0;
+  matchCount: number = 0;
   partnerCounts: Map<string, number> = new Map();
   opponentCounts: Map<string, number> = new Map();
   constructor(
@@ -224,18 +225,22 @@ test("should honor play ratio for paused", ({ players }) => {
 });
 
 test("should honor variety for team up", ({ players }) => {
+  players[0].matchCount = 2;
   players[0].partnerCounts = new Map([
     ["1", 1],
     ["2", 1],
   ]);
+  players[1].matchCount = 2;
   players[1].partnerCounts = new Map([
     ["0", 1],
     ["3", 1],
   ]);
+  players[2].matchCount = 2;
   players[2].partnerCounts = new Map([
     ["0", 1],
     ["3", 1],
   ]);
+  players[3].matchCount = 2;
   players[3].partnerCounts = new Map([
     ["1", 1],
     ["2", 1],

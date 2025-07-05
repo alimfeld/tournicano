@@ -68,6 +68,17 @@ article.player {
   }
 }
 
+/* Global debug styles */
+
+div.debug {
+  font-size: 60%;
+  width: 100%;
+  display: flex;
+  color: var(--pico-muted-color);
+  justify-content: space-between;
+  margin-bottom: 1rex;
+}
+
 /* Global button styles */
 
 button.action-with-confirmation,

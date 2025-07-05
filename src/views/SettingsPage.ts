@@ -152,6 +152,22 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             }),
             m("label", { htmlFor: "light" }, "Light"),
           ),
+          m(
+            "fieldset",
+            m(
+              "label",
+              m("input", {
+                name: "debug",
+                type: "checkbox",
+                role: "switch",
+                checked: settings.debug,
+                onchange: () => {
+                  settings.showDebug(!settings.debug);
+                },
+              }),
+              "Show debug information",
+            ),
+          ),
         ),
       ),
     ];

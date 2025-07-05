@@ -79,14 +79,16 @@ export const RoundPage: m.Component<RoundAttrs> = {
         round
           ? [
               ...round.matches.map((match, matchIndex) =>
-                m(MatchView, { match, matchIndex }),
+                m(MatchView, { match, matchIndex, debug: settings.debug }),
               ),
               round.paused.length > 0
                 ? [
                     m("h2", "Paused"),
                     m(
                       "section.paused",
-                      round.paused.map((player) => m(PlayerView, { player })),
+                      round.paused.map((player) =>
+                        m(PlayerView, { player, debug: settings.debug }),
+                      ),
                     ),
                   ]
                 : null,

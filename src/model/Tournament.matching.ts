@@ -10,6 +10,7 @@ export interface Player {
   readonly playRatio: number;
   readonly winRatio: number;
   readonly plusMinus: number;
+  readonly matchCount: number;
   readonly partnerCounts: Map<string, number>;
   readonly opponentCounts: Map<string, number>;
 }
@@ -237,7 +238,12 @@ const teamUpVarietyWeight = (
   a: { entity: Player },
   b: { entity: Player },
 ): number => {
-  return -(a.entity.partnerCounts.get(b.entity.id) || 0);
+  const matchSum = a.entity.matchCount + b.entity.matchCount;
+  if (matchSum == 0) {
+    return 0;
+  }
+  const partnerSum = 2 * (a.entity.partnerCounts.get(b.entity.id) || 0);
+  return -(partnerSum / matchSum);
 };
 
 const curriedTeamUpPerformanceWeight = (
@@ -283,12 +289,20 @@ const matchUpVarietyWeight = (
   a: { entity: Team },
   b: { entity: Team },
 ): number => {
-  return -(
+  const matchSum =
+    a.entity[0].matchCount +
+    a.entity[1].matchCount +
+    b.entity[0].matchCount +
+    b.entity[1].matchCount;
+  if (matchSum == 0) {
+    return 0;
+  }
+  const opponentSum =
     (a.entity[0].opponentCounts.get(b.entity[0].id) || 0) +
     (a.entity[0].opponentCounts.get(b.entity[1].id) || 0) +
     (a.entity[1].opponentCounts.get(b.entity[0].id) || 0) +
-    (a.entity[1].opponentCounts.get(b.entity[1].id) || 0)
-  );
+    (a.entity[1].opponentCounts.get(b.entity[1].id) || 0);
+  return -(opponentSum / matchSum);
 };
 
 const matchUpPerformanceWeight = (
