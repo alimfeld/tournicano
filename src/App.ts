@@ -77,10 +77,12 @@ export const App = () => {
   const nav = (page: Page) => {
     state.page = page;
     localStorage.setItem(PAGE_KEY, `${page}`);
+    window.scrollTo(0, 0);
   };
   const changeRound = (index: number) => {
     state.roundIndex = index;
     localStorage.setItem(ROUND_KEY, `${index}`);
+    window.scrollTo(0, 0);
   };
 
   return {

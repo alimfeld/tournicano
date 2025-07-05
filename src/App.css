@@ -3,7 +3,7 @@
 }
 
 body {
-  margin-bottom: 5rem; /* leave room for the fixed nav */
+  padding-bottom: 5rem; /* leave room for the fixed nav */
   min-height: 100vh;
 }
 
