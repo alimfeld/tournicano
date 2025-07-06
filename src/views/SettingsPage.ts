@@ -5,7 +5,11 @@ import { Settings } from "../model/Settings.ts";
 import { Page } from "../App.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { ActionWithConfirmation } from "./ActionWithConfirmation.ts";
-import { Americano, Mexicano } from "../model/Tournament.matching.ts";
+import {
+  Americano,
+  AmericanoMixed,
+  Mexicano,
+} from "../model/Tournament.matching.ts";
 import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
 
 export interface SettingsAttrs {
@@ -18,6 +22,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
   view: ({ attrs: { settings, tournament, nav } }) => {
     const isAmericano =
       JSON.stringify(settings.matchingSpec) == JSON.stringify(Americano);
+    const isAmericanoMixed =
+      JSON.stringify(settings.matchingSpec) == JSON.stringify(AmericanoMixed);
     const isMexicano =
       JSON.stringify(settings.matchingSpec) == JSON.stringify(Mexicano);
     return [
@@ -54,34 +60,56 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           m(
             "fieldset",
             m("legend", "Matching:"),
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "americano",
-              checked: isAmericano,
-              onchange: () => {
-                settings.setMatchingSpec(Americano);
-              },
-            }),
-            m("label", { htmlFor: "americano" }, "Americano"),
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "mexicano",
-              checked: isMexicano,
-              onchange: () => {
-                settings.setMatchingSpec(Mexicano);
-              },
-            }),
-            m("label", { htmlFor: "mexicano" }, "Mexicano"),
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "custom",
-              checked: !isAmericano && !isMexicano,
-              disabled: true,
-            }),
-            m("label", { htmlFor: "custom" }, "Custom"),
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "matching-spec",
+                id: "americano",
+                checked: isAmericano,
+                onchange: () => {
+                  settings.setMatchingSpec(Americano);
+                },
+              }),
+              "Americano",
+            ),
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "matching-spec",
+                id: "americano-mixed",
+                checked: isAmericanoMixed,
+                onchange: () => {
+                  settings.setMatchingSpec(AmericanoMixed);
+                },
+              }),
+              "Americano Mixed",
+            ),
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "matching-spec",
+                id: "mexicano",
+                checked: isMexicano,
+                onchange: () => {
+                  settings.setMatchingSpec(Mexicano);
+                },
+              }),
+              "Mexicano",
+            ),
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "matching-spec",
+                id: "custom",
+                checked: !isAmericano && !isAmericanoMixed && !isMexicano,
+                disabled: true,
+              }),
+              "Custom",
+            ),
           ),
           m(MatchingSpecDialog, {
             action: "Customize...",

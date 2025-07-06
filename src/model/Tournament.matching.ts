@@ -46,6 +46,21 @@ export const Americano: MatchingSpec = {
     varietyFactor: 100,
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
+    groupFactor: 0,
+    groupMode: TeamUpGroupMode.ADJACENT, // not relevant
+  },
+  matchUp: {
+    varietyFactor: 100,
+    performanceFactor: 0,
+    groupFactor: 0,
+  },
+};
+
+export const AmericanoMixed: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 100,
     groupMode: TeamUpGroupMode.ADJACENT,
   },
