@@ -94,31 +94,32 @@ export const RoundPage: m.Component<RoundAttrs> = {
                 : null,
             ]
           : [m("p", "No rounds created (yet)!")],
-        m(
-          "section.actions",
-          m(ActionWithConfirmation, {
-            action: "Delete",
-            disabled: !(round && round.isLast()),
-            title: "Delete Round?",
-            description: "This will delete the current round.",
-            onconfirm: () => {
-              if (round) {
-                round.delete();
-                changeRound(roundIndex - 1);
-              }
-            },
-          }),
-          m(
-            "button.add",
-            {
-              disabled: matchesPerRound < 1,
-              onclick: () => {
-                tournament.createRound(settings.matchingSpec, matchesPerRound);
-                changeRound(roundCount);
+      ),
+      m(
+        "div.round-actions",
+        round && round.isLast()
+          ? m(ActionWithConfirmation, {
+              action: "Delete",
+              title: "Delete Round?",
+              description: "This will delete the current round.",
+              onconfirm: () => {
+                if (round) {
+                  round.delete();
+                  changeRound(roundIndex - 1);
+                }
               },
+            })
+          : null,
+        m(
+          "button.add",
+          {
+            disabled: matchesPerRound < 1,
+            onclick: () => {
+              tournament.createRound(settings.matchingSpec, matchesPerRound);
+              changeRound(roundCount);
             },
-            `New Round (${matchesPerRound} Matches)`,
-          ),
+          },
+          `Add (${matchesPerRound})`,
         ),
       ),
     ]);

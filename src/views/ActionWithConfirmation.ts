@@ -2,7 +2,7 @@ import m from "mithril";
 
 export interface ActionWithConfirmationAttrs {
   action: string;
-  disabled: boolean;
+  disabled?: boolean;
   title: string;
   description: string;
   onconfirm: () => void;

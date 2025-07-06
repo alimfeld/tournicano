@@ -7,11 +7,21 @@ header.round button {
   padding: 1rex;
 }
 
+main.round {
+  padding-bottom: 4rem; /* leave room for action buttons */
+  height: 100%;
+}
+
 @scope (main.round) {
   h2 {
     font-size: 80%;
     margin: 0;
     text-align: center;
+  }
+
+  div.debug.team,
+  div.debug.match {
+    margin: 1rex 0;
   }
 
   section.match {
@@ -49,8 +59,6 @@ header.round button {
     display: grid;
     column-gap: var(--pico-spacing);
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-bottom: 1px solid;
-    border-color: var(--pico-muted-border-color);
   }
 
   section.paused article {
@@ -71,9 +79,23 @@ header.round button {
       grid-template-columns: repeat(5, minmax(0, 1fr));
     }
   }
+}
 
-  section.actions {
-    display: flex;
-    justify-content: space-between;
+div.round-actions {
+  position: fixed;
+  bottom: 5rem;
+  right: var(--pico-spacing);
+  left: var(--pico-spacing);
+  z-index: 1;
+  margin-bottom: var(--pico-spacing);
+}
+
+@scope (div.round-actions) {
+  button.add {
+    float: right;
+  }
+
+  button {
+    border-radius: 2rem;
   }
 }

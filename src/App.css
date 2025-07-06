@@ -81,8 +81,9 @@ div.debug {
   width: 100%;
   display: flex;
   color: var(--pico-muted-color);
-  justify-content: space-between;
-  margin-bottom: 1rex;
+  justify-content: space-around;
+  border: 1px solid;
+  border-color: var(--pico-muted-border-color);
 }
 
 /* Global button styles */

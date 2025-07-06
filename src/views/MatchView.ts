@@ -21,21 +21,22 @@ export const MatchView: m.Component<MatchAttrs> = {
     };
     const renderMatchDebug = (match: Match) => {
       const variety = (
+        1 -
         (match.teamA.player1.opponentCounts.get(match.teamB.player1.id)! +
           match.teamA.player1.opponentCounts.get(match.teamB.player2.id)! +
           match.teamA.player2.opponentCounts.get(match.teamB.player1.id)! +
           match.teamA.player2.opponentCounts.get(match.teamB.player2.id)!) /
-        (match.teamA.player1.matchCount +
-          match.teamA.player2.matchCount +
-          match.teamB.player1.matchCount +
-          match.teamB.player2.matchCount)
+          (match.teamA.player1.matchCount +
+            match.teamA.player2.matchCount +
+            match.teamB.player1.matchCount +
+            match.teamB.player2.matchCount)
       ).toFixed(2);
       return m(
-        "div.debug",
+        "div.debug.match",
         m("span.variety", `V${variety}`),
         m(
           "span.performance",
-          `ΔP${Math.abs(avgTeamWinRatio(match.teamA) - avgTeamWinRatio(match.teamB)).toFixed(2)}/${Math.abs(sumTeamPlusMinus(match.teamA) - sumTeamPlusMinus(match.teamB))}`,
+          `ΔP[${Math.abs(avgTeamWinRatio(match.teamA) - avgTeamWinRatio(match.teamB)).toFixed(2)},${Math.abs(sumTeamPlusMinus(match.teamA) - sumTeamPlusMinus(match.teamB))}]`,
         ),
         m(
           "span.group",
@@ -45,15 +46,16 @@ export const MatchView: m.Component<MatchAttrs> = {
     };
     const renderTeamDebug = (team: Team) => {
       const variety = (
+        1 -
         (2 * team.player1.partnerCounts.get(team.player2.id)!) /
-        (team.player1.matchCount + team.player2.matchCount)
+          (team.player1.matchCount + team.player2.matchCount)
       ).toFixed(2);
       return m(
-        "div.debug",
+        "div.debug.team",
         m("span.variety", `V${variety}`),
         m(
           "span.performance",
-          `ØP${avgTeamWinRatio(team).toFixed(2)}/${sumTeamPlusMinus(team)}`,
+          `ØP[${avgTeamWinRatio(team).toFixed(2)},${sumTeamPlusMinus(team)}]`,
         ),
         m("span.group", `ΔG${diffTeamGroup(team)}`),
       );

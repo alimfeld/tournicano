@@ -20,19 +20,19 @@ export const PlayerView: m.Component<PlayerAttrs> = {
     });
     return m(
       "article.player",
+      m("img", { src: avatar.toDataUri() }),
+      m("p", player.name),
       vnode.attrs.debug && isPlayerStats(player)
         ? m(
             "div.debug",
             m("span.play-ratio", `M${player.playRatio.toFixed(2)}`),
             m(
               "span.performance",
-              `P${player.winRatio.toFixed(2)}/${player.plusMinus}`,
+              `P[${player.winRatio.toFixed(2)},${player.plusMinus}]`,
             ),
             m("span.group", `G${player.group}`),
           )
         : null,
-      m("img", { src: avatar.toDataUri() }),
-      m("p", player.name),
       vnode.children,
     );
   },
