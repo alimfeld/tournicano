@@ -95,7 +95,8 @@ div.round-actions {
     float: right;
   }
 
-  button {
+  button.action-with-confirmation,
+  button.add {
     border-radius: 2rem;
   }
 }
