@@ -51,7 +51,13 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               acc[player.group] = group;
               return acc;
             }, [])
-            .map((group, i) => m(GroupView, { players: group, groupIndex: i })),
+            .map((group, i, groups) =>
+              m(GroupView, {
+                players: group,
+                groupIndex: i,
+                groupCount: groups.length,
+              }),
+            ),
         ),
         m(
           "form",

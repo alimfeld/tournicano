@@ -5,10 +5,11 @@ import { RegisteredPlayer } from "../model/Tournament.ts";
 export interface GroupAttrs {
   players: RegisteredPlayer[];
   groupIndex: number;
+  groupCount: number;
 }
 
 export const GroupView: m.Component<GroupAttrs> = {
-  view: ({ attrs: { players, groupIndex } }) => {
+  view: ({ attrs: { players, groupIndex, groupCount } }) => {
     const [active, total] = players.values().reduce(
       (acc, player) => {
         if (player.active) {
@@ -24,7 +25,7 @@ export const GroupView: m.Component<GroupAttrs> = {
         ? `Group ${groupIndex + 1} (${active})`
         : `Group ${groupIndex + 1} (${active}/${total})`;
     return [
-      m("h2", title),
+      groupCount > 1 ? m("h2", title) : null,
       m(
         "section.group",
         players
