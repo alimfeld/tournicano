@@ -15,8 +15,6 @@ main.round {
 @scope (main.round) {
   h2 {
     font-size: 80%;
-    margin: 0;
-    text-align: center;
   }
 
   div.debug.team,

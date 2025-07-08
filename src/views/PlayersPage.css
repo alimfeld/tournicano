@@ -13,6 +13,8 @@ header.players {
     display: grid;
     column-gap: var(--pico-spacing);
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid;
+    border-color: var(--pico-muted-border-color);
   }
 
   @media (min-width: 576px) {
