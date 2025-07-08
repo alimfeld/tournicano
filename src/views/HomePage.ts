@@ -103,7 +103,10 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("b", "Note"),
           ": For performance-based matching to be effective, scores must be entered. For group-based matching to be effective, multiple player groups must be created.",
         ),
-        m("p", "These factors can be fine-tuned in the ⚙️ Settings."),
+        m(
+          "p",
+          "Use a predefined matching (such as Americano or Mexicano) or customize it under ⚙️ Settings.",
+        ),
         m("h2", "🚫 Out of scope"),
         m(
           "ul",
