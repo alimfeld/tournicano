@@ -58,7 +58,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Excess players are paused for the round using an algorithm that balances each player's play ratio (i.e. the number of matches played over the number of rounds since the player was added).",
+          "Excess players are paused for the round using an algorithm that balances each player's play ratio (i.e. the number of matches played over the number of rounds the player participated in).",
         ),
         m(
           "p",

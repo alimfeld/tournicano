@@ -7,10 +7,10 @@ import {
 export interface Player {
   readonly id: string;
   readonly group: number;
-  readonly playRatio: number;
   readonly winRatio: number;
   readonly plusMinus: number;
   readonly matchCount: number;
+  readonly pauseCount: number;
   readonly partnerCounts: Map<string, number>;
   readonly opponentCounts: Map<string, number>;
 }
@@ -167,7 +167,10 @@ const partition = (
   let result = players.toSorted(() => Math.random() - 0.5); // shuffle array to break patterns
   if (players.length > competingCount) {
     result = players.toSorted((p, q) => {
-      return p.playRatio - q.playRatio;
+      return (
+        p.matchCount / (p.pauseCount + p.matchCount + 1) -
+        q.matchCount / (q.pauseCount + q.matchCount + 1)
+      );
     });
   }
   return [result.slice(0, competingCount), result.slice(competingCount)];

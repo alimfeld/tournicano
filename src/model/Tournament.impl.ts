@@ -145,9 +145,6 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
 
   get playRatio() {
     const roundCount = this.matchCount + this.pauseCount;
-    if (roundCount == 0) {
-      return 0; // or 1
-    }
     return this.matchCount / roundCount;
   }
 
@@ -250,7 +247,6 @@ class RoundImpl implements Round {
     });
     this.inactive = inactive.map((id) => {
       const player = getOrCreate(id);
-      player.pauseCount += 1;
       return player;
     });
     this.matches = matched.map((m) => {

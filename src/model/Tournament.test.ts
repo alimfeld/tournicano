@@ -10,10 +10,10 @@ import {
 
 class Player {
   group: number = 0;
-  playRatio: number = 0;
   winRatio: number = 0;
   plusMinus: number = 0;
   matchCount: number = 0;
+  pauseCount: number = 0;
   partnerCounts: Map<string, number> = new Map();
   opponentCounts: Map<string, number> = new Map();
   constructor(
@@ -218,8 +218,8 @@ test("should update performance through rounds", ({ players, scores }) => {
 });
 
 test("should honor play ratio for paused", ({ players }) => {
-  players[3].playRatio = 1;
-  players[7].playRatio = 1;
+  players[3].matchCount = 1;
+  players[7].matchCount = 1;
   const [_matches, paused] = matchUp(players, Americano);
   expect(paused).toStrictEqual([players[3], players[7]]);
 });
