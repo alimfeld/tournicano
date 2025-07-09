@@ -41,6 +41,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          "Players can be added at any time during the tournament. As soon as they are added, they become available for any newly created round.",
+        ),
+        m(
+          "p",
           "Players can be activated or deactivated using a switch. While deactivated, a player will not be considered for participation in any newly created round.",
         ),
         m(
