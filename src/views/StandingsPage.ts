@@ -20,13 +20,13 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
     const roundCount = tournament.rounds.length;
     const award: (rank: number) => string = (rank) => {
       if (rank == 1) {
-        return "1 🥇";
+        return "1🥇";
       }
       if (rank == 2) {
-        return "2 🥈";
+        return "2🥈";
       }
       if (rank == 3) {
-        return "3 🥉";
+        return "3🥉";
       }
       return rank.toString();
     };
@@ -50,7 +50,28 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       acc.push(i + 1);
       return acc;
     }, []);
-
+    const format = () => {
+      return (
+        "```\n" +
+        players
+          .map((player, i) => {
+            return (
+              String(ranks[i]).padStart(2, " ") +
+              ". " +
+              player.name.slice(0, 10).padEnd(10, ".") +
+              " " +
+              (player.winRatio * 100).toFixed(0).padStart(3, " ") +
+              "% " +
+              ((player.plusMinus >= 0 ? "+" : "") + player.plusMinus).padStart(
+                4,
+                " ",
+              )
+            );
+          })
+          .join("\n") +
+        "\n```"
+      );
+    };
     return [
       m(
         "header.standings.container-fluid",
@@ -82,7 +103,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       m(
         Swipeable,
         {
-          element: "main.standings.container-fluid",
+          element: "main.standings.container-fluid.actions",
           onswiping: (swiping) => {
             document.getElementById("title")!.style =
               `opacity: ${swiping ? 0.1 : 1}`;
@@ -136,6 +157,26 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               ),
             ]
           : m("p", "No scores submitted (yet)!"),
+      ),
+      m(
+        "div.actions",
+        m(
+          "button.right",
+          {
+            disabled: players.length == 0,
+            onclick: async () => {
+              const data = {
+                text: format(),
+              };
+              try {
+                await navigator.share(data);
+              } catch (err) {
+                console.log(err);
+              }
+            },
+          },
+          "⿻",
+        ),
       ),
     ];
   },
