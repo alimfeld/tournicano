@@ -83,6 +83,7 @@ export const MatchView: m.Component<MatchAttrs> = {
             name: `score${matchIndex}`,
             placeholder: "--:--",
             inputmode: "numeric",
+            tabindex: matchIndex + 1,
             value: match.score
               ? `${String(match.score[0]).padStart(2, "0")}:${String(match.score[1]).padStart(2, "0")}`
               : null,
