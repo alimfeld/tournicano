@@ -51,7 +51,7 @@ header.players {
     opacity: 0.5;
   }
 
-  div.player div.actions {
+  div.player div.player-actions {
     position: relative;
     width: 100%;
     display: flex;

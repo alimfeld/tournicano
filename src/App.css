@@ -86,6 +86,30 @@ div.debug {
   border-color: var(--pico-muted-border-color);
 }
 
+/* Global floating / fixed actions styles */
+
+main.actions {
+  padding-bottom: 4rem; /* leave room for action buttons */
+  height: 100%;
+}
+
+div.actions {
+  position: fixed;
+  bottom: 5rem;
+  right: var(--pico-spacing);
+  left: var(--pico-spacing);
+  z-index: 1;
+  margin-bottom: var(--pico-spacing);
+}
+
+div.actions > button {
+  border-radius: 2rem;
+}
+
+div.actions > button.right {
+  float: right;
+}
+
 /* Global button styles */
 
 button.action-with-confirmation,

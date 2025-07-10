@@ -13,7 +13,7 @@ export const HomePage: m.Component<HomeAttrs> = {
       m("header.home.container-fluid", m("h1", "Tournicano")),
       m(NavView, { nav }),
       m(
-        "main.home.container-fluid",
+        "main.home.container-fluid.actions",
         m("h2", "👉 What is it?"),
         m(
           "p",
@@ -124,6 +124,25 @@ export const HomePage: m.Component<HomeAttrs> = {
           "To time rounds, use your phone’s stopwatch, or end a round once the first match finishes.",
         ),
         m("p", "To keep the screen on, check your device’s display settings."),
+      ),
+      m(
+        "div.actions",
+        m(
+          "button.right",
+          {
+            onclick: async () => {
+              const data = {
+                url: "https://github.com/alimfeld/tournicano",
+              };
+              try {
+                await navigator.share(data);
+              } catch (err) {
+                console.log(err);
+              }
+            },
+          },
+          "⿻",
+        ),
       ),
     ];
   },

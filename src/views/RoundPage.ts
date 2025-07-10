@@ -58,7 +58,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
       m(
         Swipeable,
         {
-          element: "main.round.container-fluid",
+          element: "main.round.container-fluid.actions",
           onswiping: (swiping) => {
             document.getElementById("title")!.style =
               `opacity: ${swiping ? 0.1 : 1}`;
@@ -96,7 +96,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           : [m("p", "No rounds created (yet)!")],
       ),
       m(
-        "div.round-actions",
+        "div.actions",
         round && round.isLast()
           ? m(ActionWithConfirmation, {
               action: "Delete",
@@ -111,7 +111,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             })
           : null,
         m(
-          "button.add",
+          "button.right",
           {
             disabled: matchesPerRound < 1,
             onclick: () => {

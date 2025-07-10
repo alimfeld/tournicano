@@ -7,11 +7,6 @@ header.round button {
   padding: 1rex;
 }
 
-main.round {
-  padding-bottom: 4rem; /* leave room for action buttons */
-  height: 100%;
-}
-
 @scope (main.round) {
   h2 {
     font-size: 80%;
@@ -76,25 +71,5 @@ main.round {
     section.paused {
       grid-template-columns: repeat(5, minmax(0, 1fr));
     }
-  }
-}
-
-div.round-actions {
-  position: fixed;
-  bottom: 5rem;
-  right: var(--pico-spacing);
-  left: var(--pico-spacing);
-  z-index: 1;
-  margin-bottom: var(--pico-spacing);
-}
-
-@scope (div.round-actions) {
-  button.add {
-    float: right;
-  }
-
-  button.action-with-confirmation,
-  button.add {
-    border-radius: 2rem;
   }
 }

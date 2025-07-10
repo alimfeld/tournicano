@@ -41,7 +41,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                 PlayerView,
                 { player },
                 m(
-                  "div.actions",
+                  "div.player-actions",
                   m("input.active", {
                     type: "checkbox",
                     name: "active",

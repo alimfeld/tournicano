@@ -37,27 +37,29 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
     );
     const title =
       active == total ? `Players (${active})` : `Players (${active}/${total})`;
+    const groupedPlayers = tournament.players.reduce(
+      (acc: RegisteredPlayer[][], player) => {
+        const group = acc[player.group] || [];
+        group.push(player);
+        acc[player.group] = group;
+        return acc;
+      },
+      [],
+    );
     return [
       m("header.players.container-fluid", m("h1", title)),
       m(NavView, { nav }),
       m(
-        "main.players.container-fluid",
+        "main.players.container-fluid.actions",
         m(
           "section.players",
-          tournament.players
-            .reduce((acc: RegisteredPlayer[][], player) => {
-              const group = acc[player.group] || [];
-              group.push(player);
-              acc[player.group] = group;
-              return acc;
-            }, [])
-            .map((group, i, groups) =>
-              m(GroupView, {
-                players: group,
-                groupIndex: i,
-                groupCount: groups.length,
-              }),
-            ),
+          groupedPlayers.map((group, i, groups) =>
+            m(GroupView, {
+              players: group,
+              groupIndex: i,
+              groupCount: groups.length,
+            }),
+          ),
         ),
         m(
           "form",
@@ -72,6 +74,27 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             value: "Add",
             onclick: registerPlayers,
           }),
+        ),
+      ),
+      m(
+        "div.actions",
+        m(
+          "button.right",
+          {
+            onclick: async () => {
+              const data = {
+                text: groupedPlayers
+                  .map((group) => group.map((player) => player.name).join(" "))
+                  .join("\n"),
+              };
+              try {
+                await navigator.share(data);
+              } catch (err) {
+                console.log(err);
+              }
+            },
+          },
+          "⿻",
         ),
       ),
     ];
