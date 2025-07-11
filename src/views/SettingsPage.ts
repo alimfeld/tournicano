@@ -132,7 +132,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           }),
           m(ActionWithConfirmation, {
             action: "Reset",
-            disabled: tournament.players.length == 0,
+            disabled: tournament.players().length == 0,
             title: "Reset Tournament?",
             description: "This will delete all rounds and registered players.",
             onconfirm: () => {

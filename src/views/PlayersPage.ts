@@ -74,7 +74,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         m(
           "button.right",
           {
-            disabled: tournament.players.length == 0,
+            disabled: tournament.players().length == 0,
             onclick: async () => {
               const data = {
                 text: tournament.groups
