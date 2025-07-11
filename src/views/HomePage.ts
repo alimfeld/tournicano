@@ -51,6 +51,11 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           "Any player who hasn't yet participated in a round can be deleted.",
         ),
+        m(
+          "p",
+          m("b", "Note"),
+          ": Player names must be unique. Any non-unique names are ignored when adding players.",
+        ),
         m("h2", "🚀 Round Management"),
         m(
           "p",

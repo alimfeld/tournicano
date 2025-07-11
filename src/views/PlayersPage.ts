@@ -18,7 +18,6 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       groups.forEach((group, i) => {
         const line = group.trim();
         if (line) {
-          console.log(line);
           const names = line.trim().split(/\s+/);
           tournament.registerPlayers(names, i);
         }
