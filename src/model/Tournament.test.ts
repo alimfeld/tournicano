@@ -111,12 +111,27 @@ test("should register players", ({ players }) => {
   });
 });
 
+test("should not register players twice", ({ players }) => {
+  const tournament = runTournament(players);
+  expect(tournament.players).toHaveLength(players.length);
+  tournament.registerPlayers(players.map((p) => p.name));
+  expect(tournament.players).toHaveLength(players.length);
+});
+
 test("should rename player", ({ players }) => {
   const tournament = runTournament(players);
   const player = tournament.players[0];
-  expect(player.name).not.toBe("Ben");
-  player.rename("Ben");
-  expect(player.name).toBe("Ben");
+  expect(player.name).not.toBe("Foo");
+  player.rename("Foo");
+  expect(player.name).toBe("Foo");
+});
+
+test("should not rename player to already registered name", ({ players }) => {
+  const tournament = runTournament(players);
+  const player = tournament.players[0];
+  const name = player.name;
+  player.rename(tournament.players[1].name);
+  expect(player.name).toBe(name);
 });
 
 test("should activate player", ({ players }) => {

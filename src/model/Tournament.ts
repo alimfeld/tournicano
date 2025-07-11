@@ -11,7 +11,7 @@ export interface Player {
 export interface RegisteredPlayer extends Player {
   readonly active: boolean;
   isParticipating(): boolean;
-  rename(name: string): void;
+  rename(name: string): boolean;
   activate(active: boolean): void;
   withdraw(): boolean;
 }

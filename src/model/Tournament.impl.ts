@@ -38,8 +38,13 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
   }
 
   rename(name: string) {
-    this.name = name;
-    this.tournament.notifyChange();
+    const registeredNames = new Set(this.tournament.players.map((p) => p.name));
+    if (!registeredNames.has(name)) {
+      this.name = name;
+      this.tournament.notifyChange();
+      return true;
+    }
+    return false;
   }
 
   activate(active: boolean) {
@@ -399,10 +404,13 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   registerPlayers(names: string[], group: number) {
+    const registeredNames = new Set(this.players.map((p) => p.name));
     names.forEach((name) => {
-      const id = crypto.randomUUID();
-      const player = new RegisteredPlayerImpl(this, id, name, group);
-      this.playerMap.set(player.id, player);
+      if (!registeredNames.has(name)) {
+        const id = crypto.randomUUID();
+        const player = new RegisteredPlayerImpl(this, id, name, group);
+        this.playerMap.set(player.id, player);
+      }
     });
     this.notifyChange();
   }
