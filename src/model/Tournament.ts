@@ -86,7 +86,8 @@ export interface TournamentListener {
 
 export interface Tournament {
   readonly rounds: Round[];
-  readonly players: RegisteredPlayer[];
+  readonly groups: number[];
+  players(group?: number): RegisteredPlayer[];
   registerPlayers(names: string[], group?: number): void;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
   restart(): void;

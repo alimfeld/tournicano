@@ -20,7 +20,7 @@ export interface RoundAttrs {
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({ attrs: { settings, tournament, roundIndex, changeRound, nav } }) => {
     const matchesPerRound = Math.min(
-      Math.floor(tournament.players.filter((p) => p.active).length / 4),
+      Math.floor(tournament.players().filter((p) => p.active).length / 4),
       settings.courts,
     );
     const round =

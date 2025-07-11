@@ -96,31 +96,31 @@ const serialize = (matches: Match[]) => {
 
 test("should create empty tournament", () => {
   const tournament = runTournament();
-  expect(tournament.players).toHaveLength(0);
+  expect(tournament.players()).toHaveLength(0);
   expect(tournament.rounds).toHaveLength(0);
 });
 
 test("should register players", ({ players }) => {
   const tournament = runTournament(players);
-  expect(tournament.players).toHaveLength(players.length);
-  expect(tournament.players.map((p) => p.name)).toStrictEqual(
+  expect(tournament.players()).toHaveLength(players.length);
+  expect(tournament.players().map((p) => p.name)).toStrictEqual(
     players.map((p) => p.name),
   );
-  tournament.players.forEach((p) => {
+  tournament.players().forEach((p) => {
     expect(p.active).toBeTruthy();
   });
 });
 
 test("should not register players twice", ({ players }) => {
   const tournament = runTournament(players);
-  expect(tournament.players).toHaveLength(players.length);
+  expect(tournament.players()).toHaveLength(players.length);
   tournament.registerPlayers(players.map((p) => p.name));
-  expect(tournament.players).toHaveLength(players.length);
+  expect(tournament.players()).toHaveLength(players.length);
 });
 
 test("should rename player", ({ players }) => {
   const tournament = runTournament(players);
-  const player = tournament.players[0];
+  const player = tournament.players()[0];
   expect(player.name).not.toBe("Foo");
   player.rename("Foo");
   expect(player.name).toBe("Foo");
@@ -128,15 +128,15 @@ test("should rename player", ({ players }) => {
 
 test("should not rename player to already registered name", ({ players }) => {
   const tournament = runTournament(players);
-  const player = tournament.players[0];
+  const player = tournament.players()[0];
   const name = player.name;
-  player.rename(tournament.players[1].name);
+  player.rename(tournament.players()[1].name);
   expect(player.name).toBe(name);
 });
 
 test("should activate player", ({ players }) => {
   const tournament = runTournament(players);
-  const player = tournament.players[0];
+  const player = tournament.players()[0];
   player.activate(false);
   expect(player.active).toBe(false);
   player.activate(true);
@@ -145,18 +145,18 @@ test("should activate player", ({ players }) => {
 
 test("should withdraw non-participating player", ({ players }) => {
   const tournament = runTournament(players);
-  const player = tournament.players[0];
+  const player = tournament.players()[0];
   const success = player.withdraw();
   expect(success).toBeTruthy();
-  expect(tournament.players).toHaveLength(players.length - 1);
+  expect(tournament.players()).toHaveLength(players.length - 1);
 });
 
 test("should not withdraw participating player", ({ players, scores }) => {
   const tournament = runTournament(players, scores);
-  const player = tournament.players[0];
+  const player = tournament.players()[0];
   const success = player.withdraw();
   expect(success).toBeFalsy();
-  expect(tournament.players).toHaveLength(players.length);
+  expect(tournament.players()).toHaveLength(players.length);
 });
 
 test("should create rounds", ({ players, scores }) => {

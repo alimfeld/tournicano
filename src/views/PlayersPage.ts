@@ -2,7 +2,7 @@ import m from "mithril";
 import "./PlayersPage.css";
 import { NavView } from "./NavView.ts";
 import { Page } from "../App.ts";
-import { RegisteredPlayer, Tournament } from "../model/Tournament.ts";
+import { Tournament } from "../model/Tournament.ts";
 import { GroupView } from "./GroupView.ts";
 
 export interface PlayersAttrs {
@@ -25,27 +25,21 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       });
       input.value = "";
     };
-    const [active, total] = tournament.players.values().reduce(
-      (acc, player) => {
-        if (player.active) {
-          acc[0]++;
-        }
-        acc[1]++;
-        return acc;
-      },
-      [0, 0],
-    );
+    const [active, total] = tournament
+      .players()
+      .values()
+      .reduce(
+        (acc, player) => {
+          if (player.active) {
+            acc[0]++;
+          }
+          acc[1]++;
+          return acc;
+        },
+        [0, 0],
+      );
     const title =
       active == total ? `Players (${active})` : `Players (${active}/${total})`;
-    const groupedPlayers = tournament.players.reduce(
-      (acc: RegisteredPlayer[][], player) => {
-        const group = acc[player.group] || [];
-        group.push(player);
-        acc[player.group] = group;
-        return acc;
-      },
-      [],
-    );
     return [
       m("header.players.container-fluid", m("h1", title)),
       m(NavView, { nav }),
@@ -53,11 +47,11 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         "main.players.container-fluid.actions",
         m(
           "section.players",
-          groupedPlayers.map((group, i, groups) =>
+          tournament.groups.map((group) =>
             m(GroupView, {
-              players: group,
-              groupIndex: i,
-              groupCount: groups.length,
+              players: tournament.players(group),
+              groupIndex: group,
+              groupCount: tournament.groups.length,
             }),
           ),
         ),
@@ -84,8 +78,14 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             disabled: tournament.players.length == 0,
             onclick: async () => {
               const data = {
-                text: groupedPlayers
-                  .map((group) => group.map((player) => player.name).join(" "))
+                text: tournament.groups
+                  .map((group) =>
+                    tournament
+                      .players(group)
+                      .map((player) => player.name)
+                      .toSorted((p, q) => p.localeCompare(q))
+                      .join(" "),
+                  )
                   .join("\n"),
               };
               try {

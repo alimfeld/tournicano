@@ -38,7 +38,9 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
   }
 
   rename(name: string) {
-    const registeredNames = new Set(this.tournament.players.map((p) => p.name));
+    const registeredNames = new Set(
+      this.tournament.players().map((p) => p.name),
+    );
     if (!registeredNames.has(name)) {
       this.name = name;
       this.tournament.notifyChange();
@@ -399,12 +401,20 @@ class TournamentImpl implements Mutable<Tournament> {
     }
   }
 
-  get players() {
-    return this.playerMap.values().toArray();
+  players(group?: number) {
+    const players = this.playerMap.values().toArray();
+    if (group == undefined) {
+      return players;
+    }
+    return players.filter((p) => p.group == group);
+  }
+
+  get groups() {
+    return [...new Set(this.playerMap.values().map((p) => p.group))];
   }
 
   registerPlayers(names: string[], group: number) {
-    const registeredNames = new Set(this.players.map((p) => p.name));
+    const registeredNames = new Set(this.players().map((p) => p.name));
     names.forEach((name) => {
       if (!registeredNames.has(name)) {
         const id = crypto.randomUUID();
@@ -425,7 +435,7 @@ class TournamentImpl implements Mutable<Tournament> {
       participating.push(...previousRound.playerMap.values().toArray());
     }
     participating.push(
-      ...this.players
+      ...this.players()
         .filter((p) => {
           return p.active && !p.isParticipating();
         })
@@ -472,7 +482,7 @@ class TournamentImpl implements Mutable<Tournament> {
 
   serialize() {
     const compact: CompactTournament = [
-      this.players
+      this.players()
         .values()
         .toArray()
         .map((p) => [p.id, p.name, p.group, p.active]),
