@@ -30,42 +30,23 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       }
       return rank.toString();
     };
-    const players = round ? round.standings() : [];
-    const ranks = players.reduce((acc: number[], _, i) => {
-      if (acc.length == 0) {
-        acc.push(1);
-        return acc;
-      }
-      const [p, q] = [players[i], players[i - 1]];
-      const pperf = p.winRatio;
-      const qperf = q.winRatio;
-      if (pperf == qperf) {
-        const pdiff = p.plusMinus;
-        const qdiff = q.plusMinus;
-        if (pdiff == qdiff) {
-          acc.push(acc[i - 1]);
-          return acc;
-        }
-      }
-      acc.push(i + 1);
-      return acc;
-    }, []);
+    const standings = round ? round.standings() : [];
     const format = () => {
       return (
         "```\n" +
-        players
-          .map((player, i) => {
+        standings
+          .map((ranked) => {
             return (
-              String(ranks[i]).padStart(2, " ") +
+              String(ranked.rank).padStart(2, " ") +
               ". " +
-              player.name.slice(0, 10).padEnd(10, ".") +
+              ranked.player.name.slice(0, 10).padEnd(10, ".") +
               " " +
-              (player.winRatio * 100).toFixed(0).padStart(3, " ") +
+              (ranked.player.winRatio * 100).toFixed(0).padStart(3, " ") +
               "% " +
-              ((player.plusMinus >= 0 ? "+" : "") + player.plusMinus).padStart(
-                4,
-                " ",
-              )
+              (
+                (ranked.player.plusMinus >= 0 ? "+" : "") +
+                ranked.player.plusMinus
+              ).padStart(4, " ")
             );
           })
           .join("\n") +
@@ -121,36 +102,37 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                 }
               : undefined,
         },
-        players.length > 0
+        standings.length > 0
           ? [
-              ...players.map((player, i) =>
+              ...standings.map((ranked) =>
                 m(
                   "section.entry",
-                  m("div.rank", m("p", award(ranks[i]))),
-                  m(PlayerView, { player }),
+                  m("div.rank", m("p", award(ranked.rank))),
+                  m(PlayerView, { player: ranked.player }),
                   m(
                     "div.record",
                     m(
                       "p.win-percentage",
-                      `${(player.winRatio * 100).toFixed(0)}%`,
+                      `${(ranked.player.winRatio * 100).toFixed(0)}%`,
                       m("div.progressbar", {
-                        style: `width: ${player.winRatio * 100}%`,
+                        style: `width: ${ranked.player.winRatio * 100}%`,
                       }),
                     ),
                     m(
                       "small",
-                      `(${player.wins}-${player.draws}-${player.losses})`,
+                      `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`,
                     ),
                   ),
                   m(
                     "div.points",
                     m(
                       "p.plus-minus",
-                      (player.plusMinus >= 0 ? "+" : "") + player.plusMinus,
+                      (ranked.player.plusMinus >= 0 ? "+" : "") +
+                        ranked.player.plusMinus,
                     ),
                     m(
                       "small",
-                      `(+${player.pointsFor}/-${player.pointsAgainst})`,
+                      `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`,
                     ),
                   ),
                 ),
@@ -163,7 +145,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         m(
           "button.right",
           {
-            disabled: players.length == 0,
+            disabled: standings.length == 0,
             onclick: async () => {
               const data = {
                 text: format(),

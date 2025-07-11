@@ -154,7 +154,8 @@ test("should balance play stats", ({ players, scores }) => {
   tournament.rounds
     .at(-1)!
     .standings()
-    .forEach((player) => {
+    .forEach((ranked) => {
+      const player = ranked.player;
       expect(player.matchCount).toBe(4);
       expect(player.pauseCount).toBe(1);
     });
@@ -163,29 +164,28 @@ test("should balance play stats", ({ players, scores }) => {
 test("should balance matchings", ({ players, scores }) => {
   const tournament = runTournament(players, scores);
   tournament.rounds.forEach((round) => {
-    round.standings().forEach((player) => {
+    round.standings().forEach((ranked) => {
+      const player = ranked.player;
       expect(
         player.partnerCounts.values().reduce((acc, count) => (acc += count), 0),
       ).toBe(player.matchCount);
-      round
-        .standings()
-        .forEach((partner) =>
-          expect(player.partnerCounts.get(partner.id) || 0).toBeLessThanOrEqual(
-            1,
-          ),
+      round.standings().forEach((ranked) => {
+        const partner = ranked.player;
+        expect(player.partnerCounts.get(partner.id) || 0).toBeLessThanOrEqual(
+          1,
         );
+      });
       expect(
         player.opponentCounts
           .values()
           .reduce((acc, count) => (acc += count), 0),
       ).toBe(player.matchCount * 2);
-      round
-        .standings()
-        .forEach((opponent) =>
-          expect(
-            player.opponentCounts.get(opponent.id) || 0,
-          ).toBeLessThanOrEqual(2),
+      round.standings().forEach((ranked) => {
+        const opponent = ranked.player;
+        expect(player.opponentCounts.get(opponent.id) || 0).toBeLessThanOrEqual(
+          2,
         );
+      });
     });
   });
 });
@@ -209,10 +209,12 @@ test("should update performance through rounds", ({ players, scores }) => {
   firstRound.matches.forEach((match, i) => match.submitScore(scores[0][i]));
   const firstRoundPerf = firstRound
     .standings()
-    .map((player) => [player.winRatio, player.plusMinus]);
+    .map((ranked) => [ranked.player.winRatio, ranked.player.plusMinus]);
   tournament.rounds.forEach((round) =>
     expect(
-      round.standings().map((player) => [player.winRatio, player.plusMinus]),
+      round
+        .standings()
+        .map((ranked) => [ranked.player.winRatio, ranked.player.plusMinus]),
     ).toStrictEqual(firstRoundPerf),
   );
 });

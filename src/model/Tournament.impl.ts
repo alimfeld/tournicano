@@ -285,15 +285,25 @@ class RoundImpl implements Round {
     return success;
   }
 
-  standings() {
-    return this.playerMap
+  standings(group?: number) {
+    const players = this.playerMap
       .values()
       .toArray()
+      .filter((player) => group == undefined || player.group == group)
       .filter((player) => player.wins + player.draws + player.losses > 0)
       .toSorted((p, q) => {
         const result = p.compare(q);
         return result == 0 ? p.name.localeCompare(q.name) : result;
       });
+    let rank = 1;
+    return players.map((player, i) => {
+      if (i == 0 || players[i - 1].compare(players[i]) == 0) {
+        return { rank, player };
+      } else {
+        rank = i + 1;
+        return { rank, player };
+      }
+    });
   }
 
   addPerformance(id: PlayerId, performance: Performance) {
@@ -320,7 +330,8 @@ class RoundImpl implements Round {
       result += line;
     });
     result += `Standings ${r + 1}\n`;
-    this.standings().forEach((p) => {
+    this.standings().forEach((ranked) => {
+      const p = ranked.player;
       let line = `${p.name} M${p.matchCount}/${p.matchCount + p.pauseCount} W${p.wins}|D${p.draws}|L${p.losses} +${p.pointsFor}/-${p.pointsAgainst} %${(p.winRatio * 100).toFixed(1)} (${p.plusMinus >= 0 ? "+" + p.plusMinus : "" + p.plusMinus})\n`;
       result += line;
     });

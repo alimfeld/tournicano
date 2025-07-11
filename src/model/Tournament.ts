@@ -47,6 +47,11 @@ export interface PlayerStats
   readonly plusMinus: number;
 }
 
+export interface RankedPlayer {
+  rank: number;
+  player: PlayerStats;
+}
+
 export interface Team {
   readonly player1: PlayerStats;
   readonly player2: PlayerStats;
@@ -64,7 +69,7 @@ export interface Match {
 export interface Round {
   readonly matches: Match[];
   readonly paused: PlayerStats[];
-  standings(): PlayerStats[];
+  standings(group?: number): RankedPlayer[];
   isLast(): boolean;
   delete(): boolean;
   toString(): string;
