@@ -91,6 +91,10 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           "You can navigate back and forth to see the standings of any specific round.",
         ),
+        m(
+          "p",
+          "When players are assigned to different groups, you can show standings overall and per group. This works for a maximum of 4 groups.",
+        ),
         m("h2", "🤝 Matching"),
         m(
           "p",
