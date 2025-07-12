@@ -14,6 +14,7 @@ import { HomePage } from "./views/HomePage.ts";
 const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
 const ROUND_KEY = "round";
+const GROUP_KEY = "group";
 const TOURNAMENT_KEY = "tournament";
 
 export enum Page {
@@ -29,6 +30,7 @@ interface State {
   readonly settings: Settings;
   page: Page;
   roundIndex: number;
+  group: number | undefined;
 }
 
 const syncTheme = (theme: Theme) => {
@@ -42,6 +44,7 @@ const syncTheme = (theme: Theme) => {
 };
 
 const createState: () => State = () => {
+  const storedGroup = localStorage.getItem(GROUP_KEY);
   const state = {
     tournament: tournamentFactory.create(
       localStorage.getItem(TOURNAMENT_KEY) || undefined,
@@ -51,6 +54,7 @@ const createState: () => State = () => {
     ),
     page: parseInt(localStorage.getItem(PAGE_KEY) || `${Page.HOME}`),
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
+    group: storedGroup != null ? parseInt(storedGroup) : undefined,
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -82,6 +86,15 @@ export const App = () => {
   const changeRound = (index: number) => {
     state.roundIndex = index;
     localStorage.setItem(ROUND_KEY, `${index}`);
+    window.scrollTo(0, 0);
+  };
+  const changeGroup = (group: number | undefined) => {
+    state.group = group;
+    if (group == undefined) {
+      localStorage.removeItem(GROUP_KEY);
+    } else {
+      localStorage.setItem(GROUP_KEY, `${group}`);
+    }
     window.scrollTo(0, 0);
   };
 
@@ -119,7 +132,9 @@ export const App = () => {
           return m(StandingsPage, {
             tournament: state.tournament,
             roundIndex: state.roundIndex,
+            group: state.group,
             changeRound,
+            changeGroup,
             nav,
           });
         }

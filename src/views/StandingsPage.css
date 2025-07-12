@@ -16,6 +16,10 @@ header.standings button {
     border-color: var(--pico-muted-border-color);
   }
 
+  div.group-switcher button {
+    padding: 1rex 0;
+  }
+
   @scope (section.entry) {
     div.record {
       text-align: center;

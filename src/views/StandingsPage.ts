@@ -9,15 +9,25 @@ import { Swipeable } from "./Swipeable.ts";
 export interface StandingsAttrs {
   tournament: Tournament;
   roundIndex: number;
+  group: number | undefined;
   changeRound: (index: number) => void;
+  changeGroup: (group: number | undefined) => void;
   nav: (page: Page) => void;
 }
 
 export const StandingsPage: m.Component<StandingsAttrs> = {
-  view: ({ attrs: { tournament, roundIndex, changeRound, nav } }) => {
+  view: ({
+    attrs: { tournament, roundIndex, group, changeRound, changeGroup, nav },
+  }) => {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
+    const groups = tournament.groups;
+    const showGroupSwitcher = groups.length > 1 && groups.length <= 4;
+    const standingsGroup =
+      showGroupSwitcher && (group == undefined || groups.indexOf(group) >= 0)
+        ? group
+        : undefined;
     const award: (rank: number) => string = (rank) => {
       if (rank == 1) {
         return "1🥇";
@@ -30,7 +40,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       }
       return rank.toString();
     };
-    const standings = round ? round.standings() : [];
+    const standings = round ? round.standings(standingsGroup) : [];
     const format = () => {
       return (
         "```\n" +
@@ -102,6 +112,34 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                 }
               : undefined,
         },
+        showGroupSwitcher
+          ? m(
+              "div.group-switcher",
+              { role: "group" },
+              m(
+                "button",
+                {
+                  disabled: standingsGroup == undefined,
+                  onclick: () => {
+                    changeGroup(undefined);
+                  },
+                },
+                "All",
+              ),
+              groups.map((g) =>
+                m(
+                  "button",
+                  {
+                    disabled: standingsGroup == g,
+                    onclick: () => {
+                      changeGroup(g);
+                    },
+                  },
+                  `${g + 1}`,
+                ),
+              ),
+            )
+          : null,
         standings.length > 0
           ? [
               ...standings.map((ranked) =>
