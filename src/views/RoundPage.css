@@ -12,11 +12,6 @@ header.round button {
     font-size: 80%;
   }
 
-  div.debug.team,
-  div.debug.match {
-    margin: 1rex 0;
-  }
-
   section.match {
     display: grid;
     column-gap: var(--pico-spacing);
