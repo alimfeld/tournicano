@@ -17,7 +17,9 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "👉 What is it?"),
         m(
           "p",
-          "Tournicano is a (web) app for running ad-hoc *icano (e.g., Americano, Mexicano, or similar) doubles tournaments.",
+          "Tournicano is a (web) app for running ad-hoc ",
+          m("i", "-icano"),
+          " (e.g., Americano, Mexicano, or similar) doubles tournaments.",
         ),
         m("h2", "✨ Features"),
         m(
