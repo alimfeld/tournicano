@@ -49,6 +49,12 @@ nav ul:last-of-type {
   }
 }
 
+/* Global touch behavior */
+
+* {
+  touch-action: manipulation; /* disable touble-tap zoom */
+}
+
 /* Global player styles */
 
 article.player {
