@@ -439,7 +439,7 @@ class TournamentImpl implements Mutable<Tournament> {
         .filter((p) => {
           return p.active && !p.isParticipating();
         })
-        .toSorted((p, q) => p.id.localeCompare(q.id)) // don't rely on order players were added
+        .toSorted(() => Math.random() - 0.5) // don't rely on order players were added
         .map((p) => new PlayerStatsImpl(this, p.id)),
     );
     const [competing, inactive] = participating.reduce(
