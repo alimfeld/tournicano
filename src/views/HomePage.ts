@@ -39,7 +39,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Players can be assigned to groups. Separate groups of players with a newline when entering their names.",
+          "Players can be assigned to groups. Separate groups of players with a newline when entering their names. A maximum of 4 groups are supported.",
         ),
         m(
           "p",
@@ -95,7 +95,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "When players are assigned to different groups, you can show standings overall and per group. This works for a maximum of 4 groups.",
+          "When players are assigned to different groups, you can show standings overall and per group.",
         ),
         m("h2", "🤝 Matching"),
         m(

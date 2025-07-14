@@ -22,8 +22,8 @@ export const GroupView: m.Component<GroupAttrs> = {
     );
     const title =
       active == total
-        ? `Group ${groupIndex + 1} (${active})`
-        : `Group ${groupIndex + 1} (${active}/${total})`;
+        ? `Group ${String.fromCharCode(65 + groupIndex)} (${active})`
+        : `Group ${String.fromCharCode(65 + groupIndex)} (${active}/${total})`;
     return [
       groupCount > 1 ? m("h2", title) : null,
       m(

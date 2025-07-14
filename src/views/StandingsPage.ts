@@ -135,7 +135,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                       changeGroup(g);
                     },
                   },
-                  `${g + 1}`,
+                  `${String.fromCharCode(65 + g)}`,
                 ),
               ),
             )

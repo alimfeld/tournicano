@@ -16,10 +16,12 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
       groups.forEach((group, i) => {
-        const line = group.trim();
-        if (line) {
-          const names = line.trim().split(/\s+/);
-          tournament.registerPlayers(names, i);
+        if (i < 4) {
+          const line = group.trim();
+          if (line) {
+            const names = line.trim().split(/\s+/);
+            tournament.registerPlayers(names, i);
+          }
         }
       });
       input.value = "";
