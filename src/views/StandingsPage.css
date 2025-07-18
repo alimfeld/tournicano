@@ -21,6 +21,11 @@ header.standings button {
   }
 
   @scope (section.entry) {
+    div.rank {
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
     div.record {
       text-align: center;
       padding: 0 10% 0 20%;
