@@ -86,6 +86,21 @@ export const Mexicano: MatchingSpec = {
   },
 };
 
+export const Tournicano: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 100,
+    performanceFactor: 100,
+    performanceMode: TeamUpPerformanceMode.MEXICANO_1324,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.ADJACENT,
+  },
+  matchUp: {
+    varietyFactor: 100,
+    performanceFactor: 100,
+    groupFactor: 100,
+  },
+};
+
 export interface MatchingSpec {
   teamUp: TeamUpSpec;
   matchUp: MatchUpSpec;

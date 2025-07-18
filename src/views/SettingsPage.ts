@@ -9,6 +9,7 @@ import {
   Americano,
   AmericanoMixed,
   Mexicano,
+  Tournicano,
 } from "../model/Tournament.matching.ts";
 import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
 
@@ -26,6 +27,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
       JSON.stringify(settings.matchingSpec) == JSON.stringify(AmericanoMixed);
     const isMexicano =
       JSON.stringify(settings.matchingSpec) == JSON.stringify(Mexicano);
+    const isTournicano =
+      JSON.stringify(settings.matchingSpec) == JSON.stringify(Tournicano);
     return [
       m("header.settings.container-fluid", m("h1", "Settings")),
       m(NavView, { nav }),
@@ -104,8 +107,25 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               m("input", {
                 type: "radio",
                 name: "matching-spec",
+                id: "tournicano",
+                checked: isTournicano,
+                onchange: () => {
+                  settings.setMatchingSpec(Tournicano);
+                },
+              }),
+              "Tournicano",
+            ),
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "matching-spec",
                 id: "custom",
-                checked: !isAmericano && !isAmericanoMixed && !isMexicano,
+                checked:
+                  !isAmericano &&
+                  !isAmericanoMixed &&
+                  !isMexicano &&
+                  !isTournicano,
                 disabled: true,
               }),
               "Custom",
