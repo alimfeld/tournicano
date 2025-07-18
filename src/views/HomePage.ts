@@ -127,7 +127,10 @@ export const HomePage: m.Component<HomeAttrs> = {
           "ul",
           m("li", "Player / tournament database"),
           m("li", "Integration with third-party services (e.g., for ratings)"),
-          m("li", "Data import / export (beyond clipboard)"),
+          m(
+            "li",
+            "Data import / export (beyond clipboard and the system's ⿻ sharing capabilities)",
+          ),
           m("li", "Features likely covered by your existing system"),
         ),
         m(
