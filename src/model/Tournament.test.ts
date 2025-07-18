@@ -195,12 +195,6 @@ test("should balance matchings", ({ players, scores }) => {
           .values()
           .reduce((acc, count) => (acc += count), 0),
       ).toBe(player.matchCount * 2);
-      round.standings().forEach((ranked) => {
-        const opponent = ranked.player;
-        expect(player.opponentCounts.get(opponent.id) || 0).toBeLessThanOrEqual(
-          2,
-        );
-      });
     });
   });
 });

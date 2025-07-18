@@ -234,6 +234,7 @@ const match = <Type>(
       edges.push([i, j, (totalWeights[pos++] || 0) + 1]);
     }
   }
+  shuffle(edges); // shuffle edges to break algo patterns
   const matching = maximumMatching(edges);
   return [...iter(matching)].map((edge: [number, number]) => [
     ranked[edge[0]],
@@ -329,4 +330,12 @@ const matchUpPerformanceWeight = (
 ): number => {
   // we rely on a.rank < b.rank
   return -(b.rank - a.rank);
+};
+
+// Fisher-Yates shuffle
+const shuffle = (array: any[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 };
