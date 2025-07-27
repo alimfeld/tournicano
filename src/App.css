@@ -1,5 +1,42 @@
 :root {
-  /* --pico-spacing: 1rex; */
+  /* --pico-font-size: 100%; */
+  --pico-font-size: 108%;
+}
+
+@media (min-width: 576px) {
+  :root,
+  :host {
+    /* --pico-font-size: 106.25%; */
+    --pico-font-size: 116%;
+  }
+}
+@media (min-width: 768px) {
+  :root,
+  :host {
+    /* --pico-font-size: 112.5%; */
+    --pico-font-size: 124%;
+  }
+}
+@media (min-width: 1024px) {
+  :root,
+  :host {
+    /* --pico-font-size: 118.75%; */
+    --pico-font-size: 132%;
+  }
+}
+@media (min-width: 1280px) {
+  :root,
+  :host {
+    /* --pico-font-size: 125%; */
+    --pico-font-size: 140%;
+  }
+}
+@media (min-width: 1536px) {
+  :root,
+  :host {
+    /* --pico-font-size: 131.25%; */
+    --pico-font-size: 148%;
+  }
 }
 
 body {

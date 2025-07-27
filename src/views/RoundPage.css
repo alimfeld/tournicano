@@ -9,7 +9,7 @@ header.round button {
 
 @scope (main.round) {
   h2 {
-    font-size: 80%;
+    font-size: 100%;
   }
 
   section.match {
