@@ -11,6 +11,7 @@ export interface Player {
   readonly plusMinus: number;
   readonly matchCount: number;
   readonly pauseCount: number;
+  readonly lastPause: number;
   readonly partnerCounts: Map<string, number>;
   readonly opponentCounts: Map<string, number>;
 }
@@ -171,6 +172,17 @@ export const matchUp = (
   return [matches, paused];
 };
 
+const playRatio = (p: Player) => {
+  return p.matchCount / (p.pauseCount + p.matchCount + 1);
+};
+
+const groupCounts = (players: Player[]) => {
+  return players.reduce((acc: number[], player) => {
+    acc[player.group] = (acc[player.group] || 0) + 1;
+    return acc;
+  }, []);
+};
+
 const partition = (
   players: Player[],
   maxMatches: number,
@@ -179,16 +191,108 @@ const partition = (
   if (players.length < competingCount) {
     competingCount = players.length - (players.length % 4);
   }
-  let result = players.toSorted(() => Math.random() - 0.5); // shuffle array to break patterns
+  let result = players;
   if (players.length > competingCount) {
-    result = players.toSorted((p, q) => {
-      return (
-        p.matchCount / (p.pauseCount + p.matchCount + 1) -
-        q.matchCount / (q.pauseCount + q.matchCount + 1)
+    // we need to pause players
+    result = players.toSorted((p, q) => playRatio(p) - playRatio(q));
+    const definitelyPlaying = [];
+    const maybePaused = [];
+    const definitelyPaused = [];
+    const cutOff = playRatio(result.at(competingCount - 1)!);
+    for (const player of result) {
+      const r = playRatio(player);
+      if (r < cutOff) {
+        definitelyPlaying.push(player);
+      } else if (r == cutOff) {
+        maybePaused.push(player);
+      } else {
+        definitelyPaused.push(player);
+      }
+    }
+    if (definitelyPlaying.length + maybePaused.length > competingCount) {
+      const max = groupCounts(definitelyPlaying.concat(maybePaused));
+      const min = groupCounts(definitelyPlaying);
+      let distribution = findGroupDistribution(
+        {
+          max,
+          multipleOf: 4,
+          sum: competingCount,
+        },
+        min,
       );
-    });
+      if (distribution == null) {
+        distribution = findGroupDistribution(
+          {
+            max,
+            multipleOf: 2,
+            sum: competingCount,
+          },
+          min,
+        );
+      }
+      if (distribution != null) {
+        result = definitelyPlaying;
+        const currentCounts = min.slice();
+        const tail = [];
+        const candidates = maybePaused.slice();
+        shuffle(candidates);
+        candidates.sort((p, q) => q.lastPause - p.lastPause);
+        for (const player of candidates) {
+          const currentCount = currentCounts[player.group] || 0;
+          const distributionCount = distribution[player.group] || 0;
+          if (currentCount < distributionCount) {
+            currentCounts[player.group] = currentCount + 1;
+            result.push(player);
+          } else {
+            tail.push(player);
+          }
+        }
+        result = result.concat(tail).concat(definitelyPaused);
+      }
+    }
   }
   return [result.slice(0, competingCount), result.slice(competingCount)];
+};
+
+const findGroupDistribution = (
+  constraints: {
+    max: number[];
+    multipleOf: number;
+    sum: number;
+  },
+  proposal: number[],
+  next: number = 0,
+): number[] | null => {
+  const [sumProposal, satisfiesMax, satisfiesMultipleOf] = proposal.reduce(
+    (acc, val, i) => {
+      const count = val || 0;
+      acc[0] += count;
+      acc[1] = acc[1] && count <= (constraints.max[i] || 0);
+      acc[2] = acc[2] && count % constraints.multipleOf == 0;
+      return acc;
+    },
+    [0, true, true],
+  );
+  if (!satisfiesMax) {
+    return null;
+  }
+  if (sumProposal == constraints.sum && satisfiesMax && satisfiesMultipleOf) {
+    return proposal;
+  }
+  if (sumProposal < constraints.sum || !satisfiesMultipleOf) {
+    for (let i = 0; i < constraints.max.length; i++) {
+      const g = (i + next) % constraints.max.length;
+      const nextProposal = proposal.slice();
+      nextProposal[g] = (nextProposal[g] || 0) + constraints.multipleOf;
+      nextProposal[g] =
+        nextProposal[g] - (nextProposal[g] % constraints.multipleOf);
+      const result = findGroupDistribution(constraints, nextProposal, next + 1);
+      if (result != null) {
+        return result;
+      }
+    }
+  }
+  return null;
 };
 
 const rank = (factors: [number, number][]) => {

@@ -134,6 +134,7 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
 
   matchCount: number = 0;
   pauseCount: number = 0;
+  lastPause: number = -1;
 
   constructor(
     private tournament: TournamentImpl,
@@ -179,6 +180,7 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
 
     copy.matchCount = this.matchCount;
     copy.pauseCount = this.pauseCount;
+    copy.lastPause = this.lastPause;
 
     copy.wins = this.wins;
     copy.losses = this.losses;
@@ -233,6 +235,7 @@ class RoundImpl implements Round {
 
   constructor(
     readonly tournament: TournamentImpl,
+    readonly index: number,
     participating: PlayerStatsImpl[],
     matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
     paused: PlayerId[],
@@ -250,6 +253,7 @@ class RoundImpl implements Round {
     this.paused = paused.map((id) => {
       const player = getOrCreate(id);
       player.pauseCount += 1;
+      player.lastPause = index;
       return player;
     });
     this.inactive = inactive.map((id) => {
@@ -315,9 +319,10 @@ class RoundImpl implements Round {
 
   addPerformance(id: PlayerId, performance: Performance) {
     this.playerMap.get(id)!.add(performance);
-    const r = this.tournament.rounds.indexOf(this);
-    if (r + 1 < this.tournament.rounds.length) {
-      this.tournament.rounds.at(r + 1)?.addPerformance(id, performance);
+    if (this.index + 1 < this.tournament.rounds.length) {
+      this.tournament.rounds
+        .at(this.index + 1)
+        ?.addPerformance(id, performance);
     }
   }
 
@@ -385,6 +390,7 @@ class TournamentImpl implements Mutable<Tournament> {
           : [];
         const round = new RoundImpl(
           this,
+          this.rounds.length,
           participating,
           cr[0].map((cm) => [cm[0], cm[1]]),
           cr[1],
@@ -439,7 +445,6 @@ class TournamentImpl implements Mutable<Tournament> {
         .filter((p) => {
           return p.active && !p.isParticipating();
         })
-        .toSorted(() => Math.random() - 0.5) // don't rely on order players were added
         .map((p) => new PlayerStatsImpl(this, p.id)),
     );
     const [competing, inactive] = participating.reduce(
@@ -456,6 +461,7 @@ class TournamentImpl implements Mutable<Tournament> {
     const [matched, paused] = matchUp(competing, spec || Americano, maxMatches);
     const round = new RoundImpl(
       this,
+      this.rounds.length,
       participating,
       matched.map((m) => [
         [m[0][0].id, m[0][1].id],
