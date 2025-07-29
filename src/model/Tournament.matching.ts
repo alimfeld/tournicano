@@ -120,6 +120,8 @@ export const matchUp = (
     maxMatches ? maxMatches : Math.floor(players.length / 4),
   );
 
+  shuffle(competing); // shuffle to break patterns
+
   const teams = match(
     competing,
     (a: Player, b: Player) =>
@@ -235,7 +237,7 @@ const partition = (
         const currentCounts = min.slice();
         const tail = [];
         const candidates = maybePaused.slice();
-        shuffle(candidates);
+        shuffle(candidates); // shuffle to break patterns
         candidates.sort((p, q) => q.lastPause - p.lastPause);
         for (const player of candidates) {
           const currentCount = currentCounts[player.group] || 0;
