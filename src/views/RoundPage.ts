@@ -15,10 +15,13 @@ export interface RoundAttrs {
   roundIndex: number;
   changeRound: (index: number) => void;
   nav: (page: Page) => void;
+  wakeLock: boolean;
 }
 
 export const RoundPage: m.Component<RoundAttrs> = {
-  view: ({ attrs: { settings, tournament, roundIndex, changeRound, nav } }) => {
+  view: ({
+    attrs: { settings, tournament, roundIndex, changeRound, nav, wakeLock },
+  }) => {
     const matchesPerRound = Math.min(
       Math.floor(tournament.players().filter((p) => p.active).length / 4),
       settings.courts,
@@ -39,11 +42,11 @@ export const RoundPage: m.Component<RoundAttrs> = {
         ),
         m(
           "h1#title",
-          round
+          (round
             ? roundIndex + 1 == roundCount
               ? `Round ${roundIndex + 1}`
               : `Round ${roundIndex + 1}/${roundCount}`
-            : "Rounds",
+            : "Rounds") + (wakeLock ? " 👁️" : ""),
         ),
         m(
           "button.outline.next",

@@ -80,9 +80,6 @@ export const App = () => {
   state.tournament.addListener(tournamentListener);
   let wakeLock: WakeLockSentinel | null = null;
   const nav = async (page: Page) => {
-    state.page = page;
-    localStorage.setItem(PAGE_KEY, `${page}`);
-    window.scrollTo(0, 0);
     if (state.settings.wakeLock && page == Page.ROUNDS) {
       try {
         wakeLock = await navigator.wakeLock.request("screen");
@@ -95,6 +92,9 @@ export const App = () => {
         wakeLock = null;
       });
     }
+    state.page = page;
+    localStorage.setItem(PAGE_KEY, `${page}`);
+    window.scrollTo(0, 0);
   };
   const changeRound = (index: number) => {
     state.roundIndex = index;
@@ -139,6 +139,7 @@ export const App = () => {
             roundIndex: state.roundIndex,
             changeRound,
             nav,
+            wakeLock: wakeLock != null,
           });
         }
         case Page.STANDINGS: {

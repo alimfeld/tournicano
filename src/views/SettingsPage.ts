@@ -214,9 +214,10 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
                   settings.enableWakeLock(!settings.wakeLock);
                 },
               }),
-              "Prevent screen from turning off",
+              "Prevent screen from turning off" +
+                (settings.wakeLock ? " 👁️" : ""),
             ),
-            m("small", "Only for rounds; if supported by your device"),
+            m("small", "Only on rounds 🚀 page"),
           ),
           m(
             "fieldset",
