@@ -205,6 +205,24 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             m(
               "label",
               m("input", {
+                name: "wakeLock",
+                type: "checkbox",
+                role: "switch",
+                checked: settings.wakeLock,
+                disabled: !("wakeLock" in navigator),
+                onchange: () => {
+                  settings.enableWakeLock(!settings.wakeLock);
+                },
+              }),
+              "Prevent screen from turning off",
+            ),
+            m("small", "Only for rounds; if supported by your device"),
+          ),
+          m(
+            "fieldset",
+            m(
+              "label",
+              m("input", {
                 name: "debug",
                 type: "checkbox",
                 role: "switch",

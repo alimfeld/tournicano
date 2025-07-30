@@ -19,6 +19,7 @@ class SettingsImpl implements Mutable<Settings> {
   courts = 2;
   theme: Theme = "auto";
   debug: boolean = false;
+  wakeLock: boolean = false;
   matchingSpec: MatchingSpec = Americano;
 
   constructor(serialized?: string) {
@@ -26,6 +27,7 @@ class SettingsImpl implements Mutable<Settings> {
       const data = JSON.parse(serialized) as SettingsData;
       this.courts = data.courts;
       this.theme = data.theme;
+      this.wakeLock = data.wakeLock;
       this.debug = data.debug;
       this.matchingSpec = data.matchingSpec;
     }
@@ -36,6 +38,7 @@ class SettingsImpl implements Mutable<Settings> {
       courts: this.courts,
       theme: this.theme,
       debug: this.debug,
+      wakeLock: this.wakeLock,
       matchingSpec: this.matchingSpec,
     } as SettingsData);
   }
@@ -47,6 +50,11 @@ class SettingsImpl implements Mutable<Settings> {
 
   setTheme(theme: Theme): void {
     this.theme = theme;
+    this.notifyChange();
+  }
+
+  enableWakeLock(enable: boolean): void {
+    this.wakeLock = enable;
     this.notifyChange();
   }
 

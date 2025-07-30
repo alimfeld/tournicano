@@ -137,7 +137,6 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           "To time rounds, use your phone’s stopwatch, or end a round once the first match finishes.",
         ),
-        m("p", "To keep the screen on, check your device’s display settings."),
       ),
       m(
         "div.actions",
