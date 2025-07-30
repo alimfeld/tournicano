@@ -115,12 +115,13 @@ export const matchUp = (
   spec: MatchingSpec,
   maxMatches?: number,
 ): [matches: Match[], paused: Player[]] => {
+  const candidates = players.slice();
+  shuffle(candidates); // shuffle to break patterns
+
   const [competing, paused] = partition(
-    players,
+    candidates,
     maxMatches ? maxMatches : Math.floor(players.length / 4),
   );
-
-  shuffle(competing); // shuffle to break patterns
 
   const teams = match(
     competing,
@@ -237,7 +238,6 @@ const partition = (
         const currentCounts = min.slice();
         const tail = [];
         const candidates = maybePaused.slice();
-        shuffle(candidates); // shuffle to break patterns
         candidates.sort((p, q) => q.lastPause - p.lastPause);
         for (const player of candidates) {
           const currentCount = currentCounts[player.group] || 0;
@@ -382,8 +382,19 @@ const teamUpVarietyWeight = (
   if (matchSum == 0) {
     return 0;
   }
-  const partnerSum = 2 * (a.entity.partnerCounts.get(b.entity.id) || 0);
-  return -(partnerSum / matchSum);
+  const partnerCount = a.entity.partnerCounts.get(b.entity.id) || 0;
+  if (partnerCount == 0) {
+    return 0;
+  }
+  const samePartnerSumA = a.entity.partnerCounts
+    .values()
+    .reduce((acc, count) => (acc += count - 1), 1);
+  const samePartnerSumB = a.entity.partnerCounts
+    .values()
+    .reduce((acc, count) => (acc += count - 1), 1);
+  // the more times the players teamed up already, the lower the weight (factor partnerCount)
+  // the more times the players were teamed up with the same partner in the past, the lower the weight (samePartnerSum)
+  return -((partnerCount * (samePartnerSumA + samePartnerSumB)) / matchSum);
 };
 
 const curriedTeamUpPerformanceWeight = (

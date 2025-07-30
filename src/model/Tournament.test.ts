@@ -14,6 +14,7 @@ class Player {
   plusMinus: number = 0;
   matchCount: number = 0;
   pauseCount: number = 0;
+  lastPause: number = 0;
   partnerCounts: Map<string, number> = new Map();
   opponentCounts: Map<string, number> = new Map();
   constructor(
@@ -232,7 +233,9 @@ test("should honor play ratio for paused", ({ players }) => {
   players[3].matchCount = 1;
   players[7].matchCount = 1;
   const [_matches, paused] = matchUp(players, Americano);
-  expect(paused).toStrictEqual([players[3], players[7]]);
+  expect(paused).toHaveLength(2);
+  expect(paused).toContain(players[3]);
+  expect(paused).toContain(players[7]);
 });
 
 test("should honor variety for team up", ({ players }) => {
