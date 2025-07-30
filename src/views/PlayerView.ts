@@ -25,12 +25,21 @@ export const PlayerView: m.Component<PlayerAttrs> = {
       vnode.attrs.debug && isPlayerStats(player)
         ? m(
             "div.debug",
-            m("span.play-ratio", `M${player.playRatio.toFixed(2)}`),
+            m("span", "Group"),
+            m("span", player.group),
+            m("span", "ΣTeams"),
+            m("span", player.partnerCounts.size),
+            m("span", "Win%"),
+            m("span", (player.winRatio * 100).toFixed(0)),
+            m("span", "+/-"),
+            m("span", player.plusMinus),
+            m("span", "Play%"),
+            m("span", (player.playRatio * 100).toFixed(0)),
+            m("span", "Paused"),
             m(
-              "span.performance",
-              `P[${player.winRatio.toFixed(2)},${player.plusMinus}]`,
+              "span",
+              `${player.pauseCount}/${player.matchCount + player.pauseCount}`,
             ),
-            m("span.group", `G${player.group}`),
           )
         : null,
       vnode.children,

@@ -122,11 +122,16 @@ article.player {
 div.debug {
   font-size: 60%;
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   color: var(--pico-muted-color);
-  justify-content: space-around;
+  padding: 0.5ex;
   border: 1px solid;
   border-color: var(--pico-muted-border-color);
+}
+
+div.debug > :nth-child(2n) {
+  justify-self: end;
 }
 
 /* Global floating / fixed actions styles */

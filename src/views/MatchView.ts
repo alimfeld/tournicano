@@ -20,44 +20,50 @@ export const MatchView: m.Component<MatchAttrs> = {
       return Math.abs(team.player1.group - team.player2.group);
     };
     const renderMatchDebug = (match: Match) => {
-      const variety = (
-        1 -
-        (match.teamA.player1.opponentCounts.get(match.teamB.player1.id)! +
-          match.teamA.player1.opponentCounts.get(match.teamB.player2.id)! +
-          match.teamA.player2.opponentCounts.get(match.teamB.player1.id)! +
-          match.teamA.player2.opponentCounts.get(match.teamB.player2.id)!) /
-          (match.teamA.player1.matchCount +
-            match.teamA.player2.matchCount +
-            match.teamB.player1.matchCount +
-            match.teamB.player2.matchCount)
-      ).toFixed(2);
+      const opponentSum =
+        match.teamA.player1.opponentCounts.get(match.teamB.player1.id)! +
+        match.teamA.player1.opponentCounts.get(match.teamB.player2.id)! +
+        match.teamA.player2.opponentCounts.get(match.teamB.player1.id)! +
+        match.teamA.player2.opponentCounts.get(match.teamB.player2.id)!;
       return m(
-        "div.debug.match",
-        m("span.variety", `V${variety}`),
+        "div.debug",
+        m("span", "ΔGroup"),
         m(
-          "span.performance",
-          `ΔP[${Math.abs(avgTeamWinRatio(match.teamA) - avgTeamWinRatio(match.teamB)).toFixed(2)},${Math.abs(sumTeamPlusMinus(match.teamA) - sumTeamPlusMinus(match.teamB))}]`,
+          "span",
+          Math.abs(diffTeamGroup(match.teamA) - diffTeamGroup(match.teamB)),
         ),
+        m("span", "ΣOpp"),
+        m("span", opponentSum),
+        m("span", "ΔWin%"),
         m(
-          "span.group",
-          `ΔG${Math.abs(diffTeamGroup(match.teamA) - diffTeamGroup(match.teamB))}`,
+          "span",
+          (
+            Math.abs(
+              avgTeamWinRatio(match.teamA) - avgTeamWinRatio(match.teamB),
+            ) * 100
+          ).toFixed(0),
+        ),
+        m("span", "Δ+/-"),
+        m(
+          "span",
+          Math.abs(
+            sumTeamPlusMinus(match.teamA) - sumTeamPlusMinus(match.teamB),
+          ),
         ),
       );
     };
     const renderTeamDebug = (team: Team) => {
-      const variety = (
-        1 -
-        (2 * team.player1.partnerCounts.get(team.player2.id)!) /
-          (team.player1.matchCount + team.player2.matchCount)
-      ).toFixed(2);
+      const partnerCount = team.player1.partnerCounts.get(team.player2.id)!;
       return m(
-        "div.debug.team",
-        m("span.variety", `V${variety}`),
-        m(
-          "span.performance",
-          `ØP[${avgTeamWinRatio(team).toFixed(2)},${sumTeamPlusMinus(team)}]`,
-        ),
-        m("span.group", `ΔG${diffTeamGroup(team)}`),
+        "div.debug",
+        m("span", "ΔGroup"),
+        m("span", diffTeamGroup(team)),
+        m("span", "ΣPartner"),
+        m("span", partnerCount),
+        m("span", "ØWin%"),
+        m("span", (avgTeamWinRatio(team) * 100).toFixed(0)),
+        m("span", "Σ+/-"),
+        m("span", sumTeamPlusMinus(team)),
       );
     };
     const renderTeam = (team: Team) => {
