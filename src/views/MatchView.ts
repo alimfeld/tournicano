@@ -125,6 +125,11 @@ export const MatchView: m.Component<MatchAttrs> = {
               }
               match.submitScore(score);
             },
+            onkeyup: (event: KeyboardEvent) => {
+              if (event.key === 'Enter') {
+                (event.target as HTMLInputElement).blur();
+              }
+            }
           }),
           m("small", match.score ? "submitted" : "enter 4 digits"),
         ),
