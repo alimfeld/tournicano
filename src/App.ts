@@ -41,6 +41,15 @@ const syncTheme = (theme: Theme) => {
       : "light";
   }
   document.documentElement.setAttribute("data-theme", themeToApply);
+  const rootStyles = getComputedStyle(document.documentElement);
+  const primaryBgColor = rootStyles.getPropertyValue('--pico-background-color').trim();
+  let metaThemeColor: HTMLMetaElement | null = document.querySelector('meta[name="theme-color"]');
+  if (!metaThemeColor) {
+    metaThemeColor = document.createElement('meta');
+    metaThemeColor.name = "theme-color";
+    document.head.appendChild(metaThemeColor);
+  }
+  metaThemeColor.setAttribute('content', primaryBgColor);
 };
 
 const createState: () => State = () => {
