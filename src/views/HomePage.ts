@@ -69,7 +69,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Excess players are paused for the round using an algorithm that balances each player's play ratio (i.e. the number of matches played over the number of rounds the player participated in).",
+          "Excess players are 💤 paused for the round using an algorithm that balances each player's play ratio (i.e. the number of matches played over the number of rounds the player participated in).",
         ),
         m(
           "p",
@@ -83,6 +83,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         m(
           "p",
           "The tournament can be restarted (deleting all rounds) or reset (deleting all rounds and players) under ⚙️ Settings.",
+        ),
+        m(
+          "p",
+          "You can 👁️ prevent the screen from turning off when showing the round. This can be configured in ⚙️ Settings.",
         ),
         m("h2", "🏆 Standings"),
         m(
