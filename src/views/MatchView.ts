@@ -74,7 +74,7 @@ export const MatchView: m.Component<MatchAttrs> = {
       );
     };
     return [
-      m("h2", `Match ${matchIndex + 1}`),
+      m("h2", matchIndex + 1),
       m(
         "section.match",
         debug ? renderTeamDebug(match.teamA) : null,

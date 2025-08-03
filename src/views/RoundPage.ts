@@ -69,49 +69,49 @@ export const RoundPage: m.Component<RoundAttrs> = {
           onswipeleft:
             roundIndex > 0
               ? () => {
-                  changeRound(roundIndex - 1);
-                }
+                changeRound(roundIndex - 1);
+              }
               : undefined,
           onswiperight:
             roundIndex + 1 < roundCount
               ? () => {
-                  changeRound(roundIndex + 1);
-                }
+                changeRound(roundIndex + 1);
+              }
               : undefined,
         },
         round
           ? [
-              ...round.matches.map((match, matchIndex) =>
-                m(MatchView, { match, matchIndex, debug: settings.debug }),
-              ),
-              round.paused.length > 0
-                ? [
-                    m("h2", "Paused"),
-                    m(
-                      "section.paused",
-                      round.paused.map((player) =>
-                        m(PlayerView, { player, debug: settings.debug }),
-                      ),
-                    ),
-                  ]
-                : null,
-            ]
+            ...round.matches.map((match, matchIndex) =>
+              m(MatchView, { match, matchIndex, debug: settings.debug }),
+            ),
+            round.paused.length > 0
+              ? [
+                m("h2", "💤"),
+                m(
+                  "section.paused",
+                  round.paused.map((player) =>
+                    m(PlayerView, { player, debug: settings.debug }),
+                  ),
+                ),
+              ]
+              : null,
+          ]
           : [m("p", "No rounds created (yet)!")],
       ),
       m(
         "div.actions",
         round && round.isLast()
           ? m(ActionWithConfirmation, {
-              action: "Delete",
-              title: "Delete Round?",
-              description: "This will delete the current round.",
-              onconfirm: () => {
-                if (round) {
-                  round.delete();
-                  changeRound(roundIndex - 1);
-                }
-              },
-            })
+            action: "Delete",
+            title: "Delete Round?",
+            description: "This will delete the current round.",
+            onconfirm: () => {
+              if (round) {
+                round.delete();
+                changeRound(roundIndex - 1);
+              }
+            },
+          })
           : null,
         m(
           "button.right",

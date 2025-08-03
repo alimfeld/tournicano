@@ -22,8 +22,8 @@ export const GroupView: m.Component<GroupAttrs> = {
     );
     const title =
       active == total
-        ? `Group ${String.fromCharCode(65 + groupIndex)} (${active})`
-        : `Group ${String.fromCharCode(65 + groupIndex)} (${active}/${total})`;
+        ? `${String.fromCharCode(65 + groupIndex)} (${active})`
+        : `${String.fromCharCode(65 + groupIndex)} (${active}/${total})`;
     return [
       groupCount > 1 ? m("h2", title) : null,
       m(
@@ -51,16 +51,16 @@ export const GroupView: m.Component<GroupAttrs> = {
                   player.isParticipating()
                     ? null
                     : m(
-                        "button.delete",
-                        {
-                          onclick: (e: InputEvent) => {
-                            player.withdraw();
-                            // Stop event from also triggering activation / deactivation
-                            e.stopPropagation();
-                          },
+                      "button.delete",
+                      {
+                        onclick: (e: InputEvent) => {
+                          player.withdraw();
+                          // Stop event from also triggering activation / deactivation
+                          e.stopPropagation();
                         },
-                        "X",
-                      ),
+                      },
+                      "X",
+                    ),
                 ),
               ),
             ),

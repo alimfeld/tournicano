@@ -4,7 +4,6 @@ header.players {
 
 @scope (main.players) {
   h2 {
-    font-size: 100%;
     margin: 0;
     margin-bottom: var(--pico-spacing);
   }
