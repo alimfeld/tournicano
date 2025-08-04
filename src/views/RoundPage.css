@@ -57,6 +57,7 @@ header.round button {
     section.team {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-rows: minmax(0, 1fr);
+      column-gap: var(--pico-spacing);
     }
 
     section.paused {

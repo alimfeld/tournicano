@@ -16,33 +16,9 @@ header.players {
     border-color: var(--pico-muted-border-color);
   }
 
-  @media (min-width: 576px) {
-    section.group {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
   @media (min-width: 768px) {
     section.group {
       grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 1024px) {
-    section.group {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 1280px) {
-    section.group {
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 1536px) {
-    section.group {
-      grid-template-columns: repeat(8, minmax(0, 1fr));
     }
   }
 

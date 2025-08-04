@@ -113,7 +113,7 @@ article.player {
   }
 
   p {
-    font-weight: bold;
+    color: var(--pico-form-element-color);
     width: 100%;
     overflow: hidden;
     white-space: nowrap;

@@ -84,7 +84,6 @@ export const MatchView: m.Component<MatchAttrs> = {
         m(
           "section.score",
           m("input.score", {
-            "aria-invalid": match.score ? "false" : "true",
             type: "text",
             name: `score${matchIndex}`,
             placeholder: "--:--",
@@ -131,7 +130,6 @@ export const MatchView: m.Component<MatchAttrs> = {
               }
             }
           }),
-          m("small", match.score ? "submitted" : "enter 4 digits"),
         ),
         renderTeam(match.teamB),
       ),

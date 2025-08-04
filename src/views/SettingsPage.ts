@@ -36,100 +36,94 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
         "main.settings.container-fluid",
         m("h2", "Tournament"),
         m(
-          "form",
-          {
-            onsubmit: (event: InputEvent) => event.preventDefault(),
-          },
+          "fieldset",
           m(
-            "fieldset",
-            m(
-              "label",
-              "Courts:",
-              m("input.courts", {
-                type: "number",
-                name: "courts",
-                inputmode: "numeric",
-                value: settings.courts,
-                min: 0,
-                step: 1,
-                onblur: (event: InputEvent) =>
-                  settings.setCourts(
-                    (event.target as HTMLInputElement).valueAsNumber,
-                  ),
-              }),
-              m("small", "The number of courts you have available"),
-            ),
+            "label",
+            "Courts:",
+            m("input.courts", {
+              type: "number",
+              name: "courts",
+              inputmode: "numeric",
+              value: settings.courts,
+              min: 0,
+              step: 1,
+              onblur: (event: InputEvent) =>
+                settings.setCourts(
+                  (event.target as HTMLInputElement).valueAsNumber,
+                ),
+            }),
+            m("small", "The number of courts you have available"),
+          ),
+        ),
+        m(
+          "fieldset",
+          m("legend", "Matching:"),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "americano",
+              checked: isAmericano,
+              onchange: () => {
+                settings.setMatchingSpec(Americano);
+              },
+            }),
+            "Americano",
           ),
           m(
-            "fieldset",
-            m("legend", "Matching:"),
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "americano",
-                checked: isAmericano,
-                onchange: () => {
-                  settings.setMatchingSpec(Americano);
-                },
-              }),
-              "Americano",
-            ),
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "americano-mixed",
-                checked: isAmericanoMixed,
-                onchange: () => {
-                  settings.setMatchingSpec(AmericanoMixed);
-                },
-              }),
-              "Americano Mixed",
-            ),
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "mexicano",
-                checked: isMexicano,
-                onchange: () => {
-                  settings.setMatchingSpec(Mexicano);
-                },
-              }),
-              "Mexicano",
-            ),
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "tournicano",
-                checked: isTournicano,
-                onchange: () => {
-                  settings.setMatchingSpec(Tournicano);
-                },
-              }),
-              "Tournicano",
-            ),
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "custom",
-                checked:
-                  !isAmericano &&
-                  !isAmericanoMixed &&
-                  !isMexicano &&
-                  !isTournicano,
-                disabled: true,
-              }),
-              "Custom",
-            ),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "americano-mixed",
+              checked: isAmericanoMixed,
+              onchange: () => {
+                settings.setMatchingSpec(AmericanoMixed);
+              },
+            }),
+            "Americano Mixed",
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "mexicano",
+              checked: isMexicano,
+              onchange: () => {
+                settings.setMatchingSpec(Mexicano);
+              },
+            }),
+            "Mexicano",
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "tournicano",
+              checked: isTournicano,
+              onchange: () => {
+                settings.setMatchingSpec(Tournicano);
+              },
+            }),
+            "Tournicano",
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "custom",
+              checked:
+                !isAmericano &&
+                !isAmericanoMixed &&
+                !isMexicano &&
+                !isTournicano,
+              disabled: true,
+            }),
+            "Custom",
           ),
           m(MatchingSpecDialog, {
             action: "Customize...",
@@ -159,81 +153,76 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               tournament.reset();
             },
           }),
+          m("hr"),
         ),
         m("h2", "UI"),
         m(
-          "form",
-          {
-            onsubmit: (event: InputEvent) => event.preventDefault(),
-          },
+          "fieldset",
+          m("legend", "Theme:"),
+          m("input", {
+            type: "radio",
+            name: "theme",
+            id: "auto",
+            checked: settings.theme == "auto",
+            onchange: () => {
+              settings.setTheme("auto");
+            },
+          }),
+          m("label", { htmlFor: "auto" }, "Auto"),
+          m("input", {
+            type: "radio",
+            name: "theme",
+            id: "dark",
+            checked: settings.theme == "dark",
+            onchange: () => {
+              settings.setTheme("dark");
+            },
+          }),
+          m("label", { htmlFor: "dark" }, "Dark"),
+          m("input", {
+            type: "radio",
+            name: "theme",
+            id: "light",
+            checked: settings.theme == "light",
+            onchange: () => {
+              settings.setTheme("light");
+            },
+          }),
+          m("label", { htmlFor: "light" }, "Light"),
+        ),
+        m(
+          "fieldset",
           m(
-            "fieldset",
-            m("legend", "Theme:"),
+            "label",
             m("input", {
-              type: "radio",
-              name: "theme",
-              id: "auto",
-              checked: settings.theme == "auto",
+              name: "wakeLock",
+              type: "checkbox",
+              role: "switch",
+              checked: settings.wakeLock,
+              disabled: !("wakeLock" in navigator),
               onchange: () => {
-                settings.setTheme("auto");
+                settings.enableWakeLock(!settings.wakeLock);
               },
             }),
-            m("label", { htmlFor: "auto" }, "Auto"),
-            m("input", {
-              type: "radio",
-              name: "theme",
-              id: "dark",
-              checked: settings.theme == "dark",
-              onchange: () => {
-                settings.setTheme("dark");
-              },
-            }),
-            m("label", { htmlFor: "dark" }, "Dark"),
-            m("input", {
-              type: "radio",
-              name: "theme",
-              id: "light",
-              checked: settings.theme == "light",
-              onchange: () => {
-                settings.setTheme("light");
-              },
-            }),
-            m("label", { htmlFor: "light" }, "Light"),
+            "Prevent screen from turning off" +
+            (settings.wakeLock ? " 👁️" : ""),
           ),
+          m("small", "Only on rounds 🚀 page"),
+        ),
+        m(
+          "fieldset",
           m(
-            "fieldset",
-            m(
-              "label",
-              m("input", {
-                name: "wakeLock",
-                type: "checkbox",
-                role: "switch",
-                checked: settings.wakeLock,
-                disabled: !("wakeLock" in navigator),
-                onchange: () => {
-                  settings.enableWakeLock(!settings.wakeLock);
-                },
-              }),
-              "Prevent screen from turning off" +
-                (settings.wakeLock ? " 👁️" : ""),
-            ),
-            m("small", "Only on rounds 🚀 page"),
-          ),
-          m(
-            "fieldset",
-            m(
-              "label",
-              m("input", {
-                name: "debug",
-                type: "checkbox",
-                role: "switch",
-                checked: settings.debug,
-                onchange: () => {
-                  settings.showDebug(!settings.debug);
-                },
-              }),
-              "Show debug information",
-            ),
+            "label",
+            m("input", {
+              name: "debug",
+              type: "checkbox",
+              role: "switch",
+              checked: settings.debug,
+              onchange: () => {
+                settings.showDebug(!settings.debug);
+              },
+            }),
+            "Show debug information",
           ),
         ),
       ),

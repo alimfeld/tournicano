@@ -16,6 +16,12 @@ header.standings button {
     border-color: var(--pico-muted-border-color);
   }
 
+  @media (min-width: 768px) {
+    section {
+      grid-template-columns: 1fr 3fr 5fr 3fr;
+    }
+  }
+
   div.group-switcher button {
     padding: 1rex 0;
   }
