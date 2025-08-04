@@ -133,7 +133,9 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               settings.setMatchingSpec(matchingSpec);
             },
           }),
-          m("hr"),
+        ),
+        m(
+          "fieldset",
           m(ActionWithConfirmation, {
             action: "Restart",
             disabled: tournament.rounds.length == 0,
@@ -153,7 +155,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               tournament.reset();
             },
           }),
-          m("hr"),
         ),
         m("h2", "UI"),
         m(

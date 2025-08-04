@@ -3,6 +3,15 @@
   --pico-font-size: 108%;
 }
 
+[data-theme=dark] {
+  --pico-form-element-border-color: var(--pico-muted-color);
+  --pico-muted-border-color: var(--pico-muted-color);
+  --pico-box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 6px 12px rgba(255, 255, 255, 0.08),
+    0 16px 32px rgba(0, 0, 0, 0.9);
+}
+
 @media (min-width: 576px) {
   :root,
   :host {
@@ -53,6 +62,8 @@ header {
   border-color: var(--pico-muted-border-color);
 }
 
+/* Global heading styles */
+
 header h1 {
   margin: 0;
 }
@@ -61,6 +72,11 @@ main h2 {
   font-size: 1.1rem;
 }
 
+h2.divider {
+  text-align: center;
+}
+
+/* Navigation */
 
 nav {
   position: fixed;
