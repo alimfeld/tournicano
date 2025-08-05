@@ -8,8 +8,8 @@
   --pico-muted-border-color: var(--pico-muted-color);
   --pico-box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.1),
-    0 6px 12px rgba(255, 255, 255, 0.08),
-    0 16px 32px rgba(0, 0, 0, 0.9);
+    0.2rex 0.2rex 0.5rex rgba(255, 255, 255, 0.08),
+    0.5rex 0.5rex 1rex rgba(0, 0, 0, 0.9);
 }
 
 @media (min-width: 576px) {
@@ -60,6 +60,7 @@ header {
   background: var(--pico-background-color);
   border-bottom: 1px solid;
   border-color: var(--pico-muted-border-color);
+  box-shadow: var(--pico-box-shadow);
 }
 
 /* Global heading styles */
@@ -86,6 +87,7 @@ nav {
   border-color: var(--pico-muted-border-color);
   background: var(--pico-background-color);
   z-index: 1;
+  box-shadow: var(--pico-box-shadow);
 }
 
 nav ul:first-of-type,
