@@ -72,32 +72,29 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         ),
       ),
       m(
-        "div.actions",
-        m(
-          "button.right",
-          {
-            disabled: tournament.players().length == 0,
-            onclick: async () => {
-              const data = {
-                text: tournament.groups
-                  .map((group) =>
-                    tournament
-                      .players(group)
-                      .map((player) => player.name)
-                      .toSorted((p, q) => p.localeCompare(q))
-                      .join(" "),
-                  )
-                  .join("\n"),
-              };
-              try {
-                await navigator.share(data);
-              } catch (err) {
-                console.log(err);
-              }
-            },
+        "button.action.right",
+        {
+          disabled: tournament.players().length == 0,
+          onclick: async () => {
+            const data = {
+              text: tournament.groups
+                .map((group) =>
+                  tournament
+                    .players(group)
+                    .map((player) => player.name)
+                    .toSorted((p, q) => p.localeCompare(q))
+                    .join(" "),
+                )
+                .join("\n"),
+            };
+            try {
+              await navigator.share(data);
+            } catch (err) {
+              console.log(err);
+            }
           },
-          "⿻",
-        ),
+        },
+        "⿻",
       ),
     ];
   },

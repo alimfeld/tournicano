@@ -102,101 +102,98 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           onswipeleft:
             roundIndex > 0
               ? () => {
-                  changeRound(roundIndex - 1);
-                }
+                changeRound(roundIndex - 1);
+              }
               : undefined,
           onswiperight:
             roundIndex + 1 < roundCount
               ? () => {
-                  changeRound(roundIndex + 1);
-                }
+                changeRound(roundIndex + 1);
+              }
               : undefined,
         },
         showGroupSwitcher
           ? m(
-              "div.group-switcher",
-              { role: "group" },
+            "div.group-switcher",
+            { role: "group" },
+            m(
+              "button",
+              {
+                disabled: standingsGroup == undefined,
+                onclick: () => {
+                  changeGroup(undefined);
+                },
+              },
+              "All",
+            ),
+            groups.map((g) =>
               m(
                 "button",
                 {
-                  disabled: standingsGroup == undefined,
+                  disabled: standingsGroup == g,
                   onclick: () => {
-                    changeGroup(undefined);
+                    changeGroup(g);
                   },
                 },
-                "All",
+                `${String.fromCharCode(65 + g)}`,
               ),
-              groups.map((g) =>
-                m(
-                  "button",
-                  {
-                    disabled: standingsGroup == g,
-                    onclick: () => {
-                      changeGroup(g);
-                    },
-                  },
-                  `${String.fromCharCode(65 + g)}`,
-                ),
-              ),
-            )
+            ),
+          )
           : null,
         standings.length > 0
           ? [
-              ...standings.map((ranked) =>
+            ...standings.map((ranked) =>
+              m(
+                "section.entry",
+                m("div.rank", m("p", award(ranked.rank))),
+                m(PlayerView, { player: ranked.player }),
                 m(
-                  "section.entry",
-                  m("div.rank", m("p", award(ranked.rank))),
-                  m(PlayerView, { player: ranked.player }),
+                  "div.record",
                   m(
-                    "div.record",
-                    m(
-                      "p.win-percentage",
-                      `${(ranked.player.winRatio * 100).toFixed(0)}%`,
-                      m("div.progressbar", {
-                        style: `width: ${ranked.player.winRatio * 100}%`,
-                      }),
-                    ),
-                    m(
-                      "small",
-                      `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`,
-                    ),
+                    "p.win-percentage",
+                    `${(ranked.player.winRatio * 100).toFixed(0)}%`,
+                    m("div.progressbar", {
+                      style: `width: ${ranked.player.winRatio * 100}%`,
+                    }),
                   ),
                   m(
-                    "div.points",
-                    m(
-                      "p.plus-minus",
-                      (ranked.player.plusMinus >= 0 ? "+" : "") +
-                        ranked.player.plusMinus,
-                    ),
-                    m(
-                      "small",
-                      `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`,
-                    ),
+                    "small",
+                    `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`,
+                  ),
+                ),
+                m(
+                  "div.points",
+                  m(
+                    "p.plus-minus",
+                    (ranked.player.plusMinus >= 0 ? "+" : "") +
+                    ranked.player.plusMinus,
+                  ),
+                  m(
+                    "small",
+                    `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`,
                   ),
                 ),
               ),
-            ]
+            ),
+          ]
           : m("p", "No scores submitted (yet)!"),
       ),
       m(
-        "div.actions",
-        m(
-          "button.right",
-          {
-            disabled: standings.length == 0,
-            onclick: async () => {
-              const data = {
-                text: format(),
-              };
-              try {
-                await navigator.share(data);
-              } catch (err) {
-                console.log(err);
-              }
-            },
+        "button.action.right",
+        {
+          disabled: standings.length == 0,
+          onclick: async () => {
+            const data = {
+              text: format(),
+            };
+            try {
+              await navigator.share(data);
+            } catch (err) {
+              console.log(err);
+            }
           },
-          "⿻",
-        ),
+        },
+        "⿻",
       ),
     ];
   },

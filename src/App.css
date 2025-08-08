@@ -165,21 +165,20 @@ main.actions {
   height: 100%;
 }
 
-div.actions {
+button.action {
   position: fixed;
   bottom: 5rem;
-  right: var(--pico-spacing);
-  left: var(--pico-spacing);
+  border-radius: 2rem;
   z-index: 1;
   margin-bottom: var(--pico-spacing);
 }
 
-div.actions > button {
-  border-radius: 2rem;
+button.action.left {
+  left: var(--pico-spacing);
 }
 
-div.actions > button.right {
-  float: right;
+button.action.right {
+  right: var(--pico-spacing);
 }
 
 /* Global button styles */

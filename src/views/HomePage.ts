@@ -143,23 +143,20 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
       ),
       m(
-        "div.actions",
-        m(
-          "button.right",
-          {
-            onclick: async () => {
-              const data = {
-                url: "https://github.com/alimfeld/tournicano",
-              };
-              try {
-                await navigator.share(data);
-              } catch (err) {
-                console.log(err);
-              }
-            },
+        "button.action.right",
+        {
+          onclick: async () => {
+            const data = {
+              url: "https://github.com/alimfeld/tournicano",
+            };
+            try {
+              await navigator.share(data);
+            } catch (err) {
+              console.log(err);
+            }
           },
-          "⿻",
-        ),
+        },
+        "⿻",
       ),
     ];
   },
