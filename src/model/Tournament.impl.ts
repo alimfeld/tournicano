@@ -13,6 +13,7 @@ import {
   TournamentListener,
 } from "./Tournament";
 import { Americano, MatchingSpec, matching } from "./Tournament.matching";
+import { shuffle } from "./Util";
 
 export const tournamentFactory: TournamentFactory = {
   create(serialized?: string) {
@@ -441,11 +442,11 @@ class TournamentImpl implements Mutable<Tournament> {
       participating.push(...previousRound.playerMap.values().toArray());
     }
     participating.push(
-      ...this.players()
+      ...shuffle(this.players() // shuffle in players to break patterns
         .filter((p) => {
           return p.active && !p.isParticipating();
         })
-        .map((p) => new PlayerStatsImpl(this, p.id)),
+        .map((p) => new PlayerStatsImpl(this, p.id))),
     );
     const [competing, inactive] = participating.reduce(
       (acc: [PlayerStatsImpl[], PlayerId[]], player) => {

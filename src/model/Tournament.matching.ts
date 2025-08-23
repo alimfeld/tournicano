@@ -3,6 +3,7 @@ import {
   weight as maximumMatching,
   // @ts-ignore
 } from "@graph-algorithm/maximum-matching";
+import { shuffle } from "./Util";
 
 export interface Player {
   readonly id: string;
@@ -114,17 +115,12 @@ export const matching = (
   spec: MatchingSpec,
   maxMatches?: number,
 ): [matches: Match[], paused: Player[]] => {
-  // Shuffle players to break patterns.
-  // However, this might have undesired side-effects,
-  // such as non-perfect Americano tournaments with situations
-  // where 3 players each didn't play with each other yet,
-  // resulting in early repeated team-up.
   const [competing, paused] = partition(
-    shuffle(players),
+    players,
     maxMatches ? maxMatches : Math.floor(players.length / 4),
   );
 
-  const teams = match(
+  let teams = match(
     competing,
     (p: Player) => [p.winRatio, p.plusMinus],
     [
@@ -147,6 +143,10 @@ export const matching = (
       },
     ],
   );
+  if (spec.teamUp.varietyFactor > 0 || spec.matchUp.varietyFactor > 0) {
+    // shuffle teams to break patterns
+    teams = shuffle(teams);
+  }
   const matches = match(
     teams,
     (t: Team) => [t[0].winRatio + t[1].winRatio, t[0].plusMinus + t[1].plusMinus],
@@ -187,15 +187,15 @@ const partition = (
   if (players.length < competingCount) {
     competingCount = players.length - (players.length % 4);
   }
-  let result = players;
+  let sorted = players;
   if (players.length > competingCount) {
     // we need to pause players
-    result = players.toSorted((p, q) => playRatio(p) - playRatio(q));
+    sorted = players.toSorted((p, q) => playRatio(p) - playRatio(q));
     const definitelyPlaying = [];
     const maybePaused = [];
     const definitelyPaused = [];
-    const cutOff = playRatio(result.at(competingCount - 1)!);
-    for (const player of result) {
+    const cutOff = playRatio(sorted.at(competingCount - 1)!);
+    for (const player of sorted) {
       const r = playRatio(player);
       if (r < cutOff) {
         definitelyPlaying.push(player);
@@ -206,47 +206,48 @@ const partition = (
       }
     }
     if (definitelyPlaying.length + maybePaused.length > competingCount) {
-      const max = groupCounts(definitelyPlaying.concat(maybePaused));
-      const min = groupCounts(definitelyPlaying);
+      const maxGroupCounts = groupCounts(definitelyPlaying.concat(maybePaused));
+      const minGroupCounts = groupCounts(definitelyPlaying);
       let distribution = findGroupDistribution(
         {
-          max,
+          max: maxGroupCounts,
           multipleOf: 4,
           sum: competingCount,
         },
-        min,
+        minGroupCounts,
       );
       if (distribution == null) {
         distribution = findGroupDistribution(
           {
-            max,
+            max: maxGroupCounts,
             multipleOf: 2,
             sum: competingCount,
           },
-          min,
+          minGroupCounts,
         );
       }
       if (distribution != null) {
-        result = definitelyPlaying;
-        const currentCounts = min.slice();
+        sorted = definitelyPlaying;
+        const currentCounts = minGroupCounts.slice();
         const tail = [];
-        const candidates = maybePaused.slice();
+        // shuffle candidates to break patterns
+        const candidates = shuffle(maybePaused.slice());
         candidates.sort((p, q) => q.lastPause - p.lastPause);
         for (const player of candidates) {
           const currentCount = currentCounts[player.group] || 0;
           const distributionCount = distribution[player.group] || 0;
           if (currentCount < distributionCount) {
             currentCounts[player.group] = currentCount + 1;
-            result.push(player);
+            sorted.push(player);
           } else {
             tail.push(player);
           }
         }
-        result = result.concat(tail).concat(definitelyPaused);
+        sorted = sorted.concat(tail).concat(definitelyPaused);
       }
     }
   }
-  return [result.slice(0, competingCount), result.slice(competingCount)];
+  return [sorted.slice(0, competingCount), sorted.slice(competingCount)];
 };
 
 const findGroupDistribution = (
@@ -292,7 +293,7 @@ const findGroupDistribution = (
 
 const match = <Type>(
   entities: Type[],
-  perf: (entity: Type) => [number, number],
+  perf: (entity: Type) => number[],
   weights: {
     factor: number;
     fn: (
@@ -432,17 +433,7 @@ const matchUpPerformanceWeight = (
   return -(Math.abs(b.rank - a.rank));
 };
 
-// Fisher-Yates shuffle
-const shuffle = (array: any[]) => {
-  const result = [...array]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-};
-
-// Convert array of performance values (primary & tie-breaker) to array of ranks
+// Convert array of performance values (primary & tie-breakers) to array of ranks
 // (inspired by https://medium.com/@cyberseize/leetcode-1331-rank-transform-of-an-array-a-deep-dive-60444bb0e091)
 const perfToRanks = (arr: number[][]) => {
   let cp = [...arr];
