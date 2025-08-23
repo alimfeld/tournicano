@@ -25,7 +25,7 @@ export const GroupView: m.Component<GroupAttrs> = {
         ? `${String.fromCharCode(65 + groupIndex)} (${active})`
         : `${String.fromCharCode(65 + groupIndex)} (${active}/${total})`;
     return [
-      groupCount > 1 ? m("h2.divider", title) : null,
+      groupCount > 1 ? m("h2", title) : null,
       m(
         "section.group",
         players

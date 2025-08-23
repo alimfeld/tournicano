@@ -68,7 +68,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         "header.standings.container-fluid",
 
         m(
-          "button.secondary.prev",
+          "button.secondary",
           {
             disabled: roundIndex <= 0 || roundCount == 0,
             onclick: () => changeRound(roundIndex - 1),
@@ -82,7 +82,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
             : `Standings`,
         ),
         m(
-          "button.secondary.next",
+          "button.secondary",
           {
             disabled: roundIndex + 1 >= roundCount,
             onclick: () => changeRound(roundIndex + 1),

@@ -6,6 +6,7 @@ header.round {
 @scope (main.round) {
   h2.match {
     margin: 0;
+    text-align: center;
   }
 
   section.match {
