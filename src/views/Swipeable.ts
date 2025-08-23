@@ -16,11 +16,12 @@ let isSwiping = false;
 
 export const Swipeable: m.Component<SwipeableAttrs> = {
   view: (vnode) => {
-    const fadeIn = () => {
+    const fadeIn = (fromRight: boolean) => {
       const main = document.getElementsByTagName("main")[0]!;
-      main.classList.remove("fade-in");
-      main.offsetWidth;
-      main.classList.add("fade-in");
+      main.classList.remove("slide-in-from-right");
+      main.classList.remove("slide-in-from-left");
+      main.offsetHeight; // force repaint to recognize `animation-name: none;`
+      main.classList.add(fromRight ? "slide-in-from-right" : "slide-in-from-left");
     };
     return m(
       vnode.attrs.element,
@@ -74,14 +75,14 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
             vnode.attrs.onswipeleft
           ) {
             vnode.attrs.onswipeleft();
-            fadeIn();
+            fadeIn(false);
           }
           if (
             touchEndX - touchStartX < -SWIPE_THRESHOLD &&
             vnode.attrs.onswiperight
           ) {
             vnode.attrs.onswiperight();
-            fadeIn();
+            fadeIn(true);
           }
         },
       },
