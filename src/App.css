@@ -206,7 +206,7 @@ main {
 }
 
 main.slide-in-from-left {
-  animation: slide-in-from-left 0.5s ease-out;
+  animation: slide-in-from-left 0.3s ease-out;
 }
 
 @keyframes slide-in-from-left{
@@ -221,7 +221,7 @@ main.slide-in-from-left {
 }
 
 main.slide-in-from-right {
-  animation: slide-in-from-right 0.5s ease-out;
+  animation: slide-in-from-right 0.3s ease-out;
 }
 
 @keyframes slide-in-from-right {
