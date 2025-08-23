@@ -70,7 +70,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         m(
           "button.outline.prev",
           {
-            disabled: roundIndex <= 0,
+            disabled: roundIndex <= 0 || roundCount == 0,
             onclick: () => changeRound(roundIndex - 1),
           },
           "<",

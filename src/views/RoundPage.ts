@@ -35,7 +35,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
         m(
           "button.outline.prev",
           {
-            disabled: roundIndex <= 0,
+            disabled: roundIndex <= 0 || roundCount == 0,
             onclick: () => changeRound(roundIndex - 1),
           },
           "<",
