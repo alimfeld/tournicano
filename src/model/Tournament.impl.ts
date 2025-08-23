@@ -12,7 +12,7 @@ import {
   TournamentFactory,
   TournamentListener,
 } from "./Tournament";
-import { Americano, MatchingSpec, matchUp } from "./Tournament.matching";
+import { Americano, MatchingSpec, matching } from "./Tournament.matching";
 
 export const tournamentFactory: TournamentFactory = {
   create(serialized?: string) {
@@ -27,7 +27,7 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
     public name: string,
     public group: number = 0,
     public active = true,
-  ) {}
+  ) { }
 
   isParticipating(): boolean {
     const lastRound = this.tournament.rounds.at(-1);
@@ -196,7 +196,7 @@ class TeamImpl implements Team {
   constructor(
     readonly player1: PlayerStatsImpl,
     readonly player2: PlayerStatsImpl,
-  ) {}
+  ) { }
 }
 
 class MatchImpl implements Mutable<Match> {
@@ -205,7 +205,7 @@ class MatchImpl implements Mutable<Match> {
     private round: RoundImpl,
     readonly teamA: TeamImpl,
     readonly teamB: TeamImpl,
-  ) {}
+  ) { }
 
   submitScore(score?: Score) {
     const diffA = new PerformanceImpl();
@@ -458,7 +458,7 @@ class TournamentImpl implements Mutable<Tournament> {
       },
       [[], []],
     );
-    const [matched, paused] = matchUp(competing, spec || Americano, maxMatches);
+    const [matched, paused] = matching(competing, spec || Americano, maxMatches);
     const round = new RoundImpl(
       this,
       this.rounds.length,

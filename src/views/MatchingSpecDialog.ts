@@ -98,21 +98,16 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                 {
                   value: TeamUpPerformanceMode.AVERAGE,
                   label:
-                    "Match players resulting in an average team performance",
+                    "Match players for average team performance",
                 },
                 {
                   value: TeamUpPerformanceMode.EQUAL,
                   label: "Match players with equal performance",
                 },
                 {
-                  value: TeamUpPerformanceMode.MEXICANO_1324,
+                  value: TeamUpPerformanceMode.MEXICANO,
                   label:
-                    "Mexicano - match players based on ranking: 1st & 3rd vs. 2nd & 4th, etc.",
-                },
-                {
-                  value: TeamUpPerformanceMode.MEXICANO_1423,
-                  label:
-                    "Mexicano - match players based on ranking: 1st & 4th vs. 2nd & 3rd, etc.",
+                    "Mexicano (1st & 3rd vs. 2nd & 4th, etc.)",
                 },
               ],
             ),

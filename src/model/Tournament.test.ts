@@ -5,7 +5,7 @@ import {
   Americano,
   Match,
   MatchingSpec,
-  matchUp,
+  matching,
 } from "./Tournament.matching.ts";
 
 class Player {
@@ -20,7 +20,7 @@ class Player {
   constructor(
     readonly id: string,
     readonly name: string,
-  ) {}
+  ) { }
 }
 
 interface Fixture {
@@ -232,7 +232,7 @@ test("should update performance through rounds", ({ players, scores }) => {
 test("should honor play ratio for paused", ({ players }) => {
   players[3].matchCount = 1;
   players[7].matchCount = 1;
-  const [_matches, paused] = matchUp(players, Americano);
+  const [_matches, paused] = matching(players, Americano);
   expect(paused).toHaveLength(2);
   expect(paused).toContain(players[3]);
   expect(paused).toContain(players[7]);
@@ -259,7 +259,7 @@ test("should honor variety for team up", ({ players }) => {
     ["1", 1],
     ["2", 1],
   ]);
-  const [matches, _paused] = matchUp(players.slice(0, 4), Americano, 1);
+  const [matches, _paused] = matching(players.slice(0, 4), Americano, 1);
   expect(serialize(matches)).toStrictEqual(
     serialize([
       [

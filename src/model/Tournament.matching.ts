@@ -24,8 +24,7 @@ export enum TeamUpGroupMode {
 export enum TeamUpPerformanceMode {
   EQUAL, // players with equal performance
   AVERAGE, // players adding app to average performance
-  MEXICANO_1324, // 1st with 3rd and 2nd with 4th
-  MEXICANO_1423, // 1st with 4th and 2nd with 3rd
+  MEXICANO, // 1st with 3rd and 2nd with 4th
 }
 
 interface TeamUpSpec {
@@ -76,7 +75,7 @@ export const Mexicano: MatchingSpec = {
   teamUp: {
     varietyFactor: 0,
     performanceFactor: 100,
-    performanceMode: TeamUpPerformanceMode.MEXICANO_1324,
+    performanceMode: TeamUpPerformanceMode.MEXICANO,
     groupFactor: 0,
     groupMode: TeamUpGroupMode.ADJACENT, // not relevant
   },
@@ -91,7 +90,7 @@ export const Tournicano: MatchingSpec = {
   teamUp: {
     varietyFactor: 100,
     performanceFactor: 100,
-    performanceMode: TeamUpPerformanceMode.MEXICANO_1324,
+    performanceMode: TeamUpPerformanceMode.MEXICANO,
     groupFactor: 100,
     groupMode: TeamUpGroupMode.ADJACENT,
   },
@@ -110,26 +109,24 @@ export interface MatchingSpec {
 export type Team = [Player, Player];
 export type Match = [Team, Team];
 
-export const matchUp = (
+export const matching = (
   players: Player[],
   spec: MatchingSpec,
   maxMatches?: number,
 ): [matches: Match[], paused: Player[]] => {
-  const candidates = players.slice();
-  shuffle(candidates); // shuffle to break patterns
-
+  // Shuffle players to break patterns.
+  // However, this might have undesired side-effects,
+  // such as non-perfect Americano tournaments with situations
+  // where 3 players each didn't play with each other yet,
+  // resulting in early repeated team-up.
   const [competing, paused] = partition(
-    candidates,
+    shuffle(players),
     maxMatches ? maxMatches : Math.floor(players.length / 4),
   );
 
   const teams = match(
     competing,
-    (a: Player, b: Player) =>
-      rank([
-        [a.winRatio, b.winRatio],
-        [a.plusMinus, b.plusMinus],
-      ]),
+    (p: Player) => [p.winRatio, p.plusMinus],
     [
       {
         factor: spec.teamUp.groupFactor,
@@ -152,11 +149,7 @@ export const matchUp = (
   );
   const matches = match(
     teams,
-    (a: Team, b: Team) =>
-      rank([
-        [a[0].winRatio + a[1].winRatio, b[0].winRatio + b[1].winRatio],
-        [a[0].plusMinus + a[1].plusMinus, b[0].plusMinus + b[1].plusMinus],
-      ]),
+    (t: Team) => [t[0].winRatio + t[1].winRatio, t[0].plusMinus + t[1].plusMinus],
     [
       {
         factor: spec.matchUp.groupFactor,
@@ -297,19 +290,9 @@ const findGroupDistribution = (
   return null;
 };
 
-const rank = (factors: [number, number][]) => {
-  for (let i = 0; i < factors.length; i++) {
-    const [a, b] = factors[i];
-    if (a != b) {
-      return b - a;
-    }
-  }
-  return 0;
-};
-
 const match = <Type>(
   entities: Type[],
-  rankFn: (a: Type, b: Type) => number,
+  perf: (entity: Type) => [number, number],
   weights: {
     factor: number;
     fn: (
@@ -318,17 +301,17 @@ const match = <Type>(
     ) => number;
   }[],
 ): [Type, Type][] => {
-  const ranked = entities.toSorted((a, b) => rankFn(a, b));
+  const ranks = perfToRanks(entities.map(entity => perf(entity)));
   let totalWeights: number[] = [];
   weights.forEach((weight) => {
     if (weight.factor != 0) {
       let weights: number[] = [];
-      for (let i = 0; i < ranked.length - 1; i++) {
-        for (let j = i + 1; j < ranked.length; j++) {
-          const a = ranked[i];
-          const b = ranked[j];
+      for (let i = 0; i < entities.length - 1; i++) {
+        for (let j = i + 1; j < entities.length; j++) {
+          const a = entities[i];
+          const b = entities[j];
           weights.push(
-            weight.fn({ rank: i, entity: a }, { rank: j, entity: b }),
+            weight.fn({ rank: ranks[i], entity: a }, { rank: ranks[j], entity: b }),
           );
         }
       }
@@ -349,17 +332,16 @@ const match = <Type>(
   });
   const edges = [];
   let pos = 0;
-  for (let i = 0; i < ranked.length - 1; i++) {
-    for (let j = i + 1; j < ranked.length; j++) {
+  for (let i = 0; i < entities.length - 1; i++) {
+    for (let j = i + 1; j < entities.length; j++) {
       // add 1 to total weight to ensure weight > 0 for maximum matching;
       edges.push([i, j, (totalWeights[pos++] || 0) + 1]);
     }
   }
-  shuffle(edges); // shuffle edges to break algo patterns
   const matching = maximumMatching(edges);
   return [...iter(matching)].map((edge: [number, number]) => [
-    ranked[edge[0]],
-    ranked[edge[1]],
+    entities[edge[0]],
+    entities[edge[1]],
   ]);
 };
 
@@ -402,27 +384,14 @@ const curriedTeamUpPerformanceWeight = (
   competitorCount: number,
 ) => {
   return (a: { rank: number }, b: { rank: number }) => {
+    const rankDiff = Math.abs(b.rank - a.rank)
     switch (mode) {
-      // we rely on a.rank < b.rank
       case TeamUpPerformanceMode.EQUAL:
-        return -(b.rank - a.rank);
+        return -(rankDiff);
       case TeamUpPerformanceMode.AVERAGE:
-        return -Math.abs(competitorCount - 1 - b.rank - a.rank);
-      case TeamUpPerformanceMode.MEXICANO_1324:
-        return -Math.abs(b.rank - a.rank - 2);
-      case TeamUpPerformanceMode.MEXICANO_1423:
-        switch (a.rank % 4) {
-          case 0:
-            return -Math.abs(b.rank - a.rank - 3);
-          case 1:
-            return -Math.abs(b.rank - a.rank - 1);
-          case 2:
-            return -Math.abs(b.rank - a.rank - 2);
-          case 3:
-            return -Math.abs(b.rank - a.rank - 4);
-          default:
-            return 0;
-        }
+        return -Math.abs(competitorCount - 1 - rankDiff);
+      case TeamUpPerformanceMode.MEXICANO:
+        return -Math.abs(rankDiff - 2);
     }
   };
 };
@@ -460,14 +429,47 @@ const matchUpPerformanceWeight = (
   a: { rank: number },
   b: { rank: number },
 ): number => {
-  // we rely on a.rank < b.rank
-  return -(b.rank - a.rank);
+  return -(Math.abs(b.rank - a.rank));
 };
 
 // Fisher-Yates shuffle
 const shuffle = (array: any[]) => {
-  for (let i = array.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
   }
+  return result;
+};
+
+// Convert array of performance values (primary & tie-breaker) to array of ranks
+// (inspired by https://medium.com/@cyberseize/leetcode-1331-rank-transform-of-an-array-a-deep-dive-60444bb0e091)
+const perfToRanks = (arr: number[][]) => {
+  let cp = [...arr];
+  cp = cp.sort((a: number[], b: number[]) => {
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) {
+        return b[i] - a[i];
+      }
+    }
+    return 0;
+  });
+  let arr_rank = new Map();
+  let count = 0;
+  for (let i = 0; i < cp.length; i++) {
+    ++count;
+    const key = cp[i].join("#")
+    if (arr_rank.has(key)) {
+      continue;
+    }
+    else {
+      arr_rank.set(key, count);
+    }
+
+  }
+  let rank = [];
+  for (let i = 0; i < arr.length; i++) {
+    rank.push(arr_rank.get(arr[i].join("#")));
+  }
+  return rank;
 };
