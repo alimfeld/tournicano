@@ -49,7 +49,7 @@
 }
 
 body {
-  padding-bottom: 5rem; /* leave room for the fixed nav */
+  padding-bottom: 4.3rem; /* leave room for the fixed nav */
   min-height: 100vh;
 }
 
@@ -63,18 +63,32 @@ header {
   box-shadow: var(--pico-box-shadow);
 }
 
-/* Global heading styles */
-
-header h1 {
-  margin: 0;
+header > button {
+  padding: 0 var(--pico-form-element-spacing-horizontal);
+  border-radius: 2rem;
 }
 
-main h2 {
-  font-size: 1.1rem;
+/* Global heading styles */
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.2rem;
 }
 
 h2.divider {
   text-align: center;
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+h4 {
+  font-size: 1.0rem;
 }
 
 /* Navigation */
@@ -105,7 +119,7 @@ nav ul:last-of-type {
     width: 100%;
     text-align: center;
     cursor: pointer;
-    font-size: 200%;
+    font-size: 1.5rem;
   }
 }
 
@@ -167,7 +181,7 @@ main.actions {
 
 button.action {
   position: fixed;
-  bottom: 5rem;
+  bottom: 4.3rem;
   border-radius: 2rem;
   z-index: 1;
   margin-bottom: var(--pico-spacing);

@@ -3,10 +3,6 @@ header.standings {
   justify-content: space-between;
 }
 
-header.standings button {
-  padding: 1rex;
-}
-
 @scope (main.standings) {
   section {
     display: grid;

@@ -33,12 +33,12 @@ export const RoundPage: m.Component<RoundAttrs> = {
       m(
         "header.round.container-fluid",
         m(
-          "button.outline.prev",
+          "button.secondary.prev",
           {
             disabled: roundIndex <= 0 || roundCount == 0,
             onclick: () => changeRound(roundIndex - 1),
           },
-          "<",
+          "←",
         ),
         m(
           "h1#title",
@@ -49,12 +49,12 @@ export const RoundPage: m.Component<RoundAttrs> = {
             : "Rounds") + (wakeLock ? " 👁️" : ""),
         ),
         m(
-          "button.outline.next",
+          "button.secondary.next",
           {
             disabled: roundIndex + 1 >= roundCount,
             onclick: () => changeRound(roundIndex + 1),
           },
-          ">",
+          "→",
         ),
       ),
       m(NavView, { nav }),

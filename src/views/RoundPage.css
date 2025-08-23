@@ -3,10 +3,6 @@ header.round {
   justify-content: space-between;
 }
 
-header.round button {
-  padding: 1rex;
-}
-
 @scope (main.round) {
   h2.match {
     margin: 0;
