@@ -81,14 +81,14 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
             range(
               "team-up-variety-factor",
               matchingSpec.teamUp.varietyFactor,
-              "Rotating partners:",
-              "Importance to form teams with rotating partners each round.",
+              "Variety factor:",
+              "Rotating partners",
             ),
             range(
               "team-up-performance-factor",
               matchingSpec.teamUp.performanceFactor,
-              "By performance:",
-              "Importance to form teams based on their performance so far.",
+              "Performance factor:",
+              "Match based on performance mode",
             ),
             radios(
               "team-up-performance-mode",
@@ -98,24 +98,23 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                 {
                   value: TeamUpPerformanceMode.AVERAGE,
                   label:
-                    "Match players for average team performance",
+                    "Average team performance",
                 },
                 {
                   value: TeamUpPerformanceMode.EQUAL,
-                  label: "Match players with equal performance",
+                  label: "Equal player performance",
                 },
                 {
                   value: TeamUpPerformanceMode.MEXICANO,
-                  label:
-                    "Mexicano (1st & 3rd vs. 2nd & 4th, etc.)",
+                  label: "Mexicano (1&3 vs. 2&4)",
                 },
               ],
             ),
             range(
               "team-up-group-factor",
               matchingSpec.teamUp.groupFactor,
-              "By group:",
-              "Importance to match players based on their group.",
+              "Group factor:",
+              "Match based on group mode",
             ),
             radios(
               "team-up-group-mode",
@@ -124,11 +123,11 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
               [
                 {
                   value: TeamUpGroupMode.ADJACENT,
-                  label: "Match players from adjacent groups (mixed)",
+                  label: "Adjacent groups (mixed)",
                 },
                 {
                   value: TeamUpGroupMode.SAME,
-                  label: "Match players from same group",
+                  label: "Same group",
                 },
               ],
             ),
@@ -136,20 +135,20 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
             range(
               "match-up-variety-factor",
               matchingSpec.matchUp.varietyFactor,
-              "Rotating opponents:",
-              "Importance to create matches with rotating opponents.",
+              "Variety factor:",
+              "Rotating opponents",
             ),
             range(
               "match-up-performance-factor",
               matchingSpec.matchUp.performanceFactor,
-              "Similar team performance:",
-              "Importance to create balanced matches.",
+              "Performance factor:",
+              "Similar team performance",
             ),
             range(
               "match-up-group-factor",
               matchingSpec.matchUp.groupFactor,
-              "Similar group composition:",
-              "Importance to create matches with teams having a similar group composition.",
+              "Group factor:",
+              "Similar group composition",
             ),
           ),
           m(
