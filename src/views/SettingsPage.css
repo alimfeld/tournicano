@@ -2,13 +2,11 @@ header.settings {
   text-align: center;
 }
 
-@scope (main.settings) {
-  button {
-    margin-right: 1ex;
-  }
+main.settings button {
+  margin-right: 1ex;
+}
 
-  button.danger {
-    border-color: var(--pico-form-element-invalid-focus-color);
-    background: var(--pico-form-element-invalid-focus-color);
-  }
+main.settings button.danger {
+  border-color: var(--pico-form-element-invalid-focus-color);
+  background: var(--pico-form-element-invalid-focus-color);
 }

@@ -2,50 +2,48 @@ header.players {
   text-align: center;
 }
 
-@scope (main.players) {
-  h2 {
-    margin: 0;
-    margin-bottom: var(--pico-spacing);
-  }
+main.players h2 {
+  margin: 0;
+  margin-bottom: var(--pico-spacing);
+}
 
-  section.group {
-    display: grid;
-    column-gap: var(--pico-spacing);
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-bottom: 1px solid;
-    border-color: var(--pico-muted-border-color);
-  }
+main.players section.group {
+  display: grid;
+  column-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid;
+  border-color: var(--pico-muted-border-color);
+}
 
-  @media (min-width: 768px) {
-    section.group {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
+@media (min-width: 768px) {
+  main.players section.group {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
+}
 
-  div.player.inactive article {
-    opacity: 0.5;
-  }
+main.players div.player.inactive article {
+  opacity: 0.5;
+}
 
-  div.player div.player-actions {
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-top: var(--pico-spacing);
-  }
+main.players div.player div.player-actions {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: var(--pico-spacing);
+}
 
-  button.delete {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    border-color: var(--pico-form-element-invalid-focus-color);
-    background: var(--pico-form-element-invalid-focus-color);
-    padding: 0 1rex;
-  }
+main.players button.delete {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-color: var(--pico-form-element-invalid-focus-color);
+  background: var(--pico-form-element-invalid-focus-color);
+  padding: 0 1ex;
+}
 
-  input.active {
-    margin: 0;
-  }
+main.players input.active {
+  margin: 0;
 }

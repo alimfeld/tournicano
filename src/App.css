@@ -8,39 +8,48 @@
   --pico-muted-border-color: var(--pico-muted-color);
   --pico-box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.1),
-    0.2rex 0.2rex 0.5rex rgba(255, 255, 255, 0.08),
-    0.5rex 0.5rex 1rex rgba(0, 0, 0, 0.9);
+    0.2ex 0.2ex 0.5ex rgba(255, 255, 255, 0.08),
+    0.5ex 0.5ex 1ex rgba(0, 0, 0, 0.9);
 }
 
 @media (min-width: 576px) {
+
   :root,
   :host {
     /* --pico-font-size: 106.25%; */
     --pico-font-size: 116%;
   }
 }
+
 @media (min-width: 768px) {
+
   :root,
   :host {
     /* --pico-font-size: 112.5%; */
     --pico-font-size: 124%;
   }
 }
+
 @media (min-width: 1024px) {
+
   :root,
   :host {
     /* --pico-font-size: 118.75%; */
     --pico-font-size: 132%;
   }
 }
+
 @media (min-width: 1280px) {
+
   :root,
   :host {
     /* --pico-font-size: 125%; */
     --pico-font-size: 140%;
   }
 }
+
 @media (min-width: 1536px) {
+
   :root,
   :host {
     /* --pico-font-size: 131.25%; */
@@ -49,7 +58,8 @@
 }
 
 body {
-  padding-bottom: 4.3rem; /* leave room for the fixed nav */
+  padding-bottom: 4.3rem;
+  /* leave room for the fixed nav */
   min-height: 100vh;
 }
 
@@ -63,7 +73,7 @@ header {
   box-shadow: var(--pico-box-shadow);
 }
 
-header > button {
+header>button {
   padding: 0 var(--pico-form-element-spacing-horizontal);
   border-radius: 2rem;
 }
@@ -105,24 +115,23 @@ nav ul:last-of-type {
   margin: 0;
 }
 
-@scope (nav) {
-  ul {
-    width: 100%;
-    justify-content: space-evenly;
-  }
+nav ul {
+  width: 100%;
+  justify-content: space-evenly;
+}
 
-  li {
-    width: 100%;
-    text-align: center;
-    cursor: pointer;
-    font-size: 1.5rem;
-  }
+nav li {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1.5rem;
 }
 
 /* Global touch behavior */
 
 * {
-  touch-action: manipulation; /* disable touble-tap zoom */
+  touch-action: manipulation;
+  /* disable touble-tap zoom */
 }
 
 /* Global player styles */
@@ -131,24 +140,22 @@ article.player {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rex;
+  padding: 1ex;
 }
 
-@scope (article.player) {
-  img {
-    width: 4rem;
-    height: 4rem;
-  }
+article.player img {
+  width: 4rem;
+  height: 4rem;
+}
 
-  p {
-    color: var(--pico-form-element-color);
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: center;
-    margin: 0;
-  }
+article.player p {
+  color: var(--pico-form-element-color);
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  margin: 0;
 }
 
 /* Global debug styles */
@@ -164,14 +171,15 @@ div.debug {
   border-color: var(--pico-muted-border-color);
 }
 
-div.debug > :nth-child(2n) {
+div.debug> :nth-child(2n) {
   justify-self: end;
 }
 
 /* Global floating / fixed actions styles */
 
 main.actions {
-  padding-bottom: 4rem; /* leave room for action buttons */
+  padding-bottom: 4rem;
+  /* leave room for action buttons */
   height: 100%;
 }
 
@@ -209,11 +217,12 @@ main.slide-in-from-left {
   animation: slide-in-from-left 0.3s ease-out;
 }
 
-@keyframes slide-in-from-left{
+@keyframes slide-in-from-left {
   from {
     opacity: 0;
     transform: translateX(-80%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0%);
@@ -229,6 +238,7 @@ main.slide-in-from-right {
     opacity: 0;
     transform: translateX(80%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0%);

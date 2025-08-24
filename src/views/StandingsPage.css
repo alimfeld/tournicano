@@ -3,55 +3,51 @@ header.standings {
   justify-content: space-between;
 }
 
-@scope (main.standings) {
-  section {
-    display: grid;
-    grid-template-columns: 1fr 4fr 4fr 2fr;
-    align-items: center;
-    border-bottom: 1px solid;
-    border-color: var(--pico-muted-border-color);
+main.standings section {
+  display: grid;
+  grid-template-columns: 1fr 4fr 4fr 2fr;
+  align-items: center;
+  border-bottom: 1px solid;
+  border-color: var(--pico-muted-border-color);
+}
+
+@media (min-width: 768px) {
+  main.standings section {
+    grid-template-columns: 1fr 3fr 5fr 3fr;
   }
+}
 
-  @media (min-width: 768px) {
-    section {
-      grid-template-columns: 1fr 3fr 5fr 3fr;
-    }
-  }
+main.standings div.group-switcher button {
+  padding: 1ex 0;
+}
 
-  div.group-switcher button {
-    padding: 1rex 0;
-  }
+main.standings section.entry div.rank {
+  white-space: nowrap;
+  overflow: hidden;
+}
 
-  @scope (section.entry) {
-    div.rank {
-      white-space: nowrap;
-      overflow: hidden;
-    }
+main.standings section.entry div.record {
+  text-align: center;
+  padding: 0 10% 0 20%;
+}
 
-    div.record {
-      text-align: center;
-      padding: 0 10% 0 20%;
-    }
+main.standings section.entry p.win-percentage {
+  position: relative;
+  border: 1px solid;
+  border-color: var(--pico-form-element-valid-focus-color);
+  border-radius: 0.5ex;
+}
 
-    p.win-percentage {
-      position: relative;
-      border: 1px solid;
-      border-color: var(--pico-form-element-valid-focus-color);
-      border-radius: 0.5ex;
-    }
+main.standings section.entry div.progressbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--pico-form-element-valid-focus-color);
+  border-width: 0;
+  opacity: 0.3;
+}
 
-    div.progressbar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background: var(--pico-form-element-valid-focus-color);
-      border-width: 0;
-      opacity: 0.3;
-    }
-
-    div.points {
-      text-align: center;
-    }
-  }
+main.standings section.entry div.points {
+  text-align: center;
 }
