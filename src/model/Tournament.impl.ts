@@ -421,8 +421,8 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   registerPlayers(names: string[], group: number) {
-    const registeredNames = new Set(this.players().map((p) => p.name));
     names.forEach((name) => {
+      const registeredNames = new Set(this.players().map((p) => p.name));
       if (!registeredNames.has(name)) {
         const id = crypto.randomUUID();
         const player = new RegisteredPlayerImpl(this, id, name, group);
