@@ -97,7 +97,7 @@ export const MatchView = (): m.Component<MatchAttrs> => {
               m("input.score", {
                 type: "text",
                 name: `score${matchIndex}`,
-                "aria-invalid": String(!isValid),
+                class: isValid ? "valid" : "invalid",
                 placeholder: "--:--",
                 inputmode: "numeric",
                 tabindex: matchIndex + 1,

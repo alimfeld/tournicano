@@ -36,6 +36,14 @@ main.round section.score input {
   text-align: center;
 }
 
+main.round section.score input.valid {
+  border-color: var(--pico-form-element-valid-border-color);
+}
+
+main.round section.score input.invalid {
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
 main.round section.score small {
   margin-bottom: 0;
 }
