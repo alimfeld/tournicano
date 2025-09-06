@@ -8,16 +8,16 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@dicebear/collection": "^9.2.2",
-    "@dicebear/core": "^9.2.2",
+    "@dicebear/collection": "^9.2.4",
+    "@dicebear/core": "^9.2.4",
     "@graph-algorithm/maximum-matching": "^3.0.0",
     "@picocss/pico": "^2.1.1",
-    "mithril": "^2.3.1"
+    "mithril": "^2.3.7"
   },
   "devDependencies": {
     "@types/mithril": "^2.2.7",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.6",
-    "vitest": "^3.2.2"
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4",
+    "vitest": "^3.2.4"
   }
 }
