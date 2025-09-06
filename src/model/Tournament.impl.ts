@@ -130,8 +130,8 @@ class PerformanceImpl implements Mutable<Performance> {
 }
 
 class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
-  partnerCounts: Map<string, number> = new Map();
-  opponentCounts: Map<string, number> = new Map();
+  partners: Map<string, number[]> = new Map();
+  opponents: Map<string, number[]> = new Map();
 
   matchCount: number = 0;
   pauseCount: number = 0;
@@ -157,27 +157,23 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
     return this.matchCount / roundCount;
   }
 
-  partnerCount(id: PlayerId): number {
-    return this.partnerCounts.get(id) || 0;
+  incPartner(id: PlayerId, roundIndex: number) {
+    const rounds = this.partners.get(id) || [];
+    rounds.push(roundIndex);
+    this.partners.set(id, rounds);
   }
 
-  opponentCount(id: PlayerId): number {
-    return this.opponentCounts.get(id) || 0;
-  }
-
-  incPartner(id: PlayerId, step: number = 1) {
-    this.partnerCounts.set(id, this.partnerCount(id) + step);
-  }
-
-  incOpponent(id: PlayerId, step: number = 1) {
-    this.opponentCounts.set(id, this.opponentCount(id) + step);
+  incOpponent(id: PlayerId, roundIndex: number) {
+    const rounds = this.opponents.get(id) || [];
+    rounds.push(roundIndex);
+    this.opponents.set(id, rounds);
   }
 
   deepCopy(): PlayerStatsImpl {
     const copy = new PlayerStatsImpl(this.tournament, this.id);
 
-    copy.partnerCounts = new Map(this.partnerCounts);
-    copy.opponentCounts = new Map(this.opponentCounts);
+    copy.partners = new Map([...this.partners].map(([key, value]) => [key, [...value]]))
+    copy.opponents = new Map([...this.opponents].map(([key, value]) => [key, [...value]]))
 
     copy.matchCount = this.matchCount;
     copy.pauseCount = this.pauseCount;
@@ -267,17 +263,17 @@ class RoundImpl implements Round {
       const b1 = getOrCreate(m[1][0]);
       const b2 = getOrCreate(m[1][1]);
       const teamA = new TeamImpl(a1, a2);
-      a1.incPartner(a2.id);
-      a2.incPartner(a1.id);
-      b1.incPartner(b2.id);
-      b2.incPartner(b1.id);
+      a1.incPartner(a2.id, index);
+      a2.incPartner(a1.id, index);
+      b1.incPartner(b2.id, index);
+      b2.incPartner(b1.id, index);
       const teamB = new TeamImpl(b1, b2);
       const match = new MatchImpl(this, teamA, teamB);
       [a1, a2, b1, b2].forEach((p) => (p.matchCount += 1));
       [a1, a2].forEach((p) => {
         [b1, b2].forEach((q) => {
-          p.incOpponent(q.id);
-          q.incOpponent(p.id);
+          p.incOpponent(q.id, index);
+          q.incOpponent(p.id, index);
         });
       });
       return match;

@@ -15,8 +15,8 @@ class Player {
   matchCount: number = 0;
   pauseCount: number = 0;
   lastPause: number = 0;
-  partnerCounts: Map<string, number> = new Map();
-  opponentCounts: Map<string, number> = new Map();
+  partners: Map<string, number[]> = new Map();
+  opponents: Map<string, number[]> = new Map();
   constructor(
     readonly id: string,
     readonly name: string,
@@ -183,18 +183,19 @@ test("should balance matchings", ({ players, scores }) => {
     round.standings().forEach((ranked) => {
       const player = ranked.player;
       expect(
-        player.partnerCounts.values().reduce((acc, count) => (acc += count), 0),
+        player.partners.values().reduce((acc, rounds) => (acc += rounds.length), 0),
       ).toBe(player.matchCount);
       round.standings().forEach((ranked) => {
         const partner = ranked.player;
-        expect(player.partnerCounts.get(partner.id) || 0).toBeLessThanOrEqual(
+        expect(player.partners.get(partner.id)?.length || 0).toBeLessThanOrEqual(
           1,
         );
       });
+      console.log(player.opponents);
       expect(
-        player.opponentCounts
+        player.opponents
           .values()
-          .reduce((acc, count) => (acc += count), 0),
+          .reduce((acc, rounds) => (acc += rounds.length), 0),
       ).toBe(player.matchCount * 2);
     });
   });
@@ -240,24 +241,24 @@ test("should honor play ratio for paused", ({ players }) => {
 
 test("should honor variety for team up", ({ players }) => {
   players[0].matchCount = 2;
-  players[0].partnerCounts = new Map([
-    ["1", 1],
-    ["2", 1],
+  players[0].partners = new Map([
+    ["1", [0]],
+    ["2", [0]],
   ]);
   players[1].matchCount = 2;
-  players[1].partnerCounts = new Map([
-    ["0", 1],
-    ["3", 1],
+  players[1].partners = new Map([
+    ["0", [0]],
+    ["3", [0]],
   ]);
   players[2].matchCount = 2;
-  players[2].partnerCounts = new Map([
-    ["0", 1],
-    ["3", 1],
+  players[2].partners = new Map([
+    ["0", [0]],
+    ["3", [0]],
   ]);
   players[3].matchCount = 2;
-  players[3].partnerCounts = new Map([
-    ["1", 1],
-    ["2", 1],
+  players[3].partners = new Map([
+    ["1", [0]],
+    ["2", [0]],
   ]);
   const [matches, _paused] = matching(players.slice(0, 4), Americano, 1);
   expect(serialize(matches)).toStrictEqual(

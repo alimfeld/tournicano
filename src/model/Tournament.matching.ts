@@ -13,8 +13,8 @@ export interface Player {
   readonly matchCount: number;
   readonly pauseCount: number;
   readonly lastPause: number;
-  readonly partnerCounts: Map<string, number>;
-  readonly opponentCounts: Map<string, number>;
+  readonly partners: Map<string, number[]>;
+  readonly opponents: Map<string, number[]>;
 }
 
 export enum TeamUpGroupMode {
@@ -365,19 +365,23 @@ const teamUpVarietyWeight = (
   if (matchSum == 0) {
     return 0;
   }
-  const partnerCount = a.entity.partnerCounts.get(b.entity.id) || 0;
-  if (partnerCount == 0) {
+  const roundsTeamedUp = a.entity.partners.get(b.entity.id) || [];
+  if (roundsTeamedUp.length == 0) {
     return 0;
   }
-  const samePartnerSumA = a.entity.partnerCounts
+  const samePartnerSumA = a.entity.partners
     .values()
-    .reduce((acc, count) => (acc += count - 1), 1);
-  const samePartnerSumB = a.entity.partnerCounts
+    .reduce((acc, rounds) => (acc += rounds.length - 1), 1);
+  const samePartnerSumB = a.entity.partners
     .values()
-    .reduce((acc, count) => (acc += count - 1), 1);
-  // the more times the players teamed up already, the lower the weight (factor partnerCount)
-  // the more times the players were teamed up with the same partner in the past, the lower the weight (samePartnerSum)
-  return -((partnerCount * (samePartnerSumA + samePartnerSumB)) / matchSum);
+    .reduce((acc, rounds) => (acc += rounds.length - 1), 1);
+  return -(
+    roundsTeamedUp.length * // the number of times the players teamed up already
+    (
+      roundsTeamedUp.at(-1)! + 1 + // the last round (index) the players teamed up
+      samePartnerSumA + samePartnerSumB // the number of times both players were teamed up with the same partner in the past
+    )
+  ) / matchSum; // normalize
 };
 
 const curriedTeamUpPerformanceWeight = (
@@ -419,11 +423,16 @@ const matchUpVarietyWeight = (
     return 0;
   }
   const opponentSum =
-    (a.entity[0].opponentCounts.get(b.entity[0].id) || 0) +
-    (a.entity[0].opponentCounts.get(b.entity[1].id) || 0) +
-    (a.entity[1].opponentCounts.get(b.entity[0].id) || 0) +
-    (a.entity[1].opponentCounts.get(b.entity[1].id) || 0);
-  return -(opponentSum / matchSum);
+    (a.entity[0].opponents.get(b.entity[0].id)?.length || 0) +
+    (a.entity[0].opponents.get(b.entity[1].id)?.length || 0) +
+    (a.entity[1].opponents.get(b.entity[0].id)?.length || 0) +
+    (a.entity[1].opponents.get(b.entity[1].id)?.length || 0);
+  const opponentRecency =
+    (a.entity[0].opponents.get(b.entity[0].id)?.at(-1) || 0) +
+    (a.entity[0].opponents.get(b.entity[1].id)?.at(-1) || 0) +
+    (a.entity[1].opponents.get(b.entity[0].id)?.at(-1) || 0) +
+    (a.entity[1].opponents.get(b.entity[1].id)?.at(-1) || 0);
+  return -(opponentSum * opponentRecency / matchSum);
 };
 
 const matchUpPerformanceWeight = (

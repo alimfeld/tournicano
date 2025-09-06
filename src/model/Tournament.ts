@@ -18,8 +18,8 @@ export interface RegisteredPlayer extends Player {
 
 // Stats based on round matchings
 export interface Matchings {
-  readonly partnerCounts: Map<string, number>;
-  readonly opponentCounts: Map<string, number>;
+  readonly partners: Map<string, number[]>;
+  readonly opponents: Map<string, number[]>;
 }
 
 // Stats based on round participation
@@ -39,9 +39,9 @@ export interface Performance {
 
 export interface PlayerStats
   extends Player,
-    Matchings,
-    Participation,
-    Performance {
+  Matchings,
+  Participation,
+  Performance {
   readonly playRatio: number;
   readonly winRatio: number;
   readonly plusMinus: number;

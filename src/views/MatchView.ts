@@ -31,10 +31,10 @@ export const MatchView = (): m.Component<MatchAttrs> => {
       };
       const renderMatchDebug = (match: Match) => {
         const opponentSum =
-          match.teamA.player1.opponentCounts.get(match.teamB.player1.id)! +
-          match.teamA.player1.opponentCounts.get(match.teamB.player2.id)! +
-          match.teamA.player2.opponentCounts.get(match.teamB.player1.id)! +
-          match.teamA.player2.opponentCounts.get(match.teamB.player2.id)!;
+          match.teamA.player1.opponents.get(match.teamB.player1.id)!.length +
+          match.teamA.player1.opponents.get(match.teamB.player2.id)!.length +
+          match.teamA.player2.opponents.get(match.teamB.player1.id)!.length +
+          match.teamA.player2.opponents.get(match.teamB.player2.id)!.length;
         return m(
           "div.debug",
           m("span", "ΔGroup"),
@@ -63,7 +63,7 @@ export const MatchView = (): m.Component<MatchAttrs> => {
         );
       };
       const renderTeamDebug = (team: Team) => {
-        const partnerCount = team.player1.partnerCounts.get(team.player2.id)!;
+        const partnerCount = team.player1.partners.get(team.player2.id)!.length;
         return m(
           "div.debug",
           m("span", "ΔGroup"),
