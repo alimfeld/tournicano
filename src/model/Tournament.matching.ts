@@ -422,17 +422,29 @@ const matchUpVarietyWeight = (
   if (matchSum == 0) {
     return 0;
   }
+  // Individual opponent sum and recency
+  const a0b0Rounds = a.entity[0].opponents.get(b.entity[0].id) || [];
+  const a0b1Rounds = a.entity[0].opponents.get(b.entity[1].id) || [];
+  const a1b0Rounds = a.entity[1].opponents.get(b.entity[0].id) || [];
+  const a1b1Rounds = a.entity[1].opponents.get(b.entity[1].id) || [];
   const opponentSum =
-    (a.entity[0].opponents.get(b.entity[0].id)?.length || 0) +
-    (a.entity[0].opponents.get(b.entity[1].id)?.length || 0) +
-    (a.entity[1].opponents.get(b.entity[0].id)?.length || 0) +
-    (a.entity[1].opponents.get(b.entity[1].id)?.length || 0);
+    a0b0Rounds.length + a0b1Rounds.length + a1b0Rounds.length + a1b1Rounds.length;
   const opponentRecency =
-    (a.entity[0].opponents.get(b.entity[0].id)?.at(-1) || 0) +
-    (a.entity[0].opponents.get(b.entity[1].id)?.at(-1) || 0) +
-    (a.entity[1].opponents.get(b.entity[0].id)?.at(-1) || 0) +
-    (a.entity[1].opponents.get(b.entity[1].id)?.at(-1) || 0);
-  return -(opponentSum * opponentRecency / matchSum);
+    (a0b0Rounds.at(-1) || 0) + (a0b1Rounds.at(-1) || 0) + (a1b0Rounds.at(-1) || 0) + (a1b1Rounds.at(-1) || 0);
+  // Also determine, wheter players were opposed with the exact same team in the past
+  const a0bRounds = a0b0Rounds.concat(a0b1Rounds).filter(
+    (round, index, rounds) => rounds.indexOf(round) !== index);
+  const a1bRounds = a1b0Rounds.concat(a1b1Rounds).filter(
+    (round, index, rounds) => rounds.indexOf(round) !== index);
+  const b0aRounds = a0b0Rounds.concat(a1b0Rounds).filter(
+    (round, index, rounds) => rounds.indexOf(round) !== index);
+  const b1aRounds = a0b1Rounds.concat(a1b1Rounds).filter(
+    (round, index, rounds) => rounds.indexOf(round) !== index);
+  const opponentTeamSum =
+    a0bRounds.length + a1bRounds.length + b0aRounds.length + b1aRounds.length;
+  const opponentTeamRecency =
+    (a0bRounds.at(-1) || 0) + (a1bRounds.at(-1) || 0) + (b0aRounds.at(-1) || 0) + (b1aRounds.at(-1) || 0);
+  return -((opponentTeamSum + 1) * opponentSum * (opponentRecency + opponentTeamRecency) / matchSum);
 };
 
 const matchUpPerformanceWeight = (
