@@ -1,5 +1,6 @@
 import { defineConfig } from "vitest/config";
 import { VitePWA } from "vite-plugin-pwa";
+import { minimal2023Preset } from "@vite-pwa/assets-generator/config"
 
 export default defineConfig({
   base: "/tournicano/",
@@ -20,6 +21,17 @@ export default defineConfig({
         short_name: "Tournicano",
       },
       pwaAssets: {
+        preset: {
+          ...minimal2023Preset,
+          maskable: {
+            ...minimal2023Preset.maskable,
+            padding: 0
+          },
+          apple: {
+            ...minimal2023Preset.apple,
+            padding: 0
+          },
+        }
       }
     })
   ],
