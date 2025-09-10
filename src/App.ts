@@ -15,6 +15,7 @@ const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
 const ROUND_KEY = "round";
 const GROUP_KEY = "group";
+const PLAYER_FILTER_KEY = "playerFilter";
 const TOURNAMENT_KEY = "tournament";
 
 export enum Page {
@@ -31,6 +32,7 @@ interface State {
   page: Page;
   roundIndex: number;
   group: number | undefined;
+  playerFilter: string;
 }
 
 const syncTheme = (theme: Theme) => {
@@ -64,6 +66,7 @@ const createState: () => State = () => {
     page: parseInt(localStorage.getItem(PAGE_KEY) || `${Page.HOME}`),
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
     group: storedGroup != null ? parseInt(storedGroup) : undefined,
+    playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -119,6 +122,11 @@ export const App = () => {
     }
     window.scrollTo(0, 0);
   };
+  const changePlayerFilter = (playerFilter: string) => {
+    state.playerFilter = playerFilter;
+    localStorage.setItem(PLAYER_FILTER_KEY, playerFilter);
+    window.scrollTo(0, 0);
+  };
 
   return {
     view: () => {
@@ -138,6 +146,8 @@ export const App = () => {
         case Page.PLAYERS: {
           return m(PlayersPage, {
             tournament: state.tournament,
+            playerFilter: state.playerFilter,
+            changePlayerFilter,
             nav,
           });
         }

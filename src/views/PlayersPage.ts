@@ -7,11 +7,13 @@ import { GroupView } from "./GroupView.ts";
 
 export interface PlayersAttrs {
   tournament: Tournament;
+  playerFilter: string;
+  changePlayerFilter: (playerFilter: string) => void;
   nav: (page: Page) => void;
 }
 
 export const PlayersPage: m.Component<PlayersAttrs> = {
-  view: ({ attrs: { tournament, nav } }) => {
+  view: ({ attrs: { tournament, playerFilter, changePlayerFilter, nav } }) => {
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
@@ -47,10 +49,48 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       m(
         "main.players.container-fluid.actions",
         m(
+          "div.player-filter",
+          { role: "group" },
+          m(
+            "button",
+            {
+              disabled: playerFilter !== "active" && playerFilter !== "inactive",
+              onclick: () => {
+                changePlayerFilter("all");
+              },
+            },
+            "All",
+          ),
+          m(
+            "button",
+            {
+              disabled: playerFilter == "active",
+              onclick: () => {
+                changePlayerFilter("active");
+              },
+            },
+            "Active",
+          ),
+          m(
+            "button",
+            {
+              disabled: playerFilter == "inactive",
+              onclick: () => {
+                changePlayerFilter("inactive");
+              },
+            },
+            "Inactive",
+          ),
+        ),
+        m(
           "section.players",
           tournament.groups.map((group) =>
             m(GroupView, {
-              players: tournament.players(group),
+              players: tournament.players(group).filter(p =>
+                playerFilter == "all" ||
+                playerFilter == "active" && p.active ||
+                playerFilter == "inactive" && !p.active
+              ),
               groupIndex: group,
               groupCount: tournament.groups.length,
             }),

@@ -2,6 +2,10 @@ header.players {
   text-align: center;
 }
 
+main.players div.player-filter button {
+  padding: 1ex 0;
+}
+
 main.players h2 {
   margin: 0;
   margin-bottom: var(--pico-spacing);
