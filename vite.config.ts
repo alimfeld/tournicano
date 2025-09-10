@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   base: "/tournicano/",
@@ -11,6 +12,16 @@ export default defineConfig({
   optimizeDeps: {
     include: ["@graph-algorithm/maximum-matching"],
   },
+  plugins: [
+    VitePWA({
+      includeAssets: ["favicon.svg"],
+      manifest: {
+        name: "Tournicano",
+      },
+      pwaAssets: {
+      }
+    })
+  ],
   test: {
     alias: {
       "@graph-algorithm/maximum-matching": "@graph-algorithm/maximum-matching",
