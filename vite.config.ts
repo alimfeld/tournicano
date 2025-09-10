@@ -17,6 +17,7 @@ export default defineConfig({
       includeAssets: ["favicon.svg"],
       manifest: {
         name: "Tournicano",
+        short_name: "Tournicano",
       },
       pwaAssets: {
       }
