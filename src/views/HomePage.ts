@@ -51,6 +51,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          "A filter allows for displaying only active or inactive players.",
+        ),
+        m(
+          "p",
           "Any player who hasn't yet participated in a round can be deleted.",
         ),
         m(
