@@ -15,10 +15,12 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
-      includeAssets: ["favicon.svg"],
       manifest: {
         name: "Tournicano",
         short_name: "Tournicano",
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html}', '*.{png,ico,svg}'],
       },
       pwaAssets: {
         preset: {
