@@ -23,6 +23,23 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html}', '*.{png,ico,svg}'],
       },
       pwaAssets: {
+        preset: {
+          ...minimal2023Preset,
+          maskable: {
+            ...minimal2023Preset.maskable,
+            padding: 0.1,
+            resizeOptions: {
+              background: { r: 0, g: 0, b: 0, alpha: 0 }
+            }
+          },
+          apple: {
+            ...minimal2023Preset.apple,
+            padding: 0.1,
+            resizeOptions: {
+              background: { r: 0, g: 0, b: 0, alpha: 0 }
+            }
+          },
+        }
       }
     })
   ],
