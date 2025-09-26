@@ -16,11 +16,13 @@ export interface RoundAttrs {
   changeRound: (index: number) => void;
   nav: (page: Page) => void;
   wakeLock: boolean;
+  fullscreen: boolean;
+  toggleFullscreen: () => void;
 }
 
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({
-    attrs: { settings, tournament, roundIndex, changeRound, nav, wakeLock },
+    attrs: { settings, tournament, roundIndex, changeRound, nav, wakeLock, fullscreen, toggleFullscreen },
   }) => {
     const matchesPerRound = Math.min(
       Math.floor(tournament.players().filter((p) => p.active).length / 4),
@@ -30,41 +32,44 @@ export const RoundPage: m.Component<RoundAttrs> = {
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
     return m.fragment({ key: `round-${roundIndex}` }, [
-      m(
-        "header.round.container-fluid",
+      !fullscreen ?
         m(
-          "button.secondary",
-          {
-            disabled: roundIndex <= 0 || roundCount == 0,
-            onclick: () => changeRound(roundIndex - 1),
-          },
-          "←",
-        ),
-        m(
-          "h1#title",
-          (round
-            ? roundIndex + 1 == roundCount
-              ? `Round ${roundIndex + 1}`
-              : `Round ${roundIndex + 1}/${roundCount}`
-            : "Rounds") + (wakeLock ? " 👁️" : ""),
-        ),
-        m(
-          "button.secondary",
-          {
-            disabled: roundIndex + 1 >= roundCount,
-            onclick: () => changeRound(roundIndex + 1),
-          },
-          "→",
-        ),
-      ),
-      m(NavView, { nav }),
+          "header.round.container-fluid",
+          m(
+            "button.secondary",
+            {
+              disabled: roundIndex <= 0 || roundCount == 0,
+              onclick: () => changeRound(roundIndex - 1),
+            },
+            "←",
+          ),
+          m(
+            "h1#title",
+            (round
+              ? roundIndex + 1 == roundCount
+                ? `Round ${roundIndex + 1}`
+                : `Round ${roundIndex + 1}/${roundCount}`
+              : "Rounds") + (wakeLock ? " 👁️" : ""),
+          ),
+          m(
+            "button.secondary",
+            {
+              disabled: roundIndex + 1 >= roundCount,
+              onclick: () => changeRound(roundIndex + 1),
+            },
+            "→",
+          ),
+        ) : null,
+      !fullscreen ? m(NavView, { nav }) : null,
       m(
         Swipeable,
         {
-          element: "main.round.container-fluid.actions",
+          element: "main.round.container-fluid.actions" + (fullscreen ? ".fullscreen" : ""),
           onswiping: (swiping) => {
-            document.getElementById("title")!.style =
-              `opacity: ${swiping ? 0.1 : 1}`;
+            if (!fullscreen) {
+              document.getElementById("title")!.style =
+                `opacity: ${swiping ? 0.1 : 1}`;
+            }
           },
           onswipeleft:
             roundIndex > 0
@@ -103,7 +108,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           action: "Delete",
           title: "Delete Round?",
           description: "This will delete the current round.",
-          clazz: "action left",
+          clazz: "action left" + (fullscreen ? " fullscreen" : ""),
           onconfirm: () => {
             if (round) {
               round.delete();
@@ -112,8 +117,17 @@ export const RoundPage: m.Component<RoundAttrs> = {
           },
         })
         : null,
+      m("button.action.middle" + (fullscreen ? ".fullscreen" : ""),
+        {
+          onclick: () => {
+            console.log("toggle");
+            toggleFullscreen();
+          },
+        },
+        "⛶"
+      ),
       m(
-        "button.action.right",
+        "button.action.right" + (fullscreen ? ".fullscreen" : ""),
         {
           disabled: matchesPerRound < 1,
           onclick: () => {

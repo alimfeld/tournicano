@@ -33,6 +33,7 @@ interface State {
   roundIndex: number;
   group: number | undefined;
   playerFilter: string;
+  fullscreen: boolean;
 }
 
 const syncTheme = (theme: Theme) => {
@@ -67,6 +68,7 @@ const createState: () => State = () => {
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
     group: storedGroup != null ? parseInt(storedGroup) : undefined,
     playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
+    fullscreen: false
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -127,6 +129,10 @@ export const App = () => {
     localStorage.setItem(PLAYER_FILTER_KEY, playerFilter);
     window.scrollTo(0, 0);
   };
+  const toggleFullscreen = () => {
+    state.fullscreen = !state.fullscreen;
+    console.log(state.fullscreen);
+  }
 
   return {
     view: () => {
@@ -159,6 +165,8 @@ export const App = () => {
             changeRound,
             nav,
             wakeLock: wakeLock != null,
+            fullscreen: state.fullscreen,
+            toggleFullscreen,
           });
         }
         case Page.STANDINGS: {

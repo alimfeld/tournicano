@@ -58,8 +58,6 @@
 }
 
 body {
-  padding-bottom: 4.3rem;
-  /* leave room for the fixed nav */
   min-height: 100vh;
 }
 
@@ -175,6 +173,15 @@ div.debug> :nth-child(2n) {
   justify-self: end;
 }
 
+main {
+  /* leave room for the fixed nav */
+  margin-bottom: 4.3rem;
+}
+
+main.fullscreen {
+  margin-bottom: 0;
+}
+
 /* Global floating / fixed actions styles */
 
 main.actions {
@@ -191,8 +198,17 @@ button.action {
   margin-bottom: var(--pico-spacing);
 }
 
+button.action.fullscreen {
+  bottom: 0;
+}
+
 button.action.left {
   left: var(--pico-spacing);
+}
+
+button.action.middle {
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 button.action.right {
