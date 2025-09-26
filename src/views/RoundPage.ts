@@ -105,7 +105,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
       ),
       round && round.isLast()
         ? m(ActionWithConfirmation, {
-          action: "Delete",
+          action: "－",
           title: "Delete Round?",
           description: "This will delete the current round.",
           clazz: "action left" + (fullscreen ? " fullscreen" : ""),
@@ -134,7 +134,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             changeRound(roundCount);
           },
         },
-        `Add (${matchesPerRound})`,
+        `＋${matchesPerRound}`,
       ),
     ]);
   },

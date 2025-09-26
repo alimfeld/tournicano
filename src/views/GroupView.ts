@@ -59,7 +59,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                           e.stopPropagation();
                         },
                       },
-                      "X",
+                      "-",
                     ),
                 ),
               ),
