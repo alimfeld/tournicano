@@ -117,7 +117,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           },
         })
         : null,
-      m("button.action.middle" + (fullscreen ? ".fullscreen" : ""),
+      m("button.secondary.action.middle" + (fullscreen ? ".fullscreen" : ""),
         {
           onclick: () => {
             toggleFullscreen();
