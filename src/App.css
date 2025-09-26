@@ -179,6 +179,7 @@ main {
 }
 
 main.fullscreen {
+  /* no nav in fullscreen */
   margin-bottom: 0;
 }
 
@@ -192,6 +193,7 @@ main.actions {
 
 button.action {
   position: fixed;
+  /* leave room for the fixed nav */
   bottom: 4.3rem;
   border-radius: 2rem;
   z-index: 1;
@@ -199,6 +201,7 @@ button.action {
 }
 
 button.action.fullscreen {
+  /* no nav in fullscreen */
   bottom: 0;
 }
 
