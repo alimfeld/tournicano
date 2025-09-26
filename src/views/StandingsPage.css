@@ -46,6 +46,7 @@ main.standings section.entry div.progressbar {
   background: var(--pico-form-element-valid-focus-color);
   border-width: 0;
   opacity: 0.3;
+  z-index: -1;
 }
 
 main.standings section.entry div.points {
