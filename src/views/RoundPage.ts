@@ -87,7 +87,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
         round
           ? [
             ...round.matches.map((match, matchIndex) =>
-              m(MatchView, { match, matchIndex, debug: settings.debug }),
+              m(MatchView, { roundIndex, match, matchIndex, debug: settings.debug, fullscreen }),
             ),
             round.paused.length > 0
               ? [

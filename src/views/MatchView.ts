@@ -3,9 +3,11 @@ import { PlayerView } from "./PlayerView.ts";
 import { Match, Score, Team } from "../model/Tournament.ts";
 
 export interface MatchAttrs {
+  roundIndex: number;
   match: Match;
   matchIndex: number;
   debug: boolean;
+  fullscreen: boolean;
 }
 
 export const MatchView = (): m.Component<MatchAttrs> => {
@@ -13,7 +15,7 @@ export const MatchView = (): m.Component<MatchAttrs> => {
   let isValid = true;
   let scoreString = "";
   return {
-    view: ({ attrs: { match, matchIndex, debug } }) => {
+    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen } }) => {
       if (!isEditing) {
         scoreString = match.score
           ? `${String(match.score[0]).padStart(2, "0")}:${String(match.score[1]).padStart(2, "0")}`
@@ -93,7 +95,9 @@ export const MatchView = (): m.Component<MatchAttrs> => {
             renderTeam(match.teamA),
             m(
               "section.vs",
-              m("h2.match", matchIndex + 1),
+              fullscreen ?
+                m("h2.match", `${roundIndex + 1} - ${matchIndex + 1}`) :
+                m("h2.match", matchIndex + 1),
               m("input.score", {
                 type: "text",
                 name: `score${matchIndex}`,
