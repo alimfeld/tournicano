@@ -4,7 +4,6 @@ header.round {
 }
 
 main.round h2.match {
-  margin: 0;
   text-align: center;
 }
 
@@ -26,25 +25,25 @@ main.round section.team article.player {
   margin: 0;
 }
 
-main.round section.score {
+main.round section.vs {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-evenly;
 }
 
-main.round section.score input {
+main.round section.vs input {
   text-align: center;
 }
 
-main.round section.score input.valid {
+main.round section.vs input.valid {
   border-color: var(--pico-form-element-valid-border-color);
 }
 
-main.round section.score input.invalid {
+main.round section.vs input.invalid {
   border-color: var(--pico-form-element-invalid-border-color);
 }
 
-main.round section.score small {
+main.round section.vs small {
   margin-bottom: 0;
 }
 

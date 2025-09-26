@@ -85,7 +85,6 @@ export const MatchView = (): m.Component<MatchAttrs> => {
       };
       return m.fragment({ key: `match-${matchIndex}` },
         [
-          m("h2.match.divider", matchIndex + 1),
           m(
             "section.match",
             debug ? renderTeamDebug(match.teamA) : null,
@@ -93,7 +92,8 @@ export const MatchView = (): m.Component<MatchAttrs> => {
             debug ? renderTeamDebug(match.teamB) : null,
             renderTeam(match.teamA),
             m(
-              "section.score",
+              "section.vs",
+              m("h2.match", matchIndex + 1),
               m("input.score", {
                 type: "text",
                 name: `score${matchIndex}`,
