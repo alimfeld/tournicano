@@ -18,7 +18,7 @@ main.standings section {
 }
 
 main.standings div.group-switcher button {
-  padding: 1ex 0;
+  padding: 0.5ex 0;
 }
 
 main.standings section.entry div.rank {

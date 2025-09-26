@@ -3,7 +3,7 @@ header.players {
 }
 
 main.players div.player-filter button {
-  padding: 1ex 0;
+  padding: 0.5ex 0;
 }
 
 main.players h2 {

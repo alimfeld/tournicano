@@ -5,6 +5,7 @@
   --pico-spacing: 0.8rem;
   --pico-nav-element-spacing-horizontal: 0.4rem;
   --pico-nav-element-spacing-vertical: 0.7rem;
+  --pico-block-spacing-vertical: 0.8rem;
 }
 
 [data-theme=dark] {

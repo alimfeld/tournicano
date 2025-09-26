@@ -3,7 +3,7 @@ header.settings {
 }
 
 main.settings button {
-  margin-right: 1ex;
+  margin-right: var(--pico-spacing);
 }
 
 main.settings button.danger {
