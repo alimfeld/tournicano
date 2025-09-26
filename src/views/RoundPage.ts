@@ -120,7 +120,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
       m("button.action.middle" + (fullscreen ? ".fullscreen" : ""),
         {
           onclick: () => {
-            console.log("toggle");
             toggleFullscreen();
           },
         },

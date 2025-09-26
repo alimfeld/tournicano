@@ -131,7 +131,6 @@ export const App = () => {
   };
   const toggleFullscreen = () => {
     state.fullscreen = !state.fullscreen;
-    console.log(state.fullscreen);
   }
 
   return {
