@@ -198,6 +198,7 @@ button.action {
   border-radius: 2rem;
   z-index: 1;
   margin-bottom: var(--pico-spacing);
+  opacity: 0.8;
 }
 
 button.action.fullscreen {
