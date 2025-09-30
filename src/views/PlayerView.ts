@@ -1,4 +1,4 @@
-import m from "mithril";
+import m, { ChildArray } from "mithril";
 import { createAvatar } from "@dicebear/core";
 import { bottts } from "@dicebear/collection";
 import { Player, PlayerStats } from "../model/Tournament";
@@ -6,6 +6,8 @@ import { Player, PlayerStats } from "../model/Tournament";
 export interface PlayerAttrs {
   player: Player | PlayerStats;
   debug?: boolean;
+  pre?: ChildArray;
+  post?: ChildArray;
 }
 
 const isPlayerStats = (player: Player | PlayerStats): player is PlayerStats => {
@@ -20,6 +22,7 @@ export const PlayerView: m.Component<PlayerAttrs> = {
     });
     return m(
       "article.player",
+      vnode.attrs.pre,
       m("img", { src: avatar.toDataUri() }),
       m("p", player.name),
       vnode.attrs.debug && isPlayerStats(player)
@@ -41,7 +44,7 @@ export const PlayerView: m.Component<PlayerAttrs> = {
           ),
         )
         : null,
-      vnode.children,
+      vnode.attrs.post,
     );
   },
 };

@@ -12,6 +12,7 @@ export interface RegisteredPlayer extends Player {
   readonly active: boolean;
   isParticipating(): boolean;
   rename(name: string): boolean;
+  setGroup(group: number): void;
   activate(active: boolean): void;
   withdraw(): boolean;
 }

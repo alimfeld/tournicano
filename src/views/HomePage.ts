@@ -59,6 +59,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          "Players may be reassigned to adjacent groups using the ↑ and ↓ buttons.",
+        ),
+        m(
+          "p",
           m("b", "Note"),
           ": Player names must be unique. Any non-unique names are ignored when adding players.",
         ),
@@ -91,6 +95,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         m(
           "p",
           "You can 👁️ prevent the screen from turning off when showing the round. This can be configured in ⚙️ Settings.",
+        ),
+        m(
+          "p",
+          "The rounds page can be toggled to/from full screen using the ⛶ button.",
         ),
         m("h2", "🏆 Standings"),
         m(

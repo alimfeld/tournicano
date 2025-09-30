@@ -26,22 +26,19 @@ export const GroupView: m.Component<GroupAttrs> = {
         : `${String.fromCharCode(65 + groupIndex)} (${active}/${total})`;
     return [
       groupCount > 1 ? m("h2", title) : null,
-      m(
-        "section.group",
+      m("section.group",
         players
           .toSorted((p, q) => p.name.localeCompare(q.name))
-          .map((player) =>
+          .map(player =>
             m(
               "div.player",
               {
                 class: player.active ? "active" : "inactive",
                 onclick: () => player.activate(!player.active),
               },
-              m(
-                PlayerView,
-                { player },
-                m(
-                  "div.player-actions",
+              m(PlayerView, {
+                player,
+                pre: [m("div.player-actions",
                   m("input.active", {
                     type: "checkbox",
                     name: "active",
@@ -61,8 +58,29 @@ export const GroupView: m.Component<GroupAttrs> = {
                       },
                       "-",
                     ),
-                ),
-              ),
+                )],
+                post: [m("div.group-actions",
+                  m("button.secondary.up",
+                    {
+                      disabled: groupIndex == 0,
+                      onclick: (e: InputEvent) => {
+                        player.setGroup(groupIndex - 1);
+                        // Stop event from also triggering activation / deactivation
+                        e.stopPropagation();
+                      },
+                    },
+                    "↑"),
+                  m("button.secondary.down",
+                    {
+                      onclick: (e: InputEvent) => {
+                        player.setGroup(groupIndex + 1);
+                        // Stop event from also triggering activation / deactivation
+                        e.stopPropagation();
+                      },
+                    },
+                    "↓"),
+                )],
+              }),
             ),
           ),
       ),

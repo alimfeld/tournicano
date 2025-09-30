@@ -50,6 +50,10 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
     return false;
   }
 
+  setGroup(group: number) {
+    this.group = group;
+  }
+
   activate(active: boolean) {
     this.active = active;
     this.tournament.notifyChange();
@@ -413,7 +417,7 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   get groups() {
-    return [...new Set(this.playerMap.values().map((p) => p.group))];
+    return [...new Set(this.playerMap.values().map((p) => p.group))].sort();
   }
 
   registerPlayers(names: string[], group: number) {

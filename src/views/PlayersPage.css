@@ -25,7 +25,11 @@ main.players section.group {
   }
 }
 
-main.players div.player.inactive article {
+main.players div.player.inactive article img {
+  opacity: 0.5;
+}
+
+main.players div.player.inactive article p {
   opacity: 0.5;
 }
 
@@ -36,12 +40,12 @@ main.players div.player div.player-actions {
   flex-direction: row-reverse;
   justify-content: space-between;
   align-items: flex-start;
-  margin-top: var(--pico-spacing);
+  margin-bottom: var(--pico-spacing);
 }
 
 main.players button.delete {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   border-color: var(--pico-form-element-invalid-focus-color);
   background: var(--pico-form-element-invalid-focus-color);
@@ -50,4 +54,17 @@ main.players button.delete {
 
 main.players input.active {
   margin: 0;
+}
+
+main.players div.player div.group-actions {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: var(--pico-spacing);
+}
+
+div.group-actions button {
+  padding: 0 1ex;
+  border-radius: 1em;
 }
