@@ -191,7 +191,6 @@ test("should balance matchings", ({ players, scores }) => {
           1,
         );
       });
-      console.log(player.opponents);
       expect(
         player.opponents
           .values()
