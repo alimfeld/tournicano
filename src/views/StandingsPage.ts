@@ -47,19 +47,17 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       groupDraws,
       groupPointsFor,
       groupPointsAgainst,
-      groupWinRatioSum,
-      groupPlusMinus
     ] = standings.reduce((acc, ranked) => {
       acc[0] += ranked.player.wins
       acc[1] += ranked.player.losses
       acc[2] += ranked.player.draws
       acc[3] += ranked.player.pointsFor
       acc[4] += ranked.player.pointsAgainst
-      acc[5] += ranked.player.winRatio
-      acc[6] += ranked.player.plusMinus
       return acc
     }, [0, 0, 0, 0, 0, 0, 0]);
-    const groupWinRatio = groupWinRatioSum / (standings.length || 1);
+    const matchCount = groupWins + groupLosses + groupDraws;
+    const groupWinRatio = matchCount == 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
+    const groupPlusMinus = groupPointsFor - groupPointsAgainst;
     const format = () => {
       return (
         "```\n" +
