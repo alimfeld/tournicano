@@ -41,6 +41,25 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       return rank.toString();
     };
     const standings = round ? round.standings(standingsGroup) : [];
+    const [
+      groupWins,
+      groupLosses,
+      groupDraws,
+      groupPointsFor,
+      groupPointsAgainst,
+      groupWinRatioSum,
+      groupPlusMinus
+    ] = standings.reduce((acc, ranked) => {
+      acc[0] += ranked.player.wins
+      acc[1] += ranked.player.losses
+      acc[2] += ranked.player.draws
+      acc[3] += ranked.player.pointsFor
+      acc[4] += ranked.player.pointsAgainst
+      acc[5] += ranked.player.winRatio
+      acc[6] += ranked.player.plusMinus
+      return acc
+    }, [0, 0, 0, 0, 0, 0, 0]);
+    const groupWinRatio = groupWinRatioSum / (standings.length || 1);
     const format = () => {
       return (
         "```\n" +
@@ -142,6 +161,41 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           : null,
         standings.length > 0
           ? [
+            showGroupSwitcher ? [
+              m("section.group-stats",
+                m("div"),
+                m("div.total-players",
+                  m("p", "Group"),
+                  m(
+                    "small",
+                    `(${standings.length})`,
+                  ),
+                ),
+                m("div.record",
+                  m(
+                    "p.win-percentage",
+                    `${(groupWinRatio * 100).toFixed(0)}%`,
+                    m("div.progressbar", {
+                      style: `width: ${groupWinRatio * 100}%`,
+                    }),
+                  ),
+                  m(
+                    "small",
+                    `(${groupWins}-${groupDraws}-${groupLosses})`,
+                  ),
+                ),
+                m(
+                  "div.points",
+                  m(
+                    "p.plus-minus",
+                    (groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus
+                  ),
+                  m(
+                    "small",
+                    `(+${groupPointsFor}/-${groupPointsAgainst})`,
+                  ),
+                )
+              )] : [],
             ...standings.map((ranked) =>
               m(
                 "section.entry",

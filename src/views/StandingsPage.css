@@ -5,7 +5,7 @@ header.standings {
 
 main.standings section {
   display: grid;
-  grid-template-columns: 1fr 4fr 4fr 2fr;
+  grid-template-columns: 8% 32% 30% 30%;
   align-items: center;
   border-bottom: 1px solid;
   border-color: var(--pico-muted-border-color);
@@ -13,7 +13,7 @@ main.standings section {
 
 @media (min-width: 768px) {
   main.standings section {
-    grid-template-columns: 1fr 3fr 5fr 3fr;
+    grid-template-columns: 10% 25% 40% 25%;
   }
 }
 
@@ -21,24 +21,28 @@ main.standings div.group-switcher button {
   padding: 0.5ex 0;
 }
 
-main.standings section.entry div.rank {
+main.standings section div.total-players {
+  text-align: center;
+}
+
+main.standings section div.rank {
   white-space: nowrap;
   overflow: hidden;
 }
 
-main.standings section.entry div.record {
+main.standings section div.record {
   text-align: center;
-  padding: 0 10% 0 20%;
+  padding: 0 10% 0 10%;
 }
 
-main.standings section.entry p.win-percentage {
+main.standings section p.win-percentage {
   position: relative;
   border: 1px solid;
   border-color: var(--pico-form-element-valid-focus-color);
   border-radius: 0.5ex;
 }
 
-main.standings section.entry div.progressbar {
+main.standings section div.progressbar {
   position: absolute;
   top: 0;
   left: 0;
@@ -49,6 +53,22 @@ main.standings section.entry div.progressbar {
   z-index: -1;
 }
 
-main.standings section.entry div.points {
+main.standings section.group-stats {
+  padding-bottom: var(--pico-spacing);
+}
+
+main.standings section.group-stats small {
+  overflow: hidden;
+}
+
+main.standings section.group-stats p.win-percentage {
+  border-color: var(--pico-muted-color);
+}
+
+main.standings section.group-stats div.progressbar {
+  background: var(--pico-muted-color);
+}
+
+main.standings section div.points {
   text-align: center;
 }
