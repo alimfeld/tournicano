@@ -379,7 +379,7 @@ const teamUpVarietyWeight = (
   const samePartnerSumA = a.entity.partners
     .values()
     .reduce((acc, rounds) => (acc += rounds.length - 1), 1);
-  const samePartnerSumB = a.entity.partners
+  const samePartnerSumB = b.entity.partners
     .values()
     .reduce((acc, rounds) => (acc += rounds.length - 1), 1);
   return -(
