@@ -28,7 +28,7 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
     public name: string,
     public group: number = 0,
     public active = true,
-  ) { }
+  ) { };
 
   isParticipating(): boolean {
     const lastRound = this.tournament.rounds.at(-1);
@@ -198,7 +198,7 @@ class TeamImpl implements Team {
   constructor(
     readonly player1: PlayerStatsImpl,
     readonly player2: PlayerStatsImpl,
-  ) { }
+  ) { };
 }
 
 class MatchImpl implements Mutable<Match> {
@@ -207,7 +207,7 @@ class MatchImpl implements Mutable<Match> {
     private round: RoundImpl,
     readonly teamA: TeamImpl,
     readonly teamB: TeamImpl,
-  ) { }
+  ) { };
 
   submitScore(score?: Score) {
     const diffA = new PerformanceImpl();

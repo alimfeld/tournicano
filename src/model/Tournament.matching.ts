@@ -396,7 +396,7 @@ const curriedTeamUpPerformanceWeight = (
   competitorCount: number,
 ) => {
   return (a: { rank: number }, b: { rank: number }) => {
-    const rankDiff = Math.abs(b.rank - a.rank)
+    const rankDiff = Math.abs(b.rank - a.rank);
     switch (mode) {
       case TeamUpPerformanceMode.EQUAL:
         return -(rankDiff);
@@ -477,7 +477,7 @@ const perfToRanks = (arr: number[][]) => {
   let count = 0;
   for (let i = 0; i < cp.length; i++) {
     ++count;
-    const key = cp[i].join("#")
+    const key = cp[i].join("#");
     if (arr_rank.has(key)) {
       continue;
     }

@@ -124,7 +124,7 @@ export const MatchView = (): m.Component<MatchAttrs> => {
                     input.value = digits.slice(0, 2) + ":" + digits.slice(2);
                   }
                   isValid = digits.length === 4;
-                  scoreString = input.value
+                  scoreString = input.value;
                 },
                 onblur: (event: InputEvent) => {
                   isEditing = false;
@@ -145,12 +145,12 @@ export const MatchView = (): m.Component<MatchAttrs> => {
                   if (event.key === 'Enter') {
                     (event.target as HTMLInputElement).blur();
                   }
-                }
+                },
               }),
             ),
             renderTeam(match.teamB),
           ),
         ]);
     },
-  }
+  };
 };
