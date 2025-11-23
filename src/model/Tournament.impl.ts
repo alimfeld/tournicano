@@ -81,7 +81,7 @@ class PerformanceImpl implements Mutable<Performance> {
 
   get winRatio() {
     const total = this.wins + this.losses + this.draws;
-    if (total == 0) {
+    if (total === 0) {
       return 0.5;
     }
     return (this.wins + this.draws / 2) / total;
@@ -122,10 +122,10 @@ class PerformanceImpl implements Mutable<Performance> {
   compare(other: PerformanceImpl): number {
     const pperf = this.winRatio;
     const qperf = other.winRatio;
-    if (pperf == qperf) {
+    if (pperf === qperf) {
       const pdiff = this.plusMinus;
       const qdiff = other.plusMinus;
-      if (pdiff == qdiff) {
+      if (pdiff === qdiff) {
         return 0;
       }
       return qdiff - pdiff;
@@ -302,15 +302,15 @@ class RoundImpl implements Round {
     const players = this.playerMap
       .values()
       .toArray()
-      .filter((player) => group == undefined || player.group == group)
+      .filter((player) => group === undefined || player.group === group)
       .filter((player) => player.wins + player.draws + player.losses > 0)
       .toSorted((p, q) => {
         const result = p.compare(q);
-        return result == 0 ? p.name.localeCompare(q.name) : result;
+        return result === 0 ? p.name.localeCompare(q.name) : result;
       });
     let rank = 1;
     return players.map((player, i) => {
-      if (i == 0 || players[i - 1].compare(players[i]) == 0) {
+      if (i === 0 || players[i - 1].compare(players[i]) === 0) {
         return { rank, player };
       } else {
         rank = i + 1;
@@ -411,10 +411,10 @@ class TournamentImpl implements Mutable<Tournament> {
 
   players(group?: number) {
     const players = this.playerMap.values().toArray();
-    if (group == undefined) {
+    if (group === undefined) {
       return players;
     }
-    return players.filter((p) => p.group == group);
+    return players.filter((p) => p.group === group);
   }
 
   get groups() {

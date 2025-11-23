@@ -22,13 +22,13 @@ export interface SettingsAttrs {
 export const SettingsPage: m.Component<SettingsAttrs> = {
   view: ({ attrs: { settings, tournament, nav } }) => {
     const isAmericano =
-      JSON.stringify(settings.matchingSpec) == JSON.stringify(Americano);
+      JSON.stringify(settings.matchingSpec) === JSON.stringify(Americano);
     const isAmericanoMixed =
-      JSON.stringify(settings.matchingSpec) == JSON.stringify(AmericanoMixed);
+      JSON.stringify(settings.matchingSpec) === JSON.stringify(AmericanoMixed);
     const isMexicano =
-      JSON.stringify(settings.matchingSpec) == JSON.stringify(Mexicano);
+      JSON.stringify(settings.matchingSpec) === JSON.stringify(Mexicano);
     const isTournicano =
-      JSON.stringify(settings.matchingSpec) == JSON.stringify(Tournicano);
+      JSON.stringify(settings.matchingSpec) === JSON.stringify(Tournicano);
     return [
       m("header.settings.container-fluid", m("h1", "Settings")),
       m(NavView, { nav }),
@@ -138,7 +138,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           "fieldset",
           m(ActionWithConfirmation, {
             action: "Restart",
-            disabled: tournament.rounds.length == 0,
+            disabled: tournament.rounds.length === 0,
             title: "Restart Tournament?",
             description:
               "This will delete all rounds but keep the registered players.",
@@ -148,7 +148,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           }),
           m(ActionWithConfirmation, {
             action: "Reset",
-            disabled: tournament.players().length == 0,
+            disabled: tournament.players().length === 0,
             title: "Reset Tournament?",
             description: "This will delete all rounds and registered players.",
             onconfirm: () => {
@@ -164,7 +164,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             type: "radio",
             name: "theme",
             id: "auto",
-            checked: settings.theme == "auto",
+            checked: settings.theme === "auto",
             onchange: () => {
               settings.setTheme("auto");
             },
@@ -174,7 +174,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             type: "radio",
             name: "theme",
             id: "dark",
-            checked: settings.theme == "dark",
+            checked: settings.theme === "dark",
             onchange: () => {
               settings.setTheme("dark");
             },
@@ -184,7 +184,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             type: "radio",
             name: "theme",
             id: "light",
-            checked: settings.theme == "light",
+            checked: settings.theme === "light",
             onchange: () => {
               settings.setTheme("light");
             },

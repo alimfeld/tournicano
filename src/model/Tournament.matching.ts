@@ -5,6 +5,13 @@ import {
 } from "@graph-algorithm/maximum-matching";
 import { shuffle } from "./Util";
 
+// Constants for match structure
+const PLAYERS_PER_MATCH = 4;
+const PLAYERS_PER_TEAM = 2;
+const MEXICANO_RANK_DIFF = 2; // In Mexicano mode, pair 1st with 3rd, 2nd with 4th (rank diff = 2)
+const MIN_EDGE_WEIGHT = 1; // Minimum weight for maximum matching algorithm
+const PLAY_RATIO_SMOOTHING = 1; // Add to denominator to avoid division by zero and smooth play ratio
+
 export interface Player {
   readonly id: string;
   readonly group: number;
@@ -169,7 +176,7 @@ export const matching = (
 };
 
 const playRatio = (p: Player) => {
-  return p.matchCount / (p.pauseCount + p.matchCount + 1);
+  return p.matchCount / (p.pauseCount + p.matchCount + PLAY_RATIO_SMOOTHING);
 };
 
 const groupCounts = (players: Player[]) => {
@@ -183,9 +190,9 @@ const partition = (
   players: Player[],
   maxMatches: number,
 ): [competing: Player[], paused: Player[]] => {
-  let competingCount = maxMatches * 4;
+  let competingCount = maxMatches * PLAYERS_PER_MATCH;
   if (players.length < competingCount) {
-    competingCount = players.length - (players.length % 4);
+    competingCount = players.length - (players.length % PLAYERS_PER_MATCH);
   }
   let sorted = players;
   if (players.length > competingCount) {
@@ -199,7 +206,7 @@ const partition = (
       const r = playRatio(player);
       if (r < cutOff) {
         definitelyPlaying.push(player);
-      } else if (r == cutOff) {
+      } else if (r === cutOff) {
         maybePaused.push(player);
       } else {
         definitelyPaused.push(player);
@@ -211,22 +218,22 @@ const partition = (
       let distribution = findGroupDistribution(
         {
           max: maxGroupCounts,
-          multipleOf: 4,
+          multipleOf: PLAYERS_PER_MATCH,
           sum: competingCount,
         },
         minGroupCounts,
       );
-      if (distribution == null) {
+      if (distribution === null) {
         distribution = findGroupDistribution(
           {
             max: maxGroupCounts,
-            multipleOf: 2,
+            multipleOf: PLAYERS_PER_TEAM,
             sum: competingCount,
           },
           minGroupCounts,
         );
       }
-      if (distribution != null) {
+      if (distribution !== null) {
         sorted = definitelyPlaying;
         const currentCounts = minGroupCounts.slice();
         const tail = [];
@@ -264,7 +271,7 @@ const findGroupDistribution = (
       const count = val || 0;
       acc[0] += count;
       acc[1] = acc[1] && count <= (constraints.max[i] || 0);
-      acc[2] = acc[2] && count % constraints.multipleOf == 0;
+      acc[2] = acc[2] && count % constraints.multipleOf === 0;
       return acc;
     },
     [0, true, true],
@@ -272,7 +279,7 @@ const findGroupDistribution = (
   if (!satisfiesMax) {
     return null;
   }
-  if (sumProposal == constraints.sum && satisfiesMax && satisfiesMultipleOf) {
+  if (sumProposal === constraints.sum && satisfiesMax && satisfiesMultipleOf) {
     return proposal;
   }
   if (sumProposal < constraints.sum || !satisfiesMultipleOf) {
@@ -283,7 +290,7 @@ const findGroupDistribution = (
       nextProposal[g] =
         nextProposal[g] - (nextProposal[g] % constraints.multipleOf);
       const result = findGroupDistribution(constraints, nextProposal, next + 1);
-      if (result != null) {
+      if (result !== null) {
         return result;
       }
     }
@@ -305,7 +312,7 @@ const match = <Type>(
   const ranks = perfToRanks(entities.map(entity => perf(entity)));
   let totalWeights: number[] = [];
   weights.forEach((weight) => {
-    if (weight.factor != 0) {
+    if (weight.factor !== 0) {
       let weights: number[] = [];
       for (let i = 0; i < entities.length - 1; i++) {
         for (let j = i + 1; j < entities.length; j++) {
@@ -320,7 +327,7 @@ const match = <Type>(
       const min = Math.min(...weights);
       weights = weights.map((w) => w - min);
       const max = Math.max(...weights);
-      if (max != 0) {
+      if (max !== 0) {
         weights = weights.map((w) => (weight.factor * w) / max);
         // and add weights to total weights
         if (totalWeights.length > 0) {
@@ -335,8 +342,8 @@ const match = <Type>(
   let pos = 0;
   for (let i = 0; i < entities.length - 1; i++) {
     for (let j = i + 1; j < entities.length; j++) {
-      // add 1 to total weight to ensure weight > 0 for maximum matching;
-      edges.push([i, j, (totalWeights[pos++] || 0) + 1]);
+      // Add MIN_EDGE_WEIGHT to total weight to ensure weight > 0 for maximum matching
+      edges.push([i, j, (totalWeights[pos++] || 0) + MIN_EDGE_WEIGHT]);
     }
   }
   const matching = maximumMatching(edges);
@@ -362,11 +369,11 @@ const teamUpVarietyWeight = (
   b: { entity: Player },
 ): number => {
   const matchSum = a.entity.matchCount + b.entity.matchCount;
-  if (matchSum == 0) {
+  if (matchSum === 0) {
     return 0;
   }
   const roundsTeamedUp = a.entity.partners.get(b.entity.id) || [];
-  if (roundsTeamedUp.length == 0) {
+  if (roundsTeamedUp.length === 0) {
     return 0;
   }
   const samePartnerSumA = a.entity.partners
@@ -396,7 +403,7 @@ const curriedTeamUpPerformanceWeight = (
       case TeamUpPerformanceMode.AVERAGE:
         return -Math.abs(competitorCount - 1 - rankDiff);
       case TeamUpPerformanceMode.MEXICANO:
-        return -Math.abs(rankDiff - 2);
+        return -Math.abs(rankDiff - MEXICANO_RANK_DIFF);
     }
   };
 };
@@ -419,7 +426,7 @@ const matchUpVarietyWeight = (
     a.entity[1].matchCount +
     b.entity[0].matchCount +
     b.entity[1].matchCount;
-  if (matchSum == 0) {
+  if (matchSum === 0) {
     return 0;
   }
   // Individual opponent sum and recency
@@ -460,7 +467,7 @@ const perfToRanks = (arr: number[][]) => {
   let cp = [...arr];
   cp = cp.sort((a: number[], b: number[]) => {
     for (let i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) {
+      if (a[i] !== b[i]) {
         return b[i] - a[i];
       }
     }

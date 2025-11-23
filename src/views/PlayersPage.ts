@@ -42,7 +42,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         [0, 0],
       );
     const title =
-      active == total ? `Players (${active})` : `Players (${active}/${total})`;
+      active === total ? `Players (${active})` : `Players (${active}/${total})`;
     return [
       m("header.players.container-fluid", m("h1", title)),
       m(NavView, { nav }),
@@ -64,7 +64,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           m(
             "button",
             {
-              disabled: playerFilter == "active",
+              disabled: playerFilter === "active",
               onclick: () => {
                 changePlayerFilter("active");
               },
@@ -74,7 +74,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           m(
             "button",
             {
-              disabled: playerFilter == "inactive",
+              disabled: playerFilter === "inactive",
               onclick: () => {
                 changePlayerFilter("inactive");
               },
@@ -110,7 +110,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       m(
         "button.action.right",
         {
-          disabled: tournament.players().length == 0,
+          disabled: tournament.players().length === 0,
           onclick: async () => {
             const data = {
               text: tournament.groups

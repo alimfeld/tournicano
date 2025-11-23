@@ -25,17 +25,17 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
     const groups = tournament.groups;
     const showGroupSwitcher = groups.length > 1 && groups.length <= 4;
     const standingsGroup =
-      showGroupSwitcher && (group == undefined || groups.indexOf(group) >= 0)
+      showGroupSwitcher && (group === undefined || groups.indexOf(group) >= 0)
         ? group
         : undefined;
     const award: (rank: number) => string = (rank) => {
-      if (rank == 1) {
+      if (rank === 1) {
         return "1🥇";
       }
-      if (rank == 2) {
+      if (rank === 2) {
         return "2🥈";
       }
-      if (rank == 3) {
+      if (rank === 3) {
         return "3🥉";
       }
       return rank.toString();
@@ -56,7 +56,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       return acc
     }, [0, 0, 0, 0, 0, 0, 0]);
     const matchCount = groupWins + groupLosses + groupDraws;
-    const groupWinRatio = matchCount == 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
+    const groupWinRatio = matchCount === 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
     const groupPlusMinus = groupPointsFor - groupPointsAgainst;
     const format = () => {
       return (
@@ -87,7 +87,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         m(
           "button.secondary",
           {
-            disabled: roundIndex <= 0 || roundCount == 0,
+            disabled: roundIndex <= 0 || roundCount === 0,
             onclick: () => changeRound(roundIndex - 1),
           },
           "←",
@@ -136,7 +136,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
             m(
               "button",
               {
-                disabled: standingsGroup == undefined,
+                disabled: standingsGroup === undefined,
                 onclick: () => {
                   changeGroup(undefined);
                 },
@@ -147,7 +147,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               m(
                 "button",
                 {
-                  disabled: standingsGroup == g,
+                  disabled: standingsGroup === g,
                   onclick: () => {
                     changeGroup(g);
                   },
@@ -233,7 +233,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       m(
         "button.action.right",
         {
-          disabled: standings.length == 0,
+          disabled: standings.length === 0,
           onclick: async () => {
             const data = {
               text: format(),

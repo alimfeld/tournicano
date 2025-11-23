@@ -66,7 +66,7 @@ const createState: () => State = () => {
     ),
     page: parseInt(localStorage.getItem(PAGE_KEY) || `${Page.HOME}`),
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
-    group: storedGroup != null ? parseInt(storedGroup) : undefined,
+    group: storedGroup !== null ? parseInt(storedGroup) : undefined,
     playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
     fullscreen: false
   };
@@ -94,14 +94,14 @@ export const App = () => {
   state.tournament.addListener(tournamentListener);
   let wakeLock: WakeLockSentinel | null = null;
   const nav = async (page: Page) => {
-    if (state.settings.wakeLock && page == Page.ROUNDS) {
+    if (state.settings.wakeLock && page === Page.ROUNDS) {
       try {
         wakeLock = await navigator.wakeLock.request("screen");
       } catch (err) {
         console.log(err);
       }
     }
-    if (wakeLock != null && page != Page.ROUNDS) {
+    if (wakeLock !== null && page !== Page.ROUNDS) {
       wakeLock.release().then(() => {
         wakeLock = null;
       });
@@ -117,7 +117,7 @@ export const App = () => {
   };
   const changeGroup = (group: number | undefined) => {
     state.group = group;
-    if (group == undefined) {
+    if (group === undefined) {
       localStorage.removeItem(GROUP_KEY);
     } else {
       localStorage.setItem(GROUP_KEY, `${group}`);
@@ -163,7 +163,7 @@ export const App = () => {
             roundIndex: state.roundIndex,
             changeRound,
             nav,
-            wakeLock: wakeLock != null,
+            wakeLock: wakeLock !== null,
             fullscreen: state.fullscreen,
             toggleFullscreen,
           });

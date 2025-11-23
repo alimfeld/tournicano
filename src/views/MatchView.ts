@@ -123,7 +123,7 @@ export const MatchView = (): m.Component<MatchAttrs> => {
                   } else {
                     input.value = digits.slice(0, 2) + ":" + digits.slice(2);
                   }
-                  isValid = digits.length == 4;
+                  isValid = digits.length === 4;
                   scoreString = input.value
                 },
                 onblur: (event: InputEvent) => {
@@ -131,12 +131,12 @@ export const MatchView = (): m.Component<MatchAttrs> => {
                   const input = event.target as HTMLInputElement;
                   // Remove non-digit characters
                   let digits = input.value.replace(/\D/g, "");
-                  isValid = digits.length == 4;
+                  isValid = digits.length === 4;
                   const score: Score | undefined =
                     isValid
                       ? [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))]
                       : undefined;
-                  if (score == undefined) {
+                  if (score === undefined) {
                     input.value = "";
                   }
                   match.submitScore(score);

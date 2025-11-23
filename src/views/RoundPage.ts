@@ -38,7 +38,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           m(
             "button.secondary",
             {
-              disabled: roundIndex <= 0 || roundCount == 0,
+              disabled: roundIndex <= 0 || roundCount === 0,
               onclick: () => changeRound(roundIndex - 1),
             },
             "←",
@@ -46,7 +46,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           m(
             "h1#title",
             (round
-              ? roundIndex + 1 == roundCount
+              ? roundIndex + 1 === roundCount
                 ? `Round ${roundIndex + 1}`
                 : `Round ${roundIndex + 1}/${roundCount}`
               : "Rounds") + (wakeLock ? " 👁️" : ""),

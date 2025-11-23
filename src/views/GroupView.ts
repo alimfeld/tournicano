@@ -11,14 +11,14 @@ export interface GroupAttrs {
 export const GroupView: m.Component<GroupAttrs> = {
   view: ({ attrs: { tournament, playerFilter, groupIndex } }) => {
     const players = tournament.players(groupIndex).filter(p =>
-      playerFilter == "all" ||
-      playerFilter == "active" && p.active ||
-      playerFilter == "inactive" && !p.active
+      playerFilter === "all" ||
+      playerFilter === "active" && p.active ||
+      playerFilter === "inactive" && !p.active
     );
     const groupSize = tournament.players(groupIndex).length;
     const activeCount = players.reduce((acc, player) => acc + (player.active ? 1 : 0), 0);
-    const isAllActive = playerFilter == "inactive" ? players.length == 0 : activeCount == groupSize;
-    const title = `${String.fromCharCode(65 + groupIndex)} (${playerFilter == "inactive" ? players.length : activeCount}/${groupSize})`;
+    const isAllActive = playerFilter === "inactive" ? players.length === 0 : activeCount === groupSize;
+    const title = `${String.fromCharCode(65 + groupIndex)} (${playerFilter === "inactive" ? players.length : activeCount}/${groupSize})`;
     return [
       m("div.group-header",
         m("h2", title),
@@ -68,7 +68,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                 post: [m("div.group-actions",
                   m("button.secondary.up",
                     {
-                      disabled: groupIndex == 0,
+                      disabled: groupIndex === 0,
                       onclick: (e: InputEvent) => {
                         player.setGroup(groupIndex - 1);
                         // Stop event from also triggering activation / deactivation

@@ -50,7 +50,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
               id: `${name}-${input.value}`,
               name: name,
               value: input.value,
-              checked: value == input.value,
+              checked: value === input.value,
             }),
             input.label,
           ),

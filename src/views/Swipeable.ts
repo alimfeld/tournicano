@@ -56,7 +56,7 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
               1 - Math.min(dx, SWIPE_THRESHOLD) / SWIPE_THRESHOLD,
             );
             document.getElementById(ID)!.style =
-              tx != 0
+              tx !== 0
                 ? `transform: translateX(${tx}px); opacity: ${opacity}`
                 : "";
             event.preventDefault();
