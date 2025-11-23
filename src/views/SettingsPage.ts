@@ -134,14 +134,15 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             },
           }),
         ),
+        m("h3", "🚨 Danger Zone"),
         m(
           "fieldset",
           m(ActionWithConfirmation, {
             action: "Restart",
             disabled: tournament.rounds.length === 0,
-            title: "Restart Tournament?",
+            title: "🚨 Restart Tournament?",
             description:
-              "This will delete all rounds but keep the registered players.",
+              "This will delete all rounds (but keep the registered players)!",
             onconfirm: () => {
               tournament.restart();
             },
@@ -149,8 +150,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           m(ActionWithConfirmation, {
             action: "Reset",
             disabled: tournament.players().length === 0,
-            title: "Reset Tournament?",
-            description: "This will delete all rounds and registered players.",
+            title: "🚨 Reset Tournament?",
+            description: "This will delete all rounds and registered players!",
             onconfirm: () => {
               tournament.reset();
             },

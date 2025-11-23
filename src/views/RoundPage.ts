@@ -106,8 +106,8 @@ export const RoundPage: m.Component<RoundAttrs> = {
       round && round.isLast()
         ? m(ActionWithConfirmation, {
           action: "－",
-          title: "Delete Round?",
-          description: "This will delete the current round.",
+          title: "🚨 Delete Round?",
+          description: "This will delete the current round!",
           clazz: "action left" + (fullscreen ? " fullscreen" : ""),
           onconfirm: () => {
             if (round) {
