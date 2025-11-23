@@ -11,6 +11,17 @@ main.players h2 {
   margin-bottom: var(--pico-spacing);
 }
 
+main.players div.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--pico-spacing);
+}
+
+main.players div.group-header h2 {
+  margin: 0;
+}
+
 main.players section.group {
   display: grid;
   column-gap: var(--pico-spacing);

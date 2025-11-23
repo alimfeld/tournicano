@@ -1,31 +1,37 @@
 import m from "mithril";
 import { PlayerView } from "./PlayerView.ts";
-import { RegisteredPlayer } from "../model/Tournament.ts";
+import { Tournament } from "../model/Tournament.ts";
 
 export interface GroupAttrs {
-  players: RegisteredPlayer[];
+  tournament: Tournament;
+  playerFilter: string;
   groupIndex: number;
-  groupCount: number;
 }
 
 export const GroupView: m.Component<GroupAttrs> = {
-  view: ({ attrs: { players, groupIndex, groupCount } }) => {
-    const [active, total] = players.values().reduce(
-      (acc, player) => {
-        if (player.active) {
-          acc[0]++;
-        }
-        acc[1]++;
-        return acc;
-      },
-      [0, 0],
+  view: ({ attrs: { tournament, playerFilter, groupIndex } }) => {
+    const players = tournament.players(groupIndex).filter(p =>
+      playerFilter == "all" ||
+      playerFilter == "active" && p.active ||
+      playerFilter == "inactive" && !p.active
     );
-    const title =
-      active == total
-        ? `${String.fromCharCode(65 + groupIndex)} (${active})`
-        : `${String.fromCharCode(65 + groupIndex)} (${active}/${total})`;
+    const groupSize = tournament.players(groupIndex).length;
+    const activeCount = players.reduce((acc, player) => acc + (player.active ? 1 : 0), 0);
+    const isAllActive = playerFilter == "inactive" ? players.length == 0 : activeCount == groupSize;
+    const title = `${String.fromCharCode(65 + groupIndex)} (${playerFilter == "inactive" ? players.length : activeCount}/${groupSize})`;
     return [
-      groupCount > 1 ? m("h2", title) : null,
+      m("div.group-header",
+        m("h2", title),
+        m("input", {
+          type: "checkbox",
+          role: "switch",
+          checked: isAllActive,
+          onclick: (e: Event) => {
+            e.stopPropagation();
+            tournament.activateGroup(groupIndex, !isAllActive);
+          }
+        }),
+      ),
       m("section.group",
         players
           .toSorted((p, q) => p.name.localeCompare(q.name))

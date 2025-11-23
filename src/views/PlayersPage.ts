@@ -86,13 +86,9 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           "section.players",
           tournament.groups.map((group) =>
             m(GroupView, {
-              players: tournament.players(group).filter(p =>
-                playerFilter == "all" ||
-                playerFilter == "active" && p.active ||
-                playerFilter == "inactive" && !p.active
-              ),
+              tournament,
+              playerFilter,
               groupIndex: group,
-              groupCount: tournament.groups.length,
             }),
           ),
         ),

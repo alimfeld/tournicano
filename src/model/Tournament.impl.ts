@@ -52,6 +52,7 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
 
   setGroup(group: number) {
     this.group = group;
+    this.tournament.notifyChange();
   }
 
   activate(active: boolean) {
@@ -430,6 +431,10 @@ class TournamentImpl implements Mutable<Tournament> {
       }
     });
     this.notifyChange();
+  }
+
+  activateGroup(group: number, active: boolean) {
+    this.players(group).forEach((player) => player.activate(active));
   }
 
   createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
