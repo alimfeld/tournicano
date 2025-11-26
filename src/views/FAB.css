@@ -1,0 +1,177 @@
+/* FAB Container */
+.fab-container {
+  position: fixed;
+  bottom: 3.6rem;
+  /* leave room for the fixed nav */
+  z-index: 2;
+  margin-bottom: var(--pico-spacing);
+}
+
+.fab-container.fullscreen {
+  bottom: 0;
+  /* no nav in fullscreen */
+}
+
+.fab-container.left {
+  left: var(--pico-spacing);
+}
+
+.fab-container.right {
+  right: var(--pico-spacing);
+}
+
+/* Primary FAB Button */
+.fab-primary {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--pico-primary);
+  color: var(--pico-primary-inverse);
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: var(--pico-box-shadow);
+  transition: transform 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: relative;
+  z-index: 3;
+}
+
+.fab-primary:hover {
+  background: var(--pico-primary-hover);
+  transform: scale(1.05);
+}
+
+.fab-primary:active {
+  transform: scale(0.95);
+}
+
+.fab-primary.open {
+  background: var(--pico-primary-hover);
+  transform: scale(1.1);
+}
+
+/* Icon transition */
+.fab-icon {
+  position: absolute;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.fab-icon.hidden {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+  pointer-events: none;
+}
+
+/* Secondary Actions Container */
+.fab-actions {
+  position: absolute;
+  bottom: 4.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  align-items: flex-end;
+  z-index: 3;
+}
+
+.fab-container.left .fab-actions {
+  align-items: flex-start;
+  left: 0;
+}
+
+.fab-container.right .fab-actions {
+  align-items: flex-end;
+  right: 0;
+}
+
+/* Individual Action Item */
+.fab-action-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  animation: fab-action-appear 0.3s ease;
+  opacity: 1;
+}
+
+.fab-container.left .fab-action-item {
+  flex-direction: row-reverse;
+}
+
+@keyframes fab-action-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Action Label */
+.fab-action-label {
+  background: var(--pico-background-color);
+  color: var(--pico-color);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  white-space: nowrap;
+  box-shadow: var(--pico-box-shadow);
+  font-size: 0.9rem;
+  border: 1px solid var(--pico-muted-border-color);
+}
+
+/* Action Button */
+.fab-action-button {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--pico-secondary);
+  color: var(--pico-secondary-inverse);
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: var(--pico-box-shadow);
+  transition: transform 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.fab-action-button:hover {
+  background: var(--pico-secondary-hover);
+  transform: scale(1.05);
+}
+
+.fab-action-button:active {
+  transform: scale(0.95);
+}
+
+/* Backdrop */
+.fab-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 2;
+  animation: fab-backdrop-appear 0.2s ease;
+}
+
+@keyframes fab-backdrop-appear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

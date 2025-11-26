@@ -4,6 +4,7 @@ import { NavView } from "./NavView.ts";
 import { Page } from "../App.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { GroupView } from "./GroupView.ts";
+import { FAB } from "./FAB.ts";
 
 export interface PlayersAttrs {
   tournament: Tournament;
@@ -107,31 +108,50 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           }),
         ),
       ),
-      m(
-        "button.action.right",
-        {
-          disabled: tournament.players().length === 0,
-          onclick: async () => {
-            const data = {
-              text: tournament.groups
-                .map((group) =>
-                  tournament
-                    .players(group)
-                    .map((player) => player.name)
-                    .toSorted((p, q) => p.localeCompare(q))
-                    .join(" "),
-                )
-                .join("\n"),
-            };
-            try {
-              await navigator.share(data);
-            } catch (err) {
-              console.log(err);
+      m(FAB, {
+        icon: "⋮",
+        iconOpen: "✕",
+        position: "right",  // optional: "left" | "right" (default: "right")
+        fullscreen: false,  // optional: boolean (default: false)
+        actions: [
+          {
+            icon: "⚪",
+            label: "Deactivate all",
+            onclick: () => {
+              tournament.activateAll(false);
             }
           },
-        },
-        "⿻",
-      ),
+          {
+            icon: "🔵",
+            label: "Activate all",
+            onclick: () => {
+              tournament.activateAll(true);
+            }
+          },
+          {
+            icon: "⿻",
+            label: "Share",
+            onclick: async () => {
+              const data = {
+                text: tournament.groups
+                  .map((group) =>
+                    tournament
+                      .players(group)
+                      .map((player) => player.name)
+                      .toSorted((p, q) => p.localeCompare(q))
+                      .join(" "),
+                  )
+                  .join("\n"),
+              };
+              try {
+                await navigator.share(data);
+              } catch (err) {
+                console.log(err);
+              }
+            }
+          }
+        ]
+      }),
     ];
   },
 };

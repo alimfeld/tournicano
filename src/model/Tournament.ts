@@ -90,6 +90,7 @@ export interface Tournament {
   readonly groups: number[];
   players(group?: number): RegisteredPlayer[];
   registerPlayers(names: string[], group?: number): void;
+  activateAll(active: boolean): void;
   activateGroup(group: number, active: boolean): void;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
   restart(): void;

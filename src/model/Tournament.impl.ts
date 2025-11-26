@@ -433,6 +433,10 @@ class TournamentImpl implements Mutable<Tournament> {
     this.notifyChange();
   }
 
+  activateAll(active: boolean) {
+    this.players().forEach((player) => player.activate(active));
+  }
+
   activateGroup(group: number, active: boolean) {
     this.players(group).forEach((player) => player.activate(active));
   }
