@@ -41,7 +41,6 @@
 }
 
 .fab-primary:hover {
-  background: var(--pico-primary-hover);
   transform: scale(1.05);
 }
 
@@ -50,7 +49,6 @@
 }
 
 .fab-primary.open {
-  background: var(--pico-primary-hover);
   transform: scale(1.1);
 }
 
