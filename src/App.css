@@ -201,9 +201,9 @@ button.action {
   position: fixed;
   /* leave room for the fixed nav */
   bottom: 3.6rem;
-  height: 3.5rem;
-  min-width: 3.5rem;
-  border-radius: 1.75rem;
+  height: 3.2rem;
+  min-width: 3.2rem;
+  border-radius: 1.6rem;
   z-index: 1;
   margin-bottom: var(--pico-spacing);
   right: var(--pico-spacing);

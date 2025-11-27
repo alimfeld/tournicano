@@ -22,8 +22,8 @@
 
 /* Primary FAB Button */
 .fab-primary {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3.2rem;
+  height: 3.2rem;
   border-radius: 50%;
   border: none;
   background: var(--pico-primary-background);
@@ -40,26 +40,9 @@
   z-index: 3;
 }
 
-.fab-primary:hover {
-  transform: scale(1.05);
-}
-
-.fab-primary:active {
-  transform: scale(0.95);
-}
-
-.fab-primary.open {
-  transform: scale(1.1);
-}
-
 .fab-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--pico-primary-background);
-}
-
-.fab-primary:disabled:hover {
-  transform: none;
   background: var(--pico-primary-background);
 }
 
@@ -154,15 +137,6 @@
   flex-shrink: 0;
 }
 
-.fab-action-button:hover {
-  background: var(--pico-secondary-hover);
-  transform: scale(1.05);
-}
-
-.fab-action-button:active {
-  transform: scale(0.95);
-}
-
 /* Backdrop */
 .fab-backdrop {
   position: fixed;
@@ -170,7 +144,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
   z-index: 2;
   animation: fab-backdrop-appear 0.2s ease;
 }
