@@ -19,6 +19,7 @@ class SettingsImpl implements Mutable<Settings> {
   courts = 2;
   theme: Theme = "auto";
   debug: boolean = false;
+  playersEditable: boolean = true;
   wakeLock: boolean = false;
   matchingSpec: MatchingSpec = Americano;
 
@@ -29,6 +30,7 @@ class SettingsImpl implements Mutable<Settings> {
       this.theme = data.theme;
       this.wakeLock = data.wakeLock;
       this.debug = data.debug;
+      this.playersEditable = data.playersEditable;
       this.matchingSpec = data.matchingSpec;
     }
   }
@@ -38,6 +40,7 @@ class SettingsImpl implements Mutable<Settings> {
       courts: this.courts,
       theme: this.theme,
       debug: this.debug,
+      playersEditable: this.playersEditable,
       wakeLock: this.wakeLock,
       matchingSpec: this.matchingSpec,
     } as SettingsData);
@@ -60,6 +63,11 @@ class SettingsImpl implements Mutable<Settings> {
 
   showDebug(debug: boolean): void {
     this.debug = debug;
+    this.notifyChange();
+  }
+
+  setPlayersEditable(editable: boolean): void {
+    this.playersEditable = editable;
     this.notifyChange();
   }
 

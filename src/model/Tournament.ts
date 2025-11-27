@@ -76,11 +76,6 @@ export interface Round {
   toString(): string;
 }
 
-export type TournicanoFlavor = {
-  americanoFactor: number;
-  mexicanoFactor: number;
-};
-
 export interface TournamentListener {
   onchange: (tournament: Tournament) => void;
 }

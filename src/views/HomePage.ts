@@ -13,11 +13,12 @@ export const HomePage: m.Component<HomeAttrs> = {
       m("header.home.container-fluid", m("h1", "Tournicano")),
       m(NavView, { nav }),
       m(
-        "main.home.container-fluid.actions",
+        "main.home.container-fluid",
         m("h2", "👉 What is it?"),
         m(
           "p",
-          "Tournicano is a (web) app for running ad-hoc ",
+          m("a", { href: "https://github.com/alimfeld/tournicano" }, "Tournicano"),
+          " is a (web) app for running ad-hoc ",
           m("i", "-icano"),
           " (e.g., Americano, Mexicano, or similar) doubles tournaments.",
         ),
@@ -35,7 +36,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "🤖 Player Management"),
         m(
           "p",
-          "Players are added by typing or pasting their names into a text box. Player names are separated by spaces, so each player is identified by a single name. Each name maps to a consistent avatar image, which will be displayed for the player.",
+          "Players are added by typing or pasting their names into a text field. Player names are separated by spaces, so each player is identified by a single name. Each name maps to a consistent avatar image, which will be displayed for the player.",
         ),
         m(
           "p",
@@ -63,6 +64,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          "Some quick actions are available via the ⋮ button. Registration can be closed to remove UI clutter (UI elements to withdraw and register players as well as UI elements to move players between groups). All players can be activated, deactivated, or deleted (which will also delete any rounds of a started tournament). In addition, there is an option to ⿻ share/export all player names (this allows for a later import by pasting those names into the text field to add players)."
+        ),
+        m(
+          "p",
           m("b", "Note"),
           ": Player names must be unique. Any non-unique names are ignored when adding players.",
         ),
@@ -87,18 +92,11 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           "You can navigate back and forth between rounds and change scores of previously completed rounds.",
         ),
-        m("p", "The most recent round can be deleted."),
-        m(
-          "p",
-          "The tournament can be restarted (deleting all rounds) or reset (deleting all rounds and players) under ⚙️ Settings.",
+        m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed.",
         ),
         m(
           "p",
           "You can 👁️ prevent the screen from turning off when showing the round. This can be configured in ⚙️ Settings.",
-        ),
-        m(
-          "p",
-          "The rounds page can be toggled to/from full screen using the ⛶ button.",
         ),
         m("h2", "🏆 Standings"),
         m(
@@ -151,24 +149,8 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "To time rounds, use your phone’s stopwatch, or end a round once the first match finishes.",
+          "To time rounds, use any timer, or end a round once the first match finishes.",
         ),
-      ),
-      m(
-        "button.action.right",
-        {
-          onclick: async () => {
-            const data = {
-              url: "https://github.com/alimfeld/tournicano",
-            };
-            try {
-              await navigator.share(data);
-            } catch (err) {
-              console.log(err);
-            }
-          },
-        },
-        "⿻",
       ),
     ];
   },

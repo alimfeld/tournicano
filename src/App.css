@@ -201,9 +201,12 @@ button.action {
   position: fixed;
   /* leave room for the fixed nav */
   bottom: 3.6rem;
-  border-radius: 2rem;
+  height: 3.5rem;
+  min-width: 3.5rem;
+  border-radius: 1.75rem;
   z-index: 1;
   margin-bottom: var(--pico-spacing);
+  right: var(--pico-spacing);
 }
 
 button.action.fullscreen {
@@ -211,17 +214,9 @@ button.action.fullscreen {
   bottom: 0;
 }
 
-button.action.left {
-  left: var(--pico-spacing);
-}
-
-button.action.middle {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-button.action.right {
-  right: var(--pico-spacing);
+button.action.ins,
+input.ins {
+  background: var(--pico-ins-color);
 }
 
 /* Global button styles */

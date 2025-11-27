@@ -5,6 +5,11 @@ export interface FABAction {
   icon: string;
   label: string;
   onclick: () => void;
+  disabled?: boolean;
+  confirmation?: {
+    title: string;
+    description: string;
+  };
 }
 
 export interface FABAttrs {
@@ -13,6 +18,7 @@ export interface FABAttrs {
   actions: FABAction[];
   position?: "left" | "right";
   fullscreen?: boolean;
+  disabled?: boolean;
 }
 
 interface FABState {
@@ -24,20 +30,48 @@ export const FAB: m.Component<FABAttrs, FABState> = {
     state.isOpen = false;
   },
 
-  view: ({ attrs: { icon, iconOpen, actions, position = "right", fullscreen = false }, state }) => {
+  view: ({ attrs: { icon, iconOpen, actions, position = "right", fullscreen = false, disabled = false }, state }) => {
     const positionClass = position === "left" ? "left" : "right";
     const fullscreenClass = fullscreen ? "fullscreen" : "";
 
     const toggleFAB = (event: Event) => {
+      if (disabled) {
+        event.preventDefault();
+        return;
+      }
       state.isOpen = !state.isOpen;
       event.preventDefault();
     };
 
-    const handleAction = (action: FABAction, event: Event) => {
+    const handleAction = (action: FABAction, dialogId: string, event: Event) => {
+      if (action.confirmation) {
+        // Open confirmation dialog
+        document.getElementById(dialogId)!.setAttribute("open", "true");
+      } else {
+        // Execute action directly
+        action.onclick();
+        state.isOpen = false;
+      }
+      event.preventDefault();
+    };
+
+    const confirmAction = (action: FABAction, dialogId: string, event: Event) => {
       action.onclick();
+      document.getElementById(dialogId)!.setAttribute("open", "false");
       state.isOpen = false;
       event.preventDefault();
     };
+
+    const cancelAction = (dialogId: string, event: Event) => {
+      document.getElementById(dialogId)!.setAttribute("open", "false");
+      event.preventDefault();
+    };
+
+    // Filter out disabled actions
+    const enabledActions = actions.filter((action) => !action.disabled);
+
+    // Generate unique IDs for dialogs
+    const actionDialogIds = enabledActions.map(() => crypto.randomUUID());
 
     return m(
       "div.fab-container",
@@ -49,34 +83,73 @@ export const FAB: m.Component<FABAttrs, FABState> = {
         state.isOpen &&
         m(
           "div.fab-actions",
-          actions.toReversed().map((action, index) =>
-            m(
+          enabledActions.toReversed().map((action, index) => {
+            const reversedIndex = enabledActions.length - 1 - index;
+            const dialogId = actionDialogIds[reversedIndex];
+            return m(
               "div.fab-action-item",
               {
                 key: index,
                 style: {
-                  transitionDelay: `${(actions.length - 1 - index) * 50}ms`,
+                  transitionDelay: `${reversedIndex * 50}ms`,
                 },
               },
               [
                 m("span.fab-action-label", action.label),
                 m(
-                  "button.fab-action-button",
+                  "button.fab-action-button.secondary",
                   {
-                    onclick: (event: Event) => handleAction(action, event),
+                    class: action.confirmation ? "action-with-confirmation" : "",
+                    onclick: (event: Event) => handleAction(action, dialogId, event),
                   },
                   action.icon,
                 ),
               ],
-            ),
-          ),
+            );
+          }),
         ),
+
+        // Confirmation dialogs for all actions
+        ...enabledActions
+          .map((action, index) => {
+            if (!action.confirmation) return null;
+            const dialogId = actionDialogIds[index];
+            return m(
+              "dialog",
+              { id: dialogId },
+              m(
+                "article",
+                m("h3", action.confirmation.title),
+                m("p", action.confirmation.description),
+                m(
+                  "footer",
+                  m(
+                    "button",
+                    {
+                      class: "secondary",
+                      onclick: (event: Event) => cancelAction(dialogId, event),
+                    },
+                    "Cancel",
+                  ),
+                  m(
+                    "button.confirm",
+                    {
+                      onclick: (event: Event) => confirmAction(action, dialogId, event),
+                    },
+                    "Confirm",
+                  ),
+                ),
+              ),
+            );
+          })
+          .filter((dialog) => dialog !== null),
 
         // Primary FAB button with icon transition
         m(
           "button.fab-primary",
           {
             class: state.isOpen ? "open" : "",
+            disabled: disabled,
             onclick: toggleFAB,
           },
           [

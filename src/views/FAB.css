@@ -26,7 +26,7 @@
   height: 3.5rem;
   border-radius: 50%;
   border: none;
-  background: var(--pico-primary);
+  background: var(--pico-primary-background);
   color: var(--pico-primary-inverse);
   font-size: 1.5rem;
   cursor: pointer;
@@ -52,6 +52,17 @@
 .fab-primary.open {
   background: var(--pico-primary-hover);
   transform: scale(1.1);
+}
+
+.fab-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--pico-primary-background);
+}
+
+.fab-primary:disabled:hover {
+  transform: none;
+  background: var(--pico-primary-background);
 }
 
 /* Icon transition */

@@ -3,8 +3,6 @@ import "./SettingsPage.css";
 import { NavView } from "./NavView.ts";
 import { Settings } from "../model/Settings.ts";
 import { Page } from "../App.ts";
-import { Tournament } from "../model/Tournament.ts";
-import { ActionWithConfirmation } from "./ActionWithConfirmation.ts";
 import {
   Americano,
   AmericanoMixed,
@@ -15,12 +13,11 @@ import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
 
 export interface SettingsAttrs {
   settings: Settings;
-  tournament: Tournament;
   nav: (page: Page) => void;
 }
 
 export const SettingsPage: m.Component<SettingsAttrs> = {
-  view: ({ attrs: { settings, tournament, nav } }) => {
+  view: ({ attrs: { settings, nav } }) => {
     const isAmericano =
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Americano);
     const isAmericanoMixed =
@@ -134,29 +131,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             },
           }),
         ),
-        m("h3", "🚨 Danger Zone"),
-        m(
-          "fieldset",
-          m(ActionWithConfirmation, {
-            action: "Restart",
-            disabled: tournament.rounds.length === 0,
-            title: "🚨 Restart Tournament?",
-            description:
-              "This will delete all rounds (but keep the registered players)!",
-            onconfirm: () => {
-              tournament.restart();
-            },
-          }),
-          m(ActionWithConfirmation, {
-            action: "Reset",
-            disabled: tournament.players().length === 0,
-            title: "🚨 Reset Tournament?",
-            description: "This will delete all rounds and registered players!",
-            onconfirm: () => {
-              tournament.reset();
-            },
-          }),
-        ),
         m("h2", "UI"),
         m(
           "fieldset",
@@ -210,22 +184,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             (settings.wakeLock ? " 👁️" : ""),
           ),
           m("small", "Only on rounds 🚀 page"),
-        ),
-        m(
-          "fieldset",
-          m(
-            "label",
-            m("input", {
-              name: "debug",
-              type: "checkbox",
-              role: "switch",
-              checked: settings.debug,
-              onchange: () => {
-                settings.showDebug(!settings.debug);
-              },
-            }),
-            "Show debug information",
-          ),
         ),
       ),
     ];

@@ -5,8 +5,10 @@ import { Page } from "../App.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { GroupView } from "./GroupView.ts";
 import { FAB } from "./FAB.ts";
+import { Settings } from "../model/Settings.ts";
 
 export interface PlayersAttrs {
+  settings: Settings;
   tournament: Tournament;
   playerFilter: string;
   changePlayerFilter: (playerFilter: string) => void;
@@ -14,7 +16,7 @@ export interface PlayersAttrs {
 }
 
 export const PlayersPage: m.Component<PlayersAttrs> = {
-  view: ({ attrs: { tournament, playerFilter, changePlayerFilter, nav } }) => {
+  view: ({ attrs: { settings, tournament, playerFilter, changePlayerFilter, nav } }) => {
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
@@ -90,42 +92,65 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               tournament,
               playerFilter,
               groupIndex: group,
+              playersEditable: settings.playersEditable,
             }),
           ),
         ),
-        m(
-          "form",
-          { onsubmit: (event: InputEvent) => event.preventDefault() },
-          m("textarea", {
-            id: "players",
-            placeholder: "Separate players by space and groups by newline...",
-            autocapitalize: "words",
-          }),
-          m("input", {
-            type: "submit",
-            value: "Add",
-            onclick: registerPlayers,
-          }),
-        ),
+        settings.playersEditable ?
+          m(
+            "form",
+            { onsubmit: (event: InputEvent) => event.preventDefault() },
+            m("textarea", {
+              id: "players",
+              placeholder: "Separate players by space and groups by newline...",
+              autocapitalize: "words",
+            }),
+            m("input.ins", {
+              type: "submit",
+              value: "Register",
+              onclick: registerPlayers,
+            }),
+          ) : null,
       ),
       m(FAB, {
         icon: "⋮",
         iconOpen: "✕",
-        position: "right",  // optional: "left" | "right" (default: "right")
-        fullscreen: false,  // optional: boolean (default: false)
+        disabled: tournament.players().length === 0,
         actions: [
+          {
+            icon: settings.playersEditable ? "🔒" : "🔓",
+            label: settings.playersEditable ? "Close registration" : "Open registration",
+            onclick: () => {
+              settings.setPlayersEditable(!settings.playersEditable);
+            },
+          },
           {
             icon: "⚪",
             label: "Deactivate all",
             onclick: () => {
               tournament.activateAll(false);
-            }
+            },
+            disabled: active === 0,
           },
           {
             icon: "🔵",
             label: "Activate all",
             onclick: () => {
               tournament.activateAll(true);
+            },
+            disabled: active === total,
+          },
+          {
+            icon: "🔴",
+            label: "Delete all",
+            onclick: () => {
+              tournament.reset();
+              settings.setPlayersEditable(true);
+            },
+            disabled: tournament.players().length === 0,
+            confirmation: {
+              title: "🚨 Delete all players?",
+              description: "This will delete all players and reset the tournament. This action can't be undone!",
             }
           },
           {
@@ -148,7 +173,8 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               } catch (err) {
                 console.log(err);
               }
-            }
+            },
+            disabled: tournament.players().length === 0,
           }
         ]
       }),

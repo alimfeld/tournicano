@@ -6,10 +6,11 @@ export interface GroupAttrs {
   tournament: Tournament;
   playerFilter: string;
   groupIndex: number;
+  playersEditable: boolean;
 }
 
 export const GroupView: m.Component<GroupAttrs> = {
-  view: ({ attrs: { tournament, playerFilter, groupIndex } }) => {
+  view: ({ attrs: { tournament, playerFilter, groupIndex, playersEditable } }) => {
     const players = tournament.players(groupIndex).filter(p =>
       playerFilter === "all" ||
       playerFilter === "active" && p.active ||
@@ -51,7 +52,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                     role: "switch",
                     checked: player.active,
                   }),
-                  player.isParticipating()
+                  player.isParticipating() || !playersEditable
                     ? null
                     : m(
                       "button.delete",
@@ -65,7 +66,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                       "-",
                     ),
                 )],
-                post: [m("div.group-actions",
+                post: [playersEditable ? m("div.group-actions",
                   m("button.secondary.up",
                     {
                       disabled: groupIndex === 0,
@@ -85,7 +86,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                       },
                     },
                     "↓"),
-                )],
+                ) : null],
               }),
             ),
           ),

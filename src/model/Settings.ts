@@ -11,6 +11,7 @@ export interface SettingsData {
   readonly theme: Theme;
   readonly wakeLock: boolean;
   readonly debug: boolean;
+  readonly playersEditable: boolean;
   readonly matchingSpec: MatchingSpec;
 }
 
@@ -20,6 +21,7 @@ export interface Settings extends SettingsData {
   setTheme(theme: Theme): void;
   enableWakeLock(enable: boolean): void;
   showDebug(debug: boolean): void;
+  setPlayersEditable(editable: boolean): void;
   setMatchingSpec(matchingSpec: MatchingSpec): void;
   addListener(listener: SettingsListener): void;
 }

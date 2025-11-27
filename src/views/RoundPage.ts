@@ -7,7 +7,7 @@ import { Page } from "../App.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
 import { Swipeable } from "./Swipeable.ts";
-import { ActionWithConfirmation } from "./ActionWithConfirmation.ts";
+import { FAB } from "./FAB.ts";
 
 export interface RoundAttrs {
   settings: Settings;
@@ -103,30 +103,8 @@ export const RoundPage: m.Component<RoundAttrs> = {
           ]
           : [m("p", "No rounds created (yet)!")],
       ),
-      round && round.isLast()
-        ? m(ActionWithConfirmation, {
-          action: "－",
-          title: "🚨 Delete Round?",
-          description: "This will delete the current round!",
-          clazz: "action left" + (fullscreen ? " fullscreen" : ""),
-          onconfirm: () => {
-            if (round) {
-              round.delete();
-              changeRound(roundIndex - 1);
-            }
-          },
-        })
-        : null,
-      m("button.secondary.action.middle" + (fullscreen ? ".fullscreen" : ""),
-        {
-          onclick: () => {
-            toggleFullscreen();
-          },
-        },
-        "⛶"
-      ),
       m(
-        "button.action.right" + (fullscreen ? ".fullscreen" : ""),
+        "button.action.ins" + (fullscreen ? ".fullscreen" : ""),
         {
           disabled: matchesPerRound < 1,
           onclick: () => {
@@ -134,8 +112,58 @@ export const RoundPage: m.Component<RoundAttrs> = {
             changeRound(roundCount);
           },
         },
-        `＋${matchesPerRound}`,
+        `New (${matchesPerRound})`,
       ),
+      m(FAB, {
+        icon: "⋮",
+        iconOpen: "✕",
+        position: "left",
+        fullscreen: fullscreen,
+        actions: [
+          {
+            icon: "⛶",
+            label: "Toggle Fullscreen",
+            onclick: () => {
+              toggleFullscreen();
+            }
+          },
+          {
+            icon: "🔎",
+            label: "Toggle Debug",
+            onclick: () => {
+              settings.showDebug(!settings.debug);
+            }
+          },
+          {
+            icon: "−",
+            label: "Delete Round",
+            onclick: () => {
+              if (round) {
+                round.delete();
+                changeRound(roundIndex - 1);
+              }
+            },
+            confirmation: {
+              title: `🚨 Delete Round ${roundIndex + 1}?`,
+              description: "This will delete the current round!",
+            },
+            disabled: !round || !round.isLast(),
+          },
+          {
+            icon: "🔴",
+            label: "Restart",
+            onclick: () => {
+              tournament.restart();
+            },
+            confirmation: {
+              title: "🚨 Restart Tournament?",
+              description:
+                "This will delete all rounds (but keep the registered players)!",
+            },
+            disabled: tournament.rounds.length === 0,
+          },
+        ]
+      }),
     ]);
   },
 };

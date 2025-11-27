@@ -144,12 +144,12 @@ export const App = () => {
         case Page.SETTINGS: {
           return m(SettingsPage, {
             settings: state.settings,
-            tournament: state.tournament,
             nav,
           });
         }
         case Page.PLAYERS: {
           return m(PlayersPage, {
+            settings: state.settings,
             tournament: state.tournament,
             playerFilter: state.playerFilter,
             changePlayerFilter,
