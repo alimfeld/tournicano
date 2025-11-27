@@ -104,7 +104,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           : [m("p", "No rounds created (yet)!")],
       ),
       m(
-        "button.action.ins" + (fullscreen ? ".fullscreen" : ""),
+        "button.action.add" + (fullscreen ? ".fullscreen" : ""),
         {
           disabled: matchesPerRound < 1,
           onclick: () => {
@@ -112,7 +112,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             changeRound(roundCount);
           },
         },
-        `New (${matchesPerRound})`,
+        "＋",
       ),
       m(FAB, {
         icon: "⋮",

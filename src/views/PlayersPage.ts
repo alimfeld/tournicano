@@ -105,7 +105,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               placeholder: "Separate players by space and groups by newline...",
               autocapitalize: "words",
             }),
-            m("input.ins", {
+            m("input.add", {
               type: "submit",
               value: "Register",
               onclick: registerPlayers,

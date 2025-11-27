@@ -214,9 +214,10 @@ button.action.fullscreen {
   bottom: 0;
 }
 
-button.action.ins,
-input.ins {
-  background: var(--pico-ins-color);
+button.action.add,
+input.add {
+  border-color: var(--pico-form-element-valid-border-color);
+  background: var(--pico-form-element-valid-focus-color);
 }
 
 /* Global button styles */
