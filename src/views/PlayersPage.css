@@ -79,3 +79,8 @@ div.group-actions button {
   padding: 0 1ex;
   border-radius: 1em;
 }
+
+input.add {
+  border-color: var(--pico-form-element-valid-border-color);
+  background: var(--pico-form-element-valid-focus-color);
+}

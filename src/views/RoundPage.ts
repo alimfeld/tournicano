@@ -134,7 +134,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             }
           },
           {
-            icon: "−",
+            icon: "➖",
             label: "Delete Round",
             onclick: () => {
               if (round) {
@@ -149,7 +149,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             disabled: !round || !round.isLast(),
           },
           {
-            icon: "🔴",
+            icon: "🔄",
             label: "Restart",
             onclick: () => {
               tournament.restart();

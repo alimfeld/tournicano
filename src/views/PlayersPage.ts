@@ -141,7 +141,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             disabled: active === total,
           },
           {
-            icon: "🔴",
+            icon: "❌",
             label: "Delete all",
             onclick: () => {
               tournament.reset();
