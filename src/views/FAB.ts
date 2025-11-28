@@ -161,10 +161,7 @@ export const FAB: m.Component<FABAttrs, FABState> = {
         m(
           "button.fab-primary",
           {
-            class: [
-              state.isOpen ? "open" : "",
-              variant === "add" ? "add" : ""
-            ].filter(Boolean).join(" "),
+            class: variant === "add" ? "add" : "",
             disabled: disabled,
             onclick: toggleFAB,
           },
