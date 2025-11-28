@@ -20,6 +20,11 @@
   right: var(--pico-spacing);
 }
 
+.fab-container button.confirm {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
 /* Primary FAB Button */
 .fab-primary {
   width: 3.2rem;
@@ -54,6 +59,22 @@
   opacity: 0.5;
   cursor: not-allowed;
   background: var(--pico-primary-background);
+}
+
+.fab-primary:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Add variant - use Pico's green valid colors */
+.fab-primary.add {
+  background: var(--pico-form-element-valid-focus-color);
+  border-color: var(--pico-form-element-valid-border-color);
+}
+
+.fab-primary.add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--pico-form-element-valid-focus-color);
 }
 
 /* Icon transition */
@@ -165,6 +186,10 @@
     0 0.2rem 0.4rem rgba(0, 0, 0, 0.4),
     0 0.4rem 0.8rem rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.fab-action-button:active {
+  transform: scale(0.95);
 }
 
 /* Backdrop */

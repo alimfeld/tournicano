@@ -197,62 +197,6 @@ main.actions {
   height: 100%;
 }
 
-button.action {
-  position: fixed;
-  /* leave room for the fixed nav */
-  bottom: 3.6rem;
-  height: 3.2rem;
-  min-width: 3.2rem;
-  border-radius: 1.6rem;
-  z-index: 1;
-  margin-bottom: var(--pico-spacing);
-  right: var(--pico-spacing);
-  box-shadow:
-    0 0.25rem 0.5rem rgba(0, 0, 0, 0.2),
-    0 0.5rem 1rem rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
-[data-theme=dark] button.action {
-  box-shadow:
-    0 0.25rem 0.5rem rgba(0, 0, 0, 0.4),
-    0 0.5rem 1rem rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.15);
-}
-
-button.action.fullscreen {
-  /* no nav in fullscreen */
-  bottom: 0;
-}
-
-button.action.add,
-input.add {
-  border-color: var(--pico-form-element-valid-border-color);
-  background: var(--pico-form-element-valid-focus-color);
-}
-
-button.action.add {
-  box-shadow:
-    0 0.25rem 0.5rem rgba(0, 0, 0, 0.2),
-    0 0.5rem 1rem rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(0, 100, 0, 0.2);
-}
-
-[data-theme=dark] button.action.add {
-  box-shadow:
-    0 0.25rem 0.5rem rgba(0, 0, 0, 0.4),
-    0 0.5rem 1rem rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(100, 255, 100, 0.2);
-}
-
-/* Global button styles */
-
-button.action-with-confirmation,
-button.confirm {
-  border-color: var(--pico-form-element-invalid-border-color);
-  background: var(--pico-form-element-invalid-focus-color);
-}
-
 /* Global animations */
 
 main {

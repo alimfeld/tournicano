@@ -5,6 +5,7 @@ import { PlayerView } from "./PlayerView.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { Page } from "../App.ts";
 import { Swipeable } from "./Swipeable.ts";
+import { FAB } from "./FAB.ts";
 
 export interface StandingsAttrs {
   tournament: Tournament;
@@ -230,23 +231,20 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           ]
           : m("p", "No scores submitted (yet)!"),
       ),
-      m(
-        "button.action.right",
-        {
-          disabled: standings.length === 0,
-          onclick: async () => {
-            const data = {
-              text: format(),
-            };
-            try {
-              await navigator.share(data);
-            } catch (err) {
-              console.log(err);
-            }
-          },
+      m(FAB, {
+        icon: "⿻",
+        onclick: async () => {
+          const data = {
+            text: format(),
+          };
+          try {
+            await navigator.share(data);
+          } catch (err) {
+            console.log(err);
+          }
         },
-        "⿻",
-      ),
+        disabled: standings.length === 0,
+      }),
     ];
   },
 };

@@ -15,10 +15,12 @@ export interface FABAction {
 export interface FABAttrs {
   icon: string;
   iconOpen?: string;
-  actions: FABAction[];
+  actions?: FABAction[];
+  onclick?: () => void;
   position?: "left" | "right";
   fullscreen?: boolean;
   disabled?: boolean;
+  variant?: "add";
 }
 
 interface FABState {
@@ -30,16 +32,26 @@ export const FAB: m.Component<FABAttrs, FABState> = {
     state.isOpen = false;
   },
 
-  view: ({ attrs: { icon, iconOpen, actions, position = "right", fullscreen = false, disabled = false }, state }) => {
+  view: ({ attrs: { icon, iconOpen, actions, onclick, position = "right", fullscreen = false, disabled = false, variant }, state }) => {
     const positionClass = position === "left" ? "left" : "right";
     const fullscreenClass = fullscreen ? "fullscreen" : "";
+
+    // Single-action mode when onclick is provided
+    const isSingleAction = !!onclick;
 
     const toggleFAB = (event: Event) => {
       if (disabled) {
         event.preventDefault();
         return;
       }
-      state.isOpen = !state.isOpen;
+
+      if (isSingleAction) {
+        // Single-action mode: execute the action directly
+        onclick();
+      } else {
+        // Multi-action mode: toggle the FAB menu
+        state.isOpen = !state.isOpen;
+      }
       event.preventDefault();
     };
 
@@ -67,8 +79,8 @@ export const FAB: m.Component<FABAttrs, FABState> = {
       event.preventDefault();
     };
 
-    // Filter out disabled actions
-    const enabledActions = actions.filter((action) => !action.disabled);
+    // Filter out disabled actions (only for multi-action mode)
+    const enabledActions = actions ? actions.filter((action) => !action.disabled) : [];
 
     // Generate unique IDs for dialogs
     const actionDialogIds = enabledActions.map(() => crypto.randomUUID());
@@ -80,6 +92,8 @@ export const FAB: m.Component<FABAttrs, FABState> = {
       },
       [
         // Secondary actions (rendered first so they appear above the primary button)
+        // Only shown in multi-action mode when FAB is open
+        !isSingleAction &&
         state.isOpen &&
         m(
           "div.fab-actions",
@@ -99,7 +113,6 @@ export const FAB: m.Component<FABAttrs, FABState> = {
                 m(
                   "button.fab-action-button.secondary",
                   {
-                    class: action.confirmation ? "action-with-confirmation" : "",
                     onclick: (event: Event) => handleAction(action, dialogId, event),
                   },
                   action.icon,
@@ -109,8 +122,8 @@ export const FAB: m.Component<FABAttrs, FABState> = {
           }),
         ),
 
-        // Confirmation dialogs for all actions
-        ...enabledActions
+        // Confirmation dialogs for all actions (only in multi-action mode)
+        ...(!isSingleAction ? enabledActions
           .map((action, index) => {
             if (!action.confirmation) return null;
             const dialogId = actionDialogIds[index];
@@ -142,13 +155,16 @@ export const FAB: m.Component<FABAttrs, FABState> = {
               ),
             );
           })
-          .filter((dialog) => dialog !== null),
+          .filter((dialog) => dialog !== null) : []),
 
         // Primary FAB button with icon transition
         m(
           "button.fab-primary",
           {
-            class: state.isOpen ? "open" : "",
+            class: [
+              state.isOpen ? "open" : "",
+              variant === "add" ? "add" : ""
+            ].filter(Boolean).join(" "),
             disabled: disabled,
             onclick: toggleFAB,
           },
@@ -171,7 +187,8 @@ export const FAB: m.Component<FABAttrs, FABState> = {
           ],
         ),
 
-        // Backdrop overlay when FAB is open
+        // Backdrop overlay when FAB is open (only in multi-action mode)
+        !isSingleAction &&
         state.isOpen &&
         m("div.fab-backdrop", {
           onclick: toggleFAB,
