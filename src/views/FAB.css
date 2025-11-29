@@ -65,16 +65,38 @@
   transform: scale(0.95);
 }
 
-/* Add variant - use Pico's green valid colors */
-.fab-primary.add {
+/* Ins variant - use Pico's green valid colors */
+.fab-primary.ins {
   background: var(--pico-form-element-valid-focus-color);
   border-color: var(--pico-form-element-valid-border-color);
 }
 
-.fab-primary.add:disabled {
+.fab-primary.ins:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   background: var(--pico-form-element-valid-focus-color);
+}
+
+.fab-action-button.ins {
+  background: var(--pico-form-element-valid-focus-color);
+  border-color: var(--pico-form-element-valid-border-color);
+}
+
+/* Del variant - use Pico's red invalid colors */
+.fab-primary.del {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+.fab-primary.del:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--pico-form-element-invalid-focus-color);
+}
+
+.fab-action-button.del {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
 }
 
 /* Icon transition */

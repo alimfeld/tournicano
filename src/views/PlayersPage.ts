@@ -118,14 +118,14 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         disabled: tournament.players().length === 0,
         actions: [
           {
-            icon: settings.playersEditable ? "🔒" : "🔓",
+            icon: settings.playersEditable ? "C" : "O",
             label: settings.playersEditable ? "Close registration" : "Open registration",
             onclick: () => {
               settings.setPlayersEditable(!settings.playersEditable);
             },
           },
           {
-            icon: "⚪",
+            icon: "⊖",
             label: "Deactivate all",
             onclick: () => {
               tournament.activateAll(false);
@@ -133,7 +133,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             disabled: active === 0,
           },
           {
-            icon: "🔵",
+            icon: "⊕",
             label: "Activate all",
             onclick: () => {
               tournament.activateAll(true);
@@ -141,12 +141,13 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             disabled: active === total,
           },
           {
-            icon: "❌",
+            icon: "␡",
             label: "Delete all",
             onclick: () => {
               tournament.reset();
               settings.setPlayersEditable(true);
             },
+            variant: "del",
             disabled: tournament.players().length === 0,
             confirmation: {
               title: "🚨 Delete all players?",

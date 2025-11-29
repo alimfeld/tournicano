@@ -106,7 +106,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
       m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
-        variant: "add",
+        variant: "ins",
         onclick: () => {
           tournament.createRound(settings.matchingSpec, matchesPerRound);
           changeRound(roundCount);
@@ -127,14 +127,14 @@ export const RoundPage: m.Component<RoundAttrs> = {
             }
           },
           {
-            icon: "🔎",
+            icon: "?",
             label: "Toggle Debug",
             onclick: () => {
               settings.showDebug(!settings.debug);
             }
           },
           {
-            icon: "➖",
+            icon: "－",
             label: "Delete Round",
             onclick: () => {
               if (round) {
@@ -146,10 +146,11 @@ export const RoundPage: m.Component<RoundAttrs> = {
               title: `🚨 Delete Round ${roundIndex + 1}?`,
               description: "This will delete the current round!",
             },
+            variant: "del",
             disabled: !round || !round.isLast(),
           },
           {
-            icon: "🔄",
+            icon: "⇤",
             label: "Restart",
             onclick: () => {
               tournament.restart();
@@ -159,6 +160,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
               description:
                 "This will delete all rounds (but keep the registered players)!",
             },
+            variant: "del",
             disabled: tournament.rounds.length === 0,
           },
         ]

@@ -6,6 +6,7 @@ export interface FABAction {
   label: string;
   onclick: () => void;
   disabled?: boolean;
+  variant?: "ins" | "del";
   confirmation?: {
     title: string;
     description: string;
@@ -20,7 +21,7 @@ export interface FABAttrs {
   position?: "left" | "right";
   fullscreen?: boolean;
   disabled?: boolean;
-  variant?: "add";
+  variant?: "ins" | "del";
 }
 
 interface FABState {
@@ -113,6 +114,7 @@ export const FAB: m.Component<FABAttrs, FABState> = {
                 m(
                   "button.fab-action-button.secondary",
                   {
+                    class: action.variant || "",
                     onclick: (event: Event) => handleAction(action, dialogId, event),
                   },
                   action.icon,
@@ -161,7 +163,7 @@ export const FAB: m.Component<FABAttrs, FABState> = {
         m(
           "button.fab-primary",
           {
-            class: variant === "add" ? "add" : "",
+            class: variant || "",
             disabled: disabled,
             onclick: toggleFAB,
           },
