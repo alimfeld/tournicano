@@ -150,8 +150,8 @@ export const RoundPage: m.Component<RoundAttrs> = {
             disabled: !round || !round.isLast(),
           },
           {
-            icon: "⇤",
-            label: "Restart",
+            icon: "↺",
+            label: "Restart Tournament",
             onclick: () => {
               tournament.restart();
             },

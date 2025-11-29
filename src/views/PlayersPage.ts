@@ -119,7 +119,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         actions: [
           {
             icon: settings.playersEditable ? "C" : "O",
-            label: settings.playersEditable ? "Close registration" : "Open registration",
+            label: settings.playersEditable ? "Close Registration" : "Open Registration",
             onclick: () => {
               settings.setPlayersEditable(!settings.playersEditable);
             },
@@ -156,7 +156,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           },
           {
             icon: "⿻",
-            label: "Share",
+            label: "Share / Export",
             onclick: async () => {
               const data = {
                 text: tournament.groups
