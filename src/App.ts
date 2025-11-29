@@ -121,6 +121,11 @@ export const App = () => {
   };
   state.settings.addListener(wakeLockSettingsListener);
 
+  // Request wake lock on init if settings indicate and we're on rounds page
+  if (state.settings.wakeLock && state.page === Page.ROUNDS) {
+    updateWakeLock();
+  }
+
   const nav = (page: Page) => {
     state.page = page;
     localStorage.setItem(PAGE_KEY, `${page}`);
@@ -180,7 +185,7 @@ export const App = () => {
             roundIndex: state.roundIndex,
             changeRound,
             nav,
-            wakeLock: wakeLock !== null,
+            wakeLock: state.settings.wakeLock && "wakeLock" in navigator,
             fullscreen: state.fullscreen,
             toggleFullscreen,
           });
