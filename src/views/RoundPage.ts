@@ -49,7 +49,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
               ? roundIndex + 1 === roundCount
                 ? `Round ${roundIndex + 1}`
                 : `Round ${roundIndex + 1}/${roundCount}`
-              : "Rounds") + (wakeLock ? " 👁️" : ""),
+              : "Rounds") + (wakeLock ? " ⏿" : ""),
           ),
           m(
             "button.secondary",
@@ -121,14 +121,22 @@ export const RoundPage: m.Component<RoundAttrs> = {
         actions: [
           {
             icon: "⛶",
-            label: "Toggle Fullscreen",
+            label: fullscreen ? "Exit Fullscreen" : "Enter Fullscreen",
             onclick: () => {
               toggleFullscreen();
             }
           },
           {
+            icon: "⏿",
+            label: wakeLock ? "Allow Screen to Turn Off" : "Keep Screen On",
+            onclick: () => {
+              settings.enableWakeLock(!settings.wakeLock);
+            },
+            disabled: !("wakeLock" in navigator),
+          },
+          {
             icon: "?",
-            label: "Toggle Debug",
+            label: settings.debug ? "Hide Debug Info" : "Show Debug Info",
             onclick: () => {
               settings.showDebug(!settings.debug);
             }

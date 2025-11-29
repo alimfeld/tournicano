@@ -92,11 +92,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           "You can navigate back and forth between rounds and change scores of previously completed rounds.",
         ),
-        m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed.",
-        ),
-        m(
-          "p",
-          "You can 👁️ prevent the screen from turning off when showing the round. This can be configured in ⚙️ Settings.",
+        m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed. Additionally you can ⏿ prevent the screen from turning off when showing the round.",
         ),
         m("h2", "🏆 Standings"),
         m(

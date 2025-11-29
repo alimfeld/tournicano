@@ -118,7 +118,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         disabled: tournament.players().length === 0,
         actions: [
           {
-            icon: settings.playersEditable ? "C" : "O",
+            icon: settings.playersEditable ? "●" : "◯",
             label: settings.playersEditable ? "Close Registration" : "Open Registration",
             onclick: () => {
               settings.setPlayersEditable(!settings.playersEditable);
@@ -126,7 +126,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           },
           {
             icon: "⊖",
-            label: "Deactivate all",
+            label: "Deactivate All",
             onclick: () => {
               tournament.activateAll(false);
             },
@@ -134,7 +134,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           },
           {
             icon: "⊕",
-            label: "Activate all",
+            label: "Activate All",
             onclick: () => {
               tournament.activateAll(true);
             },
@@ -142,7 +142,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
           },
           {
             icon: "␡",
-            label: "Delete all",
+            label: "Delete All",
             onclick: () => {
               tournament.reset();
               settings.setPlayersEditable(true);
