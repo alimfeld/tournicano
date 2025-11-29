@@ -7,6 +7,7 @@ export interface FABAction {
   onclick: () => void;
   disabled?: boolean;
   variant?: "ins" | "del";
+  active?: boolean;
   confirmation?: {
     title: string;
     description: string;
@@ -114,7 +115,10 @@ export const FAB: m.Component<FABAttrs, FABState> = {
                 m(
                   "button.fab-action-button.secondary",
                   {
-                    class: action.variant || "",
+                    class: [
+                      action.variant || "",
+                      action.active ? "active" : ""
+                    ].filter(Boolean).join(" "),
                     onclick: (event: Event) => handleAction(action, dialogId, event),
                   },
                   action.icon,

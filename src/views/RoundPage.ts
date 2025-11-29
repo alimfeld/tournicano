@@ -124,7 +124,8 @@ export const RoundPage: m.Component<RoundAttrs> = {
             label: fullscreen ? "Exit Fullscreen" : "Enter Fullscreen",
             onclick: () => {
               toggleFullscreen();
-            }
+            },
+            active: fullscreen,
           },
           {
             icon: "⏿",
@@ -133,13 +134,15 @@ export const RoundPage: m.Component<RoundAttrs> = {
               settings.enableWakeLock(!settings.wakeLock);
             },
             disabled: !("wakeLock" in navigator),
+            active: wakeLock,
           },
           {
             icon: "?",
             label: settings.debug ? "Hide Debug Info" : "Show Debug Info",
             onclick: () => {
               settings.showDebug(!settings.debug);
-            }
+            },
+            active: settings.debug,
           },
           {
             icon: "－",

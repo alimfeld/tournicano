@@ -118,11 +118,12 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         disabled: tournament.players().length === 0,
         actions: [
           {
-            icon: settings.playersEditable ? "●" : "◯",
+            icon: "⏎",
             label: settings.playersEditable ? "Close Registration" : "Open Registration",
             onclick: () => {
               settings.setPlayersEditable(!settings.playersEditable);
             },
+            active: !settings.playersEditable,
           },
           {
             icon: "⊖",

@@ -201,6 +201,7 @@
   justify-content: center;
   padding: 0;
   flex-shrink: 0;
+  position: relative;
 }
 
 [data-theme=dark] .fab-action-button {
@@ -212,6 +213,24 @@
 
 .fab-action-button:active {
   transform: scale(0.95);
+}
+
+/* Active state - diagonal line crossing out the button */
+.fab-action-button.active::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--pico-color);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  pointer-events: none;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme=dark] .fab-action-button.active::after {
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
 }
 
 /* Backdrop */
