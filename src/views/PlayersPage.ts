@@ -24,7 +24,8 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         if (i < 4) {
           const line = group.trim();
           if (line) {
-            const names = line.trim().split(/\s+/);
+            // Split by comma or period (.) - double-tapping space produces a period on many devices
+            const names = line.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
             tournament.registerPlayers(names, i);
           }
         }
@@ -102,7 +103,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             { onsubmit: (event: InputEvent) => event.preventDefault() },
             m("textarea", {
               id: "players",
-              placeholder: "Separate players by space and groups by newline...",
+              placeholder: "Separate players by comma or period and groups by newline...",
               autocapitalize: "words",
             }),
             m("input.add", {
@@ -166,7 +167,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
                       .players(group)
                       .map((player) => player.name)
                       .toSorted((p, q) => p.localeCompare(q))
-                      .join(" "),
+                      .join(", "),
                   )
                   .join("\n"),
               };

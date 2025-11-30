@@ -36,7 +36,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "🤖 Player Management"),
         m(
           "p",
-          "Players are added by typing or pasting their names into a text field. Player names are separated by spaces, so each player is identified by a single name. Each name maps to a consistent avatar image, which will be displayed for the player.",
+          "Players are added by typing or pasting their names into a text field. Player names can consist of multiple words and are separated by commas or periods. (Note: On many devices, double-tapping the space bar produces a period.) Each name maps to a consistent avatar image, which will be displayed for the player.",
         ),
         m(
           "p",
@@ -64,7 +64,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Some quick actions are available via the ⋮ button. Registration can be closed to remove UI clutter (UI elements to withdraw and register players as well as UI elements to move players between groups). All players can be activated, deactivated, or deleted (which will also delete any rounds of a started tournament). In addition, there is an option to ⿻ share/export all player names (this allows for a later import by pasting those names into the text field to add players)."
+          "Some quick actions are available via the ⋮ button. Registration can be closed to remove UI clutter (UI elements to withdraw and register players as well as UI elements to move players between groups). All players can be activated, deactivated, or deleted (which will also delete any rounds of a started tournament). In addition, there is an option to ⿻ share/export all player names (this allows for a later import by pasting those names into the text field to add players). Exported player names are separated by commas."
         ),
         m(
           "p",
