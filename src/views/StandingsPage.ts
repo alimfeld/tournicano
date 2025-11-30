@@ -113,10 +113,6 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         Swipeable,
         {
           element: "main.standings.container-fluid.actions",
-          onswiping: (swiping) => {
-            document.getElementById("title")!.style =
-              `opacity: ${swiping ? 0.1 : 1}`;
-          },
           onswipeleft:
             roundIndex > 0
               ? () => {

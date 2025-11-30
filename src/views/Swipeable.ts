@@ -2,27 +2,21 @@ import m from "mithril";
 
 export interface SwipeableAttrs {
   element: string;
-  onswiping: (swiping: boolean) => void;
   onswipeleft: (() => void) | undefined;
   onswiperight: (() => void) | undefined;
+  onanimationstart?: () => void; // Called when animation starts (for header updates)
 }
 
 const ID = crypto.randomUUID();
 const GESTURE_THRESHOLD = 20;
-const SWIPE_THRESHOLD = 80;
+const SWIPE_THRESHOLD = Math.min(100, window.innerWidth * 0.25); // 25% of screen width, max 100px
+const SLIDE_IN_DURATION = 0.4; // Animation duration in seconds
 
 let touchStartX = 0;
 let isSwiping = false;
 
 export const Swipeable: m.Component<SwipeableAttrs> = {
   view: (vnode) => {
-    const fadeIn = (fromRight: boolean) => {
-      const main = document.getElementsByTagName("main")[0]!;
-      main.classList.remove("slide-in-from-right");
-      main.classList.remove("slide-in-from-left");
-      main.offsetHeight; // force repaint to recognize `animation-name: none;`
-      main.classList.add(fromRight ? "slide-in-from-right" : "slide-in-from-left");
-    };
     return m(
       vnode.attrs.element,
       {
@@ -40,7 +34,6 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
           if (!isSwiping && dx > GESTURE_THRESHOLD) {
             // gesture recognized
             isSwiping = true;
-            vnode.attrs.onswiping(true);
           }
           if (isSwiping) {
             let tx = 0;
@@ -51,10 +44,11 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
               // left
               tx = vnode.attrs.onswiperight ? -dx : 0;
             }
-            const opacity = Math.max(
-              0.1,
-              1 - Math.min(dx, SWIPE_THRESHOLD) / SWIPE_THRESHOLD,
-            );
+            
+            // Calculate opacity based on swipe progress (fade out as approaching threshold)
+            // Keep minimum opacity at 0.2 so content stays slightly visible
+            const opacity = Math.max(0.2, 1 - (dx / SWIPE_THRESHOLD));
+            
             document.getElementById(ID)!.style =
               tx !== 0
                 ? `transform: translateX(${tx}px); opacity: ${opacity}`
@@ -67,22 +61,77 @@ export const Swipeable: m.Component<SwipeableAttrs> = {
             return;
           }
           isSwiping = false;
-          vnode.attrs.onswiping(false);
-          document.getElementById(ID)!.style = "";
           const touchEndX = event.changedTouches[0].screenX;
+          const swipeableElement = document.getElementById(ID)!;
+          
           if (
             touchEndX - touchStartX > SWIPE_THRESHOLD &&
             vnode.attrs.onswipeleft
           ) {
-            vnode.attrs.onswipeleft();
-            fadeIn(false);
-          }
-          if (
+            // Swiping right -> change content and slide in from left
+            const callback = vnode.attrs.onswipeleft;
+            
+            // Change content immediately
+            callback();
+            
+            // Force Mithril to redraw synchronously, then animate
+            m.redraw();
+            
+            // Wait for DOM to be ready and set initial styles
+            requestAnimationFrame(() => {
+              const newElement = document.getElementById(ID);
+              if (!newElement) return;
+              
+              newElement.style.transition = "none";
+              newElement.style.transform = "translateX(-100%)";
+              newElement.style.opacity = "0.2";
+              
+              // Start transition in next frame
+              requestAnimationFrame(() => {
+                newElement.style.transition = `transform ${SLIDE_IN_DURATION}s ease-in-out, opacity ${SLIDE_IN_DURATION}s ease-in-out`;
+                newElement.style.transform = "translateX(0)";
+                newElement.style.opacity = "1";
+              });
+            });
+          } else if (
             touchEndX - touchStartX < -SWIPE_THRESHOLD &&
             vnode.attrs.onswiperight
           ) {
-            vnode.attrs.onswiperight();
-            fadeIn(true);
+            // Swiping left -> change content and slide in from right
+            const callback = vnode.attrs.onswiperight;
+            
+            // Change content immediately
+            callback();
+            
+            // Force Mithril to redraw synchronously, then animate
+            m.redraw();
+            
+            // Wait for DOM to be ready and set initial styles
+            requestAnimationFrame(() => {
+              const newElement = document.getElementById(ID);
+              if (!newElement) return;
+              
+              newElement.style.transition = "none";
+              newElement.style.transform = "translateX(100%)";
+              newElement.style.opacity = "0.2";
+              
+              // Start transition in next frame
+              requestAnimationFrame(() => {
+                newElement.style.transition = `transform ${SLIDE_IN_DURATION}s ease-in-out, opacity ${SLIDE_IN_DURATION}s ease-in-out`;
+                newElement.style.transform = "translateX(0)";
+                newElement.style.opacity = "1";
+              });
+            });
+          } else {
+            // Swipe didn't meet threshold, animate back to original position
+            swipeableElement.style.transition = "transform 0.3s ease-out, opacity 0.3s ease-out";
+            swipeableElement.style.transform = "translateX(0)";
+            swipeableElement.style.opacity = "1";
+            
+            // Clear the transition after animation completes
+            setTimeout(() => {
+              swipeableElement.style.transition = "";
+            }, 300);
           }
         },
       },

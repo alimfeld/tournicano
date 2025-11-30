@@ -65,12 +65,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
         Swipeable,
         {
           element: "main.round.container-fluid.actions" + (fullscreen ? ".fullscreen" : ""),
-          onswiping: (swiping) => {
-            if (!fullscreen) {
-              document.getElementById("title")!.style =
-                `opacity: ${swiping ? 0.1 : 1}`;
-            }
-          },
           onswipeleft:
             roundIndex > 0
               ? () => {
