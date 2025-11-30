@@ -145,6 +145,7 @@ article.player {
   align-items: center;
   justify-content: space-evenly;
   padding: 1ex;
+  min-width: 0;
 }
 
 article.player img {
