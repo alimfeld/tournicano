@@ -46,6 +46,16 @@ section.vs button.score {
   width: 100%;
 }
 
+section.vs button.score.invalid {
+  border-color: var(--pico-form-element-invalid-border-color);
+  color: var(--pico-form-element-invalid-focus-color);
+}
+
+section.vs button.score.valid {
+  border-color: var(--pico-form-element-valid-border-color);
+  color: var(--pico-form-element-valid-focus-color);
+}
+
 section.paused {
   display: grid;
   column-gap: var(--pico-spacing);
