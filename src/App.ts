@@ -41,6 +41,7 @@ interface State {
     roundIndex: number;
     matchIndex: number;
     match: Match;
+    scrollPosition: number;
   };
 }
 
@@ -163,7 +164,12 @@ export const App = () => {
     state.fullscreen = !state.fullscreen;
   }
   const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
-    state.scoreEntryMatch = { roundIndex, matchIndex, match };
+    state.scoreEntryMatch = { 
+      roundIndex, 
+      matchIndex, 
+      match,
+      scrollPosition: window.scrollY 
+    };
     nav(Page.SCORE_ENTRY);
   }
 
@@ -223,7 +229,16 @@ export const App = () => {
             roundIndex: state.scoreEntryMatch.roundIndex,
             matchIndex: state.scoreEntryMatch.matchIndex,
             match: state.scoreEntryMatch.match,
-            onClose: () => nav(Page.ROUNDS),
+            onClose: () => {
+              const savedScroll = state.scoreEntryMatch?.scrollPosition;
+              nav(Page.ROUNDS);
+              // Restore scroll position after navigation completes
+              if (savedScroll !== undefined) {
+                requestAnimationFrame(() => {
+                  window.scrollTo(0, savedScroll);
+                });
+              }
+            },
           });
         }
       }
