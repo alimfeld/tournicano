@@ -86,7 +86,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "For each match, there is an input to enter the score. A score must be entered using exactly four digits, with leading zeroes where required. The first two digits represent the points scored by the team on the left, and the last two digits represent the points scored by the team on the right. Scores above 99 points are not supported. To enter a score of, e.g., 8:11, input '0811'.",
+          "For each match, there is an button to enter the score. Scores can be entered using two digits max per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
         ),
         m(
           "p",

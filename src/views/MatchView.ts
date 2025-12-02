@@ -1,6 +1,6 @@
 import m from "mithril";
 import { PlayerView } from "./PlayerView.ts";
-import { Match, Score, Team } from "../model/Tournament.ts";
+import { Match, Team } from "../model/Tournament.ts";
 
 export interface MatchAttrs {
   roundIndex: number;
@@ -8,20 +8,16 @@ export interface MatchAttrs {
   matchIndex: number;
   debug: boolean;
   fullscreen: boolean;
+  openScoreEntry: (roundIndex: number, matchIndex: number, match: Match) => void;
 }
 
 export const MatchView = (): m.Component<MatchAttrs> => {
-  let isEditing = false;
-  let isValid = true;
-  let scoreString = "";
   return {
-    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen } }) => {
-      if (!isEditing) {
-        scoreString = match.score
-          ? `${String(match.score[0]).padStart(2, "0")}:${String(match.score[1]).padStart(2, "0")}`
-          : ""
-        isValid = !!match.score
-      }
+    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen, openScoreEntry } }) => {
+      const scoreString = match.score
+        ? `${match.score[0]}:${match.score[1]}`
+        : "";
+      const isValid = !!match.score;
       const avgTeamWinRatio = (team: Team) => {
         return (team.player1.winRatio + team.player2.winRatio) / 2;
       };
@@ -98,55 +94,10 @@ export const MatchView = (): m.Component<MatchAttrs> => {
               fullscreen ?
                 m("h2.match", `${roundIndex + 1} - ${matchIndex + 1}`) :
                 m("h2.match", matchIndex + 1),
-              m("input.score", {
-                type: "text",
-                name: `score${matchIndex}`,
+              m("button.outline.score", {
                 class: isValid ? "valid" : "invalid",
-                placeholder: "--:--",
-                inputmode: "numeric",
-                tabindex: matchIndex + 1,
-                value: scoreString,
-                oninput: (event: InputEvent) => {
-                  isEditing = true;
-                  const input = event.target as HTMLInputElement;
-                  // Remove non-digit characters
-                  let digits = input.value.replace(/\D/g, "");
-                  // Limit to 4 digits
-                  if (digits.length > 4) {
-                    digits = digits.slice(0, 4);
-                  }
-                  // Format as XX:YY
-                  if (digits.length <= 2) {
-                    input.value = digits;
-                    // keep cursor in front of colon to make backspace work!
-                    input.setSelectionRange(digits.length, digits.length);
-                  } else {
-                    input.value = digits.slice(0, 2) + ":" + digits.slice(2);
-                  }
-                  isValid = digits.length === 4;
-                  scoreString = input.value;
-                },
-                onblur: (event: InputEvent) => {
-                  isEditing = false;
-                  const input = event.target as HTMLInputElement;
-                  // Remove non-digit characters
-                  let digits = input.value.replace(/\D/g, "");
-                  isValid = digits.length === 4;
-                  const score: Score | undefined =
-                    isValid
-                      ? [parseInt(digits.slice(0, 2)), parseInt(digits.slice(2))]
-                      : undefined;
-                  if (score === undefined) {
-                    input.value = "";
-                  }
-                  match.submitScore(score);
-                },
-                onkeyup: (event: KeyboardEvent) => {
-                  if (event.key === 'Enter') {
-                    (event.target as HTMLInputElement).blur();
-                  }
-                },
-              }),
+                onclick: () => openScoreEntry(roundIndex, matchIndex, match),
+              }, scoreString || "--:--"),
             ),
             renderTeam(match.teamB),
           ),

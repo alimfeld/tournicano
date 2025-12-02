@@ -2,7 +2,7 @@ import m from "mithril";
 import "./RoundPage.css";
 import { PlayerView } from "./PlayerView.ts";
 import { NavView } from "./NavView.ts";
-import { Tournament } from "../model/Tournament.ts";
+import { Tournament, Match } from "../model/Tournament.ts";
 import { Page } from "../App.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
@@ -18,11 +18,12 @@ export interface RoundAttrs {
   wakeLock: boolean;
   fullscreen: boolean;
   toggleFullscreen: () => void;
+  openScoreEntry: (roundIndex: number, matchIndex: number, match: Match) => void;
 }
 
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({
-    attrs: { settings, tournament, roundIndex, changeRound, nav, wakeLock, fullscreen, toggleFullscreen },
+    attrs: { settings, tournament, roundIndex, changeRound, nav, wakeLock, fullscreen, toggleFullscreen, openScoreEntry },
   }) => {
     const matchesPerRound = Math.min(
       Math.floor(tournament.players().filter((p) => p.active).length / 4),
@@ -81,7 +82,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
         round
           ? [
             ...round.matches.map((match, matchIndex) =>
-              m(MatchView, { roundIndex, match, matchIndex, debug: settings.debug, fullscreen }),
+              m(MatchView, { roundIndex, match, matchIndex, debug: settings.debug, fullscreen, openScoreEntry }),
             ),
             round.paused.length > 0
               ? [

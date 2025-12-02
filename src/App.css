@@ -17,12 +17,19 @@
     0.5ex 0.5ex 1ex rgba(0, 0, 0, 0.9);
 }
 
-@media (min-width: 576px) {
+@media (min-width: 512px) {
 
   :root,
   :host {
-    /* --pico-font-size: 106.25%; */
     --pico-font-size: 120%;
+  }
+}
+
+@media (min-width: 640px) {
+
+  :root,
+  :host {
+    --pico-font-size: 130%;
   }
 }
 
@@ -30,7 +37,6 @@
 
   :root,
   :host {
-    /* --pico-font-size: 112.5%; */
     --pico-font-size: 140%;
   }
 }
@@ -39,7 +45,6 @@
 
   :root,
   :host {
-    /* --pico-font-size: 118.75%; */
     --pico-font-size: 160%;
   }
 }
@@ -48,7 +53,6 @@
 
   :root,
   :host {
-    /* --pico-font-size: 125%; */
     --pico-font-size: 180%;
   }
 }
@@ -57,7 +61,6 @@
 
   :root,
   :host {
-    /* --pico-font-size: 131.25%; */
     --pico-font-size: 200%;
   }
 }
@@ -151,8 +154,22 @@ article.player {
 }
 
 article.player img {
-  width: 4rem;
-  height: 4rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+@media (min-width: 768px) {
+  article.player img {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  article.player img {
+    width: 3.8rem;
+    height: 3.8rem;
+  }
 }
 
 article.player p {

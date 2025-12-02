@@ -3,72 +3,100 @@ header.round {
   justify-content: space-between;
 }
 
-main.round h2.match {
+header.score-entry {
   text-align: center;
 }
 
-main.round section.match {
+h2.match {
+  text-align: center;
+}
+
+section.match {
+  width: 100%;
   display: grid;
   column-gap: var(--pico-spacing);
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+section.match {
   border-bottom: 1px solid;
   border-color: var(--pico-muted-border-color);
 }
 
-main.round section.team {
+section.team {
   display: grid;
   grid-template-rows: repeat(2, minmax(0, 1fr));
   row-gap: var(--pico-spacing);
 }
 
-main.round section.team article.player {
+section.team article.player {
   margin: 0;
 }
 
-main.round section.vs {
+section.vs {
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
+  align-items: center;
+  font-size: 1.2em;
 }
 
-main.round section.vs input {
+section.vs button.score {
   text-align: center;
+  width: 100%;
 }
 
-main.round section.vs input.valid {
-  border-color: var(--pico-form-element-valid-border-color);
-}
-
-main.round section.vs input.invalid {
-  border-color: var(--pico-form-element-invalid-border-color);
-}
-
-main.round section.vs small {
-  margin-bottom: 0;
-}
-
-main.round section.paused {
+section.paused {
   display: grid;
   column-gap: var(--pico-spacing);
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-main.round section.paused article {
+section.paused article {
   opacity: 0.5;
 }
 
+main.score-entry {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+section.keyboard {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pico-spacing);
+}
+
+section.keyboard button.clear {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+section.keyboard button.accept {
+  background: var(--pico-form-element-valid-focus-color);
+  border-color: var(--pico-form-element-valid-border-color);
+}
+
 @media (min-width: 768px) {
-  main.round section.match {
+
+  section.match {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
   }
 
-  main.round section.team {
+  section.team {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: minmax(0, 1fr);
     column-gap: var(--pico-spacing);
   }
 
-  main.round section.paused {
+  section.paused {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  section.keyboard {
+    width: 60%;
   }
 }

@@ -10,6 +10,8 @@ import { Settings, SettingsListener, Theme } from "./model/Settings.ts";
 import { tournamentFactory } from "./model/Tournament.impl.ts";
 import { settingsFactory } from "./model/Settings.impl.ts";
 import { HomePage } from "./views/HomePage.ts";
+import { ScoreEntryPage } from "./views/ScoreEntryPage.ts";
+import { Match } from "./model/Tournament.ts";
 
 const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
@@ -24,6 +26,7 @@ export enum Page {
   PLAYERS,
   ROUNDS,
   STANDINGS,
+  SCORE_ENTRY,
 }
 
 interface State {
@@ -34,6 +37,11 @@ interface State {
   group: number | undefined;
   playerFilter: string;
   fullscreen: boolean;
+  scoreEntryMatch?: {
+    roundIndex: number;
+    matchIndex: number;
+    match: Match;
+  };
 }
 
 const syncTheme = (theme: Theme) => {
@@ -154,6 +162,10 @@ export const App = () => {
   const toggleFullscreen = () => {
     state.fullscreen = !state.fullscreen;
   }
+  const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
+    state.scoreEntryMatch = { roundIndex, matchIndex, match };
+    nav(Page.SCORE_ENTRY);
+  }
 
   return {
     view: () => {
@@ -188,6 +200,7 @@ export const App = () => {
             wakeLock: state.settings.wakeLock && "wakeLock" in navigator,
             fullscreen: state.fullscreen,
             toggleFullscreen,
+            openScoreEntry,
           });
         }
         case Page.STANDINGS: {
@@ -198,6 +211,19 @@ export const App = () => {
             changeRound,
             changeGroup,
             nav,
+          });
+        }
+        case Page.SCORE_ENTRY: {
+          if (!state.scoreEntryMatch) {
+            // Fallback if scoreEntryMatch is not set
+            nav(Page.ROUNDS);
+            return null;
+          }
+          return m(ScoreEntryPage, {
+            roundIndex: state.scoreEntryMatch.roundIndex,
+            matchIndex: state.scoreEntryMatch.matchIndex,
+            match: state.scoreEntryMatch.match,
+            onClose: () => nav(Page.ROUNDS),
           });
         }
       }
