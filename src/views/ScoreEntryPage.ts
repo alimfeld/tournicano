@@ -120,10 +120,6 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
     const isColonDisabled = state.scoreInput.length === 0 || state.scoreInput.includes(":");
 
     return m.fragment({}, [
-      m("header.score-entry.container-fluid", [
-        m("h1", `Round ${roundIndex + 1} - Match ${matchIndex + 1}`),
-      ]),
-
       m("main.score-entry.container-fluid.fullscreen", [
         m("section.match", [
           m("section.team", [
