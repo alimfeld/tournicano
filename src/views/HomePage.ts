@@ -86,7 +86,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "For each match, there is an button to enter the score. Scores can be entered using two digits max per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
+          "For each match, there is a button to enter the score. Scores can be entered using two digits max per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
         ),
         m(
           "p",
