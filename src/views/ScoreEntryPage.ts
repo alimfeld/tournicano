@@ -127,6 +127,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             m(PlayerView, { player: match.teamA.player2, debug: false }),
           ]),
           m("section.vs", [
+            m("h2.match", `Match ${matchIndex + 1}`),
             m("div.score-text", formatScore()),
           ]),
           m("section.team", [
@@ -152,7 +153,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
               disabled: !isValid,
               onclick: accept,
             },
-            "Accept",
+            "Submit",
           ),
           // Row 1: 1-3
           m("button.key-number", { onclick: () => addDigit("1") }, "1"),
@@ -172,7 +173,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             disabled: isColonDisabled,
           }, ":"),
           m("button.key-number", { onclick: () => addDigit("0") }, "0"),
-          m("button.key-action.secondary", { onclick: backspace }, "←"),
+          m("button.key-action.secondary", { onclick: backspace }, "⌫"),
         ]),
       ]),
     ]);
