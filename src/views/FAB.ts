@@ -111,7 +111,9 @@ export const FAB: m.Component<FABAttrs, FABState> = {
                 },
               },
               [
-                m("span.fab-action-label", action.label),
+                m("span.fab-action-label", {
+                  onclick: (event: Event) => handleAction(action, dialogId, event),
+                }, action.label),
                 m(
                   "button.fab-action-button.secondary",
                   {

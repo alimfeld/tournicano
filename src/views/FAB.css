@@ -172,6 +172,18 @@
     0 0 0 1px rgba(0, 0, 0, 0.1);
   font-size: 0.9rem;
   border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+  user-select: none;
+}
+
+.fab-action-label:hover {
+  background: var(--pico-secondary-hover-background);
+  color: var(--pico-secondary-inverse);
+}
+
+.fab-action-label:active {
+  transform: scale(0.98);
 }
 
 [data-theme=dark] .fab-action-label {
