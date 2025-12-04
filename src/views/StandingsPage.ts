@@ -156,7 +156,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           : null,
         standings.length > 0
           ? [
-            showGroupSwitcher ? [
+            showGroupSwitcher && standingsGroup !== undefined ? [
               m("section.group-stats",
                 m("div"),
                 m("div.total-players",
