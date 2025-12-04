@@ -48,6 +48,11 @@
   z-index: 3;
 }
 
+.fab-primary:hover:not(:disabled) {
+  background: var(--pico-primary-hover-background);
+  transform: scale(1.05);
+}
+
 [data-theme=dark] .fab-primary {
   box-shadow:
     0 0.25rem 0.5rem rgba(0, 0, 0, 0.4),
@@ -71,6 +76,10 @@
   border-color: var(--pico-form-element-valid-border-color);
 }
 
+.fab-primary.ins:hover:not(:disabled) {
+  background: var(--pico-form-element-valid-active-border-color);
+}
+
 .fab-primary.ins:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -82,10 +91,18 @@
   border-color: var(--pico-form-element-valid-border-color);
 }
 
+.fab-action-button.ins:hover {
+  background: var(--pico-form-element-valid-active-border-color);
+}
+
 /* Del variant - use Pico's red invalid colors */
 .fab-primary.del {
   background: var(--pico-form-element-invalid-focus-color);
   border-color: var(--pico-form-element-invalid-border-color);
+}
+
+.fab-primary.del:hover:not(:disabled) {
+  background: var(--pico-form-element-invalid-active-border-color);
 }
 
 .fab-primary.del:disabled {
@@ -97,6 +114,10 @@
 .fab-action-button.del {
   background: var(--pico-form-element-invalid-focus-color);
   border-color: var(--pico-form-element-invalid-border-color);
+}
+
+.fab-action-button.del:hover {
+  background: var(--pico-form-element-invalid-active-border-color);
 }
 
 /* Icon transition */
@@ -214,6 +235,11 @@
   padding: 0;
   flex-shrink: 0;
   position: relative;
+}
+
+.fab-action-button:hover {
+  background: var(--pico-secondary-hover-background);
+  transform: scale(1.05);
 }
 
 [data-theme=dark] .fab-action-button {
