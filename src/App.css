@@ -67,6 +67,7 @@
 
 body {
   min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height for mobile */
   display: flex;
   flex-direction: column;
 }
@@ -203,6 +204,7 @@ div.debug> :nth-child(2n) {
 
 main {
   flex: 1;
+  min-height: 0; /* Allow flex item to shrink */
   /* leave room for the fixed nav */
   padding-bottom: calc(3.6rem + env(safe-area-inset-bottom));
 }
