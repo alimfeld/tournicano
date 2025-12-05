@@ -116,6 +116,8 @@ nav {
   background: var(--pico-background-color);
   z-index: 1;
   box-shadow: var(--pico-box-shadow);
+  /* iOS safe area support */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 nav ul:first-of-type,
@@ -202,17 +204,22 @@ div.debug> :nth-child(2n) {
 main {
   flex: 1;
   /* leave room for the fixed nav */
-  margin-bottom: 3.6rem;
+  padding-bottom: calc(3.6rem + env(safe-area-inset-bottom));
 }
 
 main.fullscreen {
-  /* no nav in fullscreen */
-  margin-bottom: 0;
+  /* no nav in fullscreen, but still need safe area for FAB buttons */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Global floating / fixed actions styles */
 
 main.actions {
-  padding-bottom: 4rem;
-  /* leave room for action buttons */
+  /* leave room for action buttons + nav + safe area */
+  padding-bottom: calc(4rem + 3.6rem + env(safe-area-inset-bottom));
+}
+
+main.actions.fullscreen {
+  /* leave room for action buttons + safe area (no nav in fullscreen) */
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
 }

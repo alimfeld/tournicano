@@ -1,15 +1,15 @@
 /* FAB Container */
 .fab-container {
   position: fixed;
-  bottom: 3.6rem;
+  bottom: calc(3.6rem + env(safe-area-inset-bottom));
   /* leave room for the fixed nav */
   z-index: 2;
   margin-bottom: var(--pico-spacing);
 }
 
 .fab-container.fullscreen {
-  bottom: 0;
-  /* no nav in fullscreen */
+  bottom: env(safe-area-inset-bottom);
+  /* no nav in fullscreen, but respect iOS safe area */
 }
 
 .fab-container.left {
