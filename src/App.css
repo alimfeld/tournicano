@@ -205,6 +205,9 @@ div.debug> :nth-child(2n) {
 main {
   flex: 1;
   min-height: 0; /* Allow flex item to shrink */
+}
+
+main:not(.fullscreen):not(.actions) {
   /* leave room for the fixed nav */
   padding-bottom: calc(3.6rem + env(safe-area-inset-bottom));
 }
