@@ -67,7 +67,8 @@
 
 body {
   min-height: 100vh;
-  min-height: 100dvh; /* Use dynamic viewport height for mobile */
+  /* Use dynamic viewport height for mobile */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -204,7 +205,8 @@ div.debug> :nth-child(2n) {
 
 main {
   flex: 1;
-  min-height: 0; /* Allow flex item to shrink */
+  /* Allow flex item to shrink */
+  min-height: 0;
 }
 
 main:not(.fullscreen):not(.actions) {
