@@ -25,6 +25,7 @@ export const GroupView: m.Component<GroupAttrs> = {
         m("h2", title),
         m("input", {
           type: "checkbox",
+          name: "group-active",
           role: "switch",
           checked: isAllActive,
           onclick: (e: Event) => {
