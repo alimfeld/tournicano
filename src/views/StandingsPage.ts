@@ -1,9 +1,7 @@
 import m from "mithril";
 import "./StandingsPage.css";
-import { NavView } from "./NavView.ts";
 import { PlayerView } from "./PlayerView.ts";
 import { Tournament } from "../model/Tournament.ts";
-import { Page } from "../App.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
 
@@ -13,12 +11,11 @@ export interface StandingsAttrs {
   group: number | undefined;
   changeRound: (index: number) => void;
   changeGroup: (group: number | undefined) => void;
-  nav: (page: Page) => void;
 }
 
 export const StandingsPage: m.Component<StandingsAttrs> = {
   view: ({
-    attrs: { tournament, roundIndex, group, changeRound, changeGroup, nav },
+    attrs: { tournament, roundIndex, group, changeRound, changeGroup },
   }) => {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
@@ -108,7 +105,6 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           "→",
         ),
       ),
-      m(NavView, { nav }),
       m(
         Swipeable,
         {

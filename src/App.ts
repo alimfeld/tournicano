@@ -12,6 +12,7 @@ import { settingsFactory } from "./model/Settings.impl.ts";
 import { HomePage } from "./views/HomePage.ts";
 import { ScoreEntryPage } from "./views/ScoreEntryPage.ts";
 import { Match } from "./model/Tournament.ts";
+import { NavView } from "./views/NavView.ts";
 
 const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
@@ -175,73 +176,82 @@ export const App = () => {
 
   return {
     view: () => {
+      const showNav = state.page !== Page.SCORE_ENTRY && !state.fullscreen;
+      
+      let pageContent;
       switch (state.page) {
         case Page.HOME: {
-          return m(HomePage, {
-            nav,
-          });
+          pageContent = m(HomePage);
+          break;
         }
         case Page.SETTINGS: {
-          return m(SettingsPage, {
+          pageContent = m(SettingsPage, {
             settings: state.settings,
-            nav,
           });
+          break;
         }
         case Page.PLAYERS: {
-          return m(PlayersPage, {
+          pageContent = m(PlayersPage, {
             settings: state.settings,
             tournament: state.tournament,
             playerFilter: state.playerFilter,
             changePlayerFilter,
-            nav,
           });
+          break;
         }
         case Page.ROUNDS: {
-          return m(RoundPage, {
+          pageContent = m(RoundPage, {
             settings: state.settings,
             tournament: state.tournament,
             roundIndex: state.roundIndex,
             changeRound,
-            nav,
             wakeLock: state.settings.wakeLock && "wakeLock" in navigator,
             fullscreen: state.fullscreen,
             toggleFullscreen,
             openScoreEntry,
           });
+          break;
         }
         case Page.STANDINGS: {
-          return m(StandingsPage, {
+          pageContent = m(StandingsPage, {
             tournament: state.tournament,
             roundIndex: state.roundIndex,
             group: state.group,
             changeRound,
             changeGroup,
-            nav,
           });
+          break;
         }
         case Page.SCORE_ENTRY: {
           if (!state.scoreEntryMatch) {
             // Fallback if scoreEntryMatch is not set
             nav(Page.ROUNDS);
-            return null;
+            pageContent = null;
+          } else {
+            pageContent = m(ScoreEntryPage, {
+              roundIndex: state.scoreEntryMatch.roundIndex,
+              matchIndex: state.scoreEntryMatch.matchIndex,
+              match: state.scoreEntryMatch.match,
+              onClose: () => {
+                const savedScroll = state.scoreEntryMatch?.scrollPosition;
+                nav(Page.ROUNDS);
+                // Restore scroll position after navigation completes
+                if (savedScroll !== undefined) {
+                  requestAnimationFrame(() => {
+                    window.scrollTo(0, savedScroll);
+                  });
+                }
+              },
+            });
           }
-          return m(ScoreEntryPage, {
-            roundIndex: state.scoreEntryMatch.roundIndex,
-            matchIndex: state.scoreEntryMatch.matchIndex,
-            match: state.scoreEntryMatch.match,
-            onClose: () => {
-              const savedScroll = state.scoreEntryMatch?.scrollPosition;
-              nav(Page.ROUNDS);
-              // Restore scroll position after navigation completes
-              if (savedScroll !== undefined) {
-                requestAnimationFrame(() => {
-                  window.scrollTo(0, savedScroll);
-                });
-              }
-            },
-          });
+          break;
         }
       }
+      
+      return [
+        pageContent,
+        showNav ? m(NavView, { nav, currentPage: state.page }) : null,
+      ];
     },
   };
 };

@@ -130,6 +130,7 @@ nav ul:last-of-type {
 nav ul {
   width: 100%;
   justify-content: space-evenly;
+  position: relative;
 }
 
 nav li {
@@ -137,6 +138,25 @@ nav li {
   text-align: center;
   cursor: pointer;
   font-size: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Sliding pill highlight */
+nav .nav-highlight {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 2.5%;
+  width: 15%; /* Narrower than 20% (100% / 5) to add padding */
+  height: 2.5rem;
+  background: var(--pico-secondary-background);
+  opacity: 0.5;
+  border-radius: 1.25rem;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  transform: translateX(0%); /* Initial position */
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Global touch behavior */

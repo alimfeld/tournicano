@@ -1,7 +1,5 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { NavView } from "./NavView.ts";
-import { Page } from "../App.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { GroupView } from "./GroupView.ts";
 import { FAB } from "./FAB.ts";
@@ -12,11 +10,10 @@ export interface PlayersAttrs {
   tournament: Tournament;
   playerFilter: string;
   changePlayerFilter: (playerFilter: string) => void;
-  nav: (page: Page) => void;
 }
 
 export const PlayersPage: m.Component<PlayersAttrs> = {
-  view: ({ attrs: { settings, tournament, playerFilter, changePlayerFilter, nav } }) => {
+  view: ({ attrs: { settings, tournament, playerFilter, changePlayerFilter } }) => {
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
@@ -49,7 +46,6 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       active === total ? `Players (${active})` : `Players (${active}/${total})`;
     return [
       m("header.players.container-fluid", m("h1", title)),
-      m(NavView, { nav }),
       m(
         "main.players.container-fluid.actions",
         m(

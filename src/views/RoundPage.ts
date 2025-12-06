@@ -1,9 +1,7 @@
 import m from "mithril";
 import "./RoundPage.css";
 import { PlayerView } from "./PlayerView.ts";
-import { NavView } from "./NavView.ts";
 import { Tournament, Match } from "../model/Tournament.ts";
-import { Page } from "../App.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
 import { Swipeable } from "./Swipeable.ts";
@@ -14,7 +12,6 @@ export interface RoundAttrs {
   tournament: Tournament;
   roundIndex: number;
   changeRound: (index: number) => void;
-  nav: (page: Page) => void;
   wakeLock: boolean;
   fullscreen: boolean;
   toggleFullscreen: () => void;
@@ -23,7 +20,7 @@ export interface RoundAttrs {
 
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({
-    attrs: { settings, tournament, roundIndex, changeRound, nav, wakeLock, fullscreen, toggleFullscreen, openScoreEntry },
+    attrs: { settings, tournament, roundIndex, changeRound, wakeLock, fullscreen, toggleFullscreen, openScoreEntry },
   }) => {
     const matchesPerRound = Math.min(
       Math.floor(tournament.players().filter((p) => p.active).length / 4),
@@ -61,7 +58,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
             "→",
           ),
         ) : null,
-      !fullscreen ? m(NavView, { nav }) : null,
       m(
         Swipeable,
         {

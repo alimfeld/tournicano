@@ -1,8 +1,6 @@
 import m from "mithril";
 import "./SettingsPage.css";
-import { NavView } from "./NavView.ts";
 import { Settings } from "../model/Settings.ts";
-import { Page } from "../App.ts";
 import {
   Americano,
   AmericanoMixed,
@@ -13,11 +11,10 @@ import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
 
 export interface SettingsAttrs {
   settings: Settings;
-  nav: (page: Page) => void;
 }
 
 export const SettingsPage: m.Component<SettingsAttrs> = {
-  view: ({ attrs: { settings, nav } }) => {
+  view: ({ attrs: { settings } }) => {
     const isAmericano =
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Americano);
     const isAmericanoMixed =
@@ -28,7 +25,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Tournicano);
     return [
       m("header.settings.container-fluid", m("h1", "Settings")),
-      m(NavView, { nav }),
       m(
         "main.settings.container-fluid",
         m("h2", "Tournament"),
