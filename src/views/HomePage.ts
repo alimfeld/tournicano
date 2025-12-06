@@ -31,11 +31,11 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "🤖 Player Management"),
         m(
           "p",
-          "Players are added by typing or pasting their names into a text field. Player names can consist of multiple words and are separated by commas or periods. (Note: On many devices, double-tapping the space bar produces a period.) Each name maps to a consistent avatar image, which will be displayed for the player.",
+          "Players are added by typing or pasting their names into a text field. Player names can consist of multiple words and are separated by commas or periods. (Note: On many devices, double-tapping the space bar produces a period.) Each name maps to a consistent avatar image that will be displayed for the player.",
         ),
         m(
           "p",
-          "Players can be assigned to groups. Separate groups of players with a newline when entering their names. A maximum of 4 groups are supported.",
+          "Players can be assigned to groups. Separate groups of players with a newline when entering their names. A maximum of 4 groups is supported.",
         ),
         m(
           "p",
@@ -47,7 +47,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "A filter allows for displaying only active or inactive players.",
+          "A filter allows displaying only active or inactive players.",
         ),
         m(
           "p",
@@ -59,7 +59,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Some quick actions are available via the ⋮ button. Registration can be closed to remove UI clutter (UI elements to withdraw and register players as well as UI elements to move players between groups). All players can be activated, deactivated, or deleted (which will also delete any rounds of a started tournament). In addition, there is an option to ⿻ share/export all player names (this allows for a later import by pasting those names into the text field to add players). Exported player names are separated by commas."
+          "Some quick actions are available via the ⋮ button. Registration can be closed to remove UI clutter (UI elements to add/remove players and move players between groups). All players can be activated, deactivated, or deleted (which will also delete any rounds of a started tournament). In addition, there is an option to ⿻ share/export all player names (this allows for later import by pasting those names into the text field to add players). Exported player names are separated by commas.",
         ),
         m(
           "p",
@@ -77,17 +77,17 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Excess players are 💤 paused for the round using an algorithm that balances each player's play ratio (i.e. the number of matches played over the number of rounds the player participated in).",
+          "Excess players are 💤 paused for the round using an algorithm that balances each player's play ratio (i.e., the number of matches played over the number of rounds the player participated in).",
         ),
         m(
           "p",
-          "For each match, there is a button to enter the score. Scores can be entered using two digits max per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
+          "For each match, there is a button to enter the score. Scores can be entered using a maximum of two digits per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
         ),
         m(
           "p",
           "You can navigate back and forth between rounds and change scores of previously completed rounds.",
         ),
-        m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed. Additionally you can ⏿ prevent the screen from turning off when showing the round.",
+        m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed. Additionally, you can ⏿ prevent the screen from turning off when showing the round.",
         ),
         m("h2", "🏆 Standings"),
         m(
@@ -111,11 +111,11 @@ export const HomePage: m.Component<HomeAttrs> = {
         m(
           "ul",
           m("li", m("b", "Variety"), " – rotating partners and opponents"),
-          m("li", m("b", "Performance"), " - creating balanced matches"),
+          m("li", m("b", "Performance"), " – creating balanced matches"),
           m(
             "li",
             m("b", "Groups"),
-            " - accommodating formats like mixed doubles",
+            " – accommodating formats like mixed doubles",
           ),
         ),
         m(
@@ -130,11 +130,11 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "🚫 Out of scope"),
         m(
           "ul",
-          m("li", "Player / tournament database"),
-          m("li", "Integration with third-party services (e.g., for ratings)"),
+          m("li", "Player/tournament database"),
+          m("li", "Integration with third-party services (e.g., for player ratings)"),
           m(
             "li",
-            "Data import / export (beyond clipboard and the system's ⿻ sharing capabilities)",
+            "Data import/export (beyond clipboard and the system's ⿻ sharing capabilities)",
           ),
           m("li", "Features likely covered by your existing system"),
         ),
