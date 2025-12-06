@@ -19,7 +19,6 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
       name: string,
       value: number,
       label: string,
-      description?: string,
     ) => {
       return m(
         "label",
@@ -30,31 +29,49 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
           step: 25,
           value: value,
         }),
-        description ? m("small", description) : null,
       );
     };
-    const radios = (
+    const dropdown = (
       name: string,
       value: number,
-      legend: string,
-      inputs: { value: number; label: string }[],
+      label: string,
+      options: { value: number; label: string }[],
     ) => {
+      const selectedOption = options.find((opt) => opt.value === value);
       return m(
-        "fieldset",
-        m("legend", legend),
-        inputs.map((input) => [
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              id: `${name}-${input.value}`,
-              name: name,
-              value: input.value,
-              checked: value === input.value,
-            }),
-            input.label,
+        "details.dropdown",
+        {
+          id: `dropdown-${name}`,
+        },
+        m("summary", { id: `summary-${name}` }, `${label} ${selectedOption?.label || ""}`),
+        m(
+          "ul",
+          options.map((option) =>
+            m(
+              "li",
+              m(
+                "label",
+                m("input", {
+                  type: "radio",
+                  name: name,
+                  value: option.value,
+                  checked: value === option.value,
+                  onchange: () => {
+                    const summary = document.getElementById(`summary-${name}`);
+                    const details = document.getElementById(`dropdown-${name}`) as HTMLDetailsElement;
+                    if (summary) {
+                      summary.textContent = `${label} ${option.label}`;
+                    }
+                    if (details) {
+                      details.open = false;
+                    }
+                  },
+                }),
+                option.label,
+              ),
+            ),
           ),
-        ]),
+        ),
       );
     };
     return [
@@ -77,78 +94,71 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
           m("h3", "Matching Configuration"),
           m(
             "form#matching-spec",
-            m("h4", "Team up"),
+            m("h4", "Team up factors"),
             range(
               "team-up-variety-factor",
               matchingSpec.teamUp.varietyFactor,
-              "Variety factor:",
-              "Rotating partners",
+              "Rotate partners:",
             ),
             range(
               "team-up-performance-factor",
               matchingSpec.teamUp.performanceFactor,
-              "Performance factor:",
-              "Match based on performance mode",
+              "Match by skill level:",
             ),
-            radios(
+            dropdown(
               "team-up-performance-mode",
               matchingSpec.teamUp.performanceMode,
-              "Performance mode:",
+              "How:",
               [
                 {
                   value: TeamUpPerformanceMode.AVERAGE,
-                  label:
-                    "Average team performance",
+                  label: "Balanced teams",
                 },
                 {
                   value: TeamUpPerformanceMode.EQUAL,
-                  label: "Equal player performance",
+                  label: "Equal skill",
                 },
                 {
                   value: TeamUpPerformanceMode.MEXICANO,
-                  label: "Mexicano (1&3 vs. 2&4)",
+                  label: "Mexicano (1+3, 2+4)",
                 },
               ],
             ),
             range(
               "team-up-group-factor",
               matchingSpec.teamUp.groupFactor,
-              "Group factor:",
-              "Match based on group mode",
+              "Consider player groups:",
             ),
-            radios(
+            dropdown(
               "team-up-group-mode",
               matchingSpec.teamUp.groupMode,
-              "Group mode:",
+              "How:",
               [
                 {
                   value: TeamUpGroupMode.ADJACENT,
-                  label: "Adjacent groups (mixed)",
+                  label: "Mix adjacent groups",
                 },
                 {
                   value: TeamUpGroupMode.SAME,
-                  label: "Same group",
+                  label: "Same group only",
                 },
               ],
             ),
-            m("h4", "Match up"),
+            m("h4", "Match up factors"),
             range(
               "match-up-variety-factor",
               matchingSpec.matchUp.varietyFactor,
-              "Variety factor:",
-              "Rotating opponents",
+              "Rotate opponents:",
             ),
             range(
               "match-up-performance-factor",
               matchingSpec.matchUp.performanceFactor,
-              "Performance factor:",
-              "Similar team performance",
+              "Match similar skill:",
             ),
             range(
               "match-up-group-factor",
               matchingSpec.matchUp.groupFactor,
-              "Group factor:",
-              "Similar group composition",
+              "Similar group mix:",
             ),
           ),
           m(
