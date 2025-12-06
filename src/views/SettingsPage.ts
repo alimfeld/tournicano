@@ -118,15 +118,16 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             }),
             "Custom",
           ),
-          m(MatchingSpecDialog, {
-            action: "Customize...",
-            disabled: false,
-            matchingSpec: settings.matchingSpec,
-            onconfirm: (matchingSpec) => {
-              settings.setMatchingSpec(matchingSpec);
-            },
-          }),
         ),
+        m(MatchingSpecDialog, {
+          action: "Customize...",
+          disabled: false,
+          matchingSpec: settings.matchingSpec,
+          onconfirm: (matchingSpec) => {
+            settings.setMatchingSpec(matchingSpec);
+          },
+        }),
+        m("hr"),
         m("h2", "UI"),
         m(
           "fieldset",

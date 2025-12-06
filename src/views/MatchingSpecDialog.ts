@@ -61,193 +61,196 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
         { id: ID },
         m(
           "article",
-          m("h3", "Matching Configuration"),
           m(
             "form#matching-spec",
-            m("h4", "Team up factors"),
-            m(
-              "label",
-              "Rotate partners:",
-              m("input", {
-                type: "range",
-                name: "team-up-variety-factor",
-                step: 25,
-                value: state.teamUpVarietyFactor,
-                oninput: (e: Event) => {
-                  state.teamUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
-                },
-              }),
-            ),
-            m(
-              "label",
-              "Match by skill level:",
-              m("input", {
-                type: "range",
-                name: "team-up-performance-factor",
-                step: 25,
-                value: state.teamUpPerformanceFactor,
-                oninput: (e: Event) => {
-                  state.teamUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
-                },
-              }),
-            ),
-            m(
-              "details.dropdown",
-              {
-                disabled: state.teamUpPerformanceFactor === 0,
-                style: state.teamUpPerformanceFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
-              },
+            m("fieldset",
+              m("h3", "Team up factors"),
               m(
-                "summary",
-                "How: ",
-                state.teamUpPerformanceFactor === 0
-                  ? "N/A"
-                  : state.teamUpPerformanceMode === TeamUpPerformanceMode.AVERAGE
-                    ? "Balanced teams"
-                    : state.teamUpPerformanceMode === TeamUpPerformanceMode.EQUAL
-                      ? "Equal skill"
-                      : "Mexicano (1+3, 2+4)",
+                "label",
+                "Rotate partners:",
+                m("input", {
+                  type: "range",
+                  name: "team-up-variety-factor",
+                  step: 25,
+                  value: state.teamUpVarietyFactor,
+                  oninput: (e: Event) => {
+                    state.teamUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
+                  },
+                }),
               ),
               m(
-                "ul",
-                m(
-                  "li",
-                  m(
-                    "a",
-                    {
-                      onclick: (e: Event) => {
-                        state.teamUpPerformanceMode = TeamUpPerformanceMode.AVERAGE;
-                        closeDropdown(e);
-                      },
-                    },
-                    "Balanced teams",
-                  ),
-                ),
-                m(
-                  "li",
-                  m(
-                    "a",
-                    {
-                      onclick: (e: Event) => {
-                        state.teamUpPerformanceMode = TeamUpPerformanceMode.EQUAL;
-                        closeDropdown(e);
-                      },
-                    },
-                    "Equal skill",
-                  ),
-                ),
-                m(
-                  "li",
-                  m(
-                    "a",
-                    {
-                      onclick: (e: Event) => {
-                        state.teamUpPerformanceMode = TeamUpPerformanceMode.MEXICANO;
-                        closeDropdown(e);
-                      },
-                    },
-                    "Mexicano (1+3, 2+4)",
-                  ),
-                ),
+                "label",
+                "Match by skill level:",
+                m("input", {
+                  type: "range",
+                  name: "team-up-performance-factor",
+                  step: 25,
+                  value: state.teamUpPerformanceFactor,
+                  oninput: (e: Event) => {
+                    state.teamUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
+                  },
+                }),
               ),
-            ),
-            m(
-              "label",
-              "Consider player groups:",
-              m("input", {
-                type: "range",
-                name: "team-up-group-factor",
-                step: 25,
-                value: state.teamUpGroupFactor,
-                oninput: (e: Event) => {
-                  state.teamUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
+              m(
+                "details.dropdown",
+                {
+                  disabled: state.teamUpPerformanceFactor === 0,
+                  style: state.teamUpPerformanceFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
                 },
-              }),
-            ),
-            m(
-              "details.dropdown",
-              {
-                disabled: state.teamUpGroupFactor === 0,
-                style: state.teamUpGroupFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
-              },
-              m(
-                "summary",
-                "How: ",
-                state.teamUpGroupFactor === 0
-                  ? "N/A"
-                  : state.teamUpGroupMode === TeamUpGroupMode.ADJACENT
-                    ? "Mix adjacent groups"
-                    : "Same group only",
-              ),
-              m(
-                "ul",
                 m(
-                  "li",
-                  m(
-                    "a",
-                    {
-                      onclick: (e: Event) => {
-                        state.teamUpGroupMode = TeamUpGroupMode.ADJACENT;
-                        closeDropdown(e);
-                      },
-                    },
-                    "Mix adjacent groups",
-                  ),
+                  "summary",
+                  "How: ",
+                  state.teamUpPerformanceFactor === 0
+                    ? "N/A"
+                    : state.teamUpPerformanceMode === TeamUpPerformanceMode.AVERAGE
+                      ? "Balanced teams"
+                      : state.teamUpPerformanceMode === TeamUpPerformanceMode.EQUAL
+                        ? "Equal skill"
+                        : "Mexicano (1+3, 2+4)",
                 ),
                 m(
-                  "li",
+                  "ul",
                   m(
-                    "a",
-                    {
-                      onclick: (e: Event) => {
-                        state.teamUpGroupMode = TeamUpGroupMode.SAME;
-                        closeDropdown(e);
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.teamUpPerformanceMode = TeamUpPerformanceMode.AVERAGE;
+                          closeDropdown(e);
+                        },
                       },
-                    },
-                    "Same group only",
+                      "Balanced teams",
+                    ),
+                  ),
+                  m(
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.teamUpPerformanceMode = TeamUpPerformanceMode.EQUAL;
+                          closeDropdown(e);
+                        },
+                      },
+                      "Equal skill",
+                    ),
+                  ),
+                  m(
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.teamUpPerformanceMode = TeamUpPerformanceMode.MEXICANO;
+                          closeDropdown(e);
+                        },
+                      },
+                      "Mexicano (1+3, 2+4)",
+                    ),
                   ),
                 ),
               ),
-            ),
-            m("h4", "Match up factors"),
-            m(
-              "label",
-              "Rotate opponents:",
-              m("input", {
-                type: "range",
-                name: "match-up-variety-factor",
-                step: 25,
-                value: state.matchUpVarietyFactor,
-                oninput: (e: Event) => {
-                  state.matchUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
+              m(
+                "label",
+                "Consider player groups:",
+                m("input", {
+                  type: "range",
+                  name: "team-up-group-factor",
+                  step: 25,
+                  value: state.teamUpGroupFactor,
+                  oninput: (e: Event) => {
+                    state.teamUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
+                  },
+                }),
+              ),
+              m(
+                "details.dropdown",
+                {
+                  disabled: state.teamUpGroupFactor === 0,
+                  style: state.teamUpGroupFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
                 },
-              }),
+                m(
+                  "summary",
+                  "How: ",
+                  state.teamUpGroupFactor === 0
+                    ? "N/A"
+                    : state.teamUpGroupMode === TeamUpGroupMode.ADJACENT
+                      ? "Mix adjacent groups"
+                      : "Same group only",
+                ),
+                m(
+                  "ul",
+                  m(
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.teamUpGroupMode = TeamUpGroupMode.ADJACENT;
+                          closeDropdown(e);
+                        },
+                      },
+                      "Mix adjacent groups",
+                    ),
+                  ),
+                  m(
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.teamUpGroupMode = TeamUpGroupMode.SAME;
+                          closeDropdown(e);
+                        },
+                      },
+                      "Same group only",
+                    ),
+                  ),
+                ),
+              ),
             ),
-            m(
-              "label",
-              "Match similar skill:",
-              m("input", {
-                type: "range",
-                name: "match-up-performance-factor",
-                step: 25,
-                value: state.matchUpPerformanceFactor,
-                oninput: (e: Event) => {
-                  state.matchUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
-                },
-              }),
-            ),
-            m(
-              "label",
-              "Similar group mix:",
-              m("input", {
-                type: "range",
-                name: "match-up-group-factor",
-                step: 25,
-                value: state.matchUpGroupFactor,
-                oninput: (e: Event) => {
-                  state.matchUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
-                },
-              }),
+            m("fieldset",
+              m("h3", "Match up factors"),
+              m(
+                "label",
+                "Rotate opponents:",
+                m("input", {
+                  type: "range",
+                  name: "match-up-variety-factor",
+                  step: 25,
+                  value: state.matchUpVarietyFactor,
+                  oninput: (e: Event) => {
+                    state.matchUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
+                  },
+                }),
+              ),
+              m(
+                "label",
+                "Match similar skill:",
+                m("input", {
+                  type: "range",
+                  name: "match-up-performance-factor",
+                  step: 25,
+                  value: state.matchUpPerformanceFactor,
+                  oninput: (e: Event) => {
+                    state.matchUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
+                  },
+                }),
+              ),
+              m(
+                "label",
+                "Similar group mix:",
+                m("input", {
+                  type: "range",
+                  name: "match-up-group-factor",
+                  step: 25,
+                  value: state.matchUpGroupFactor,
+                  oninput: (e: Event) => {
+                    state.matchUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
+                  },
+                }),
+              ),
             ),
           ),
           m(
@@ -255,7 +258,6 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
             m(
               "button",
               {
-                type: "button",
                 class: "secondary",
                 onclick: () => {
                   (document.getElementById(ID) as HTMLDialogElement).close();
@@ -266,7 +268,6 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
             m(
               "button",
               {
-                type: "button",
                 onclick: () => {
                   const spec = {
                     teamUp: {
