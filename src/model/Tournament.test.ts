@@ -575,3 +575,40 @@ test("should balance all factors in Tournicano", ({ players }) => {
   expect(has01Team).toBe(false);
 });
 
+test("should sort matches by performance when performanceFactor > 0", ({ players }) => {
+  // Set up 8 players with different performance levels
+  players[0].winRatio = 0.8;
+  players[0].plusMinus = 10;
+  players[1].winRatio = 0.75;
+  players[1].plusMinus = 8;
+  players[2].winRatio = 0.6;
+  players[2].plusMinus = 5;
+  players[3].winRatio = 0.55;
+  players[3].plusMinus = 3;
+  players[4].winRatio = 0.4;
+  players[4].plusMinus = 0;
+  players[5].winRatio = 0.35;
+  players[5].plusMinus = -2;
+  players[6].winRatio = 0.2;
+  players[6].plusMinus = -5;
+  players[7].winRatio = 0.1;
+  players[7].plusMinus = -8;
+
+  // Test with Mexicano (has matchUp.performanceFactor = 100)
+  const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 2);
+  
+  expect(matches).toHaveLength(2);
+  
+  // Calculate total performance (winRatio sum) for each match
+  const match0Perf = matches[0][0][0].winRatio + matches[0][0][1].winRatio + 
+                     matches[0][1][0].winRatio + matches[0][1][1].winRatio;
+  const match1Perf = matches[1][0][0].winRatio + matches[1][0][1].winRatio + 
+                     matches[1][1][0].winRatio + matches[1][1][1].winRatio;
+  
+  console.log(`Match 0 performance: ${match0Perf}`);
+  console.log(`Match 1 performance: ${match1Perf}`);
+  
+  // First match should have higher total performance
+  expect(match0Perf).toBeGreaterThanOrEqual(match1Perf);
+});
+
