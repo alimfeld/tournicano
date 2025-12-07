@@ -5,7 +5,7 @@ header.standings {
 
 main.standings section {
   display: grid;
-  grid-template-columns: 8% 32% 30% 30%;
+  grid-template-columns: 9% 31% 30% 30%;
   align-items: center;
   border-bottom: 1px solid;
   border-color: var(--pico-muted-border-color);
@@ -13,7 +13,7 @@ main.standings section {
 
 @media (min-width: 768px) {
   main.standings section {
-    grid-template-columns: 10% 25% 40% 25%;
+    grid-template-columns: 10% 22% 40% 28%;
   }
 }
 
@@ -67,7 +67,7 @@ main.standings section div.reliability-bar {
   position: relative;
   width: 100%;
   height: 3px;
-  background: var(--pico-form-element-invalid-focus-color);
+  background: transparent;
   margin-top: calc(var(--pico-typography-spacing-vertical) * -0.5);
   margin-bottom: calc(var(--pico-typography-spacing-vertical) * 0.5);
   border-radius: 2px;
@@ -100,4 +100,8 @@ main.standings section.group-stats div.progressbar {
 
 main.standings section div.points {
   text-align: center;
+}
+
+main.standings section p.plus-minus {
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) + 3px);
 }
