@@ -96,6 +96,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          "A reliability indicator shows data quality based on player participation. The win percentage box and bar are color-coded from red (unreliable) to green (reliable), reflecting the ratio of rounds played or paused versus total rounds. The bar beneath the win percentage visualizes the exact reliability score.",
+        ),
+        m(
+          "p",
           "You can navigate back and forth to see the standings of any specific round.",
         ),
         m(

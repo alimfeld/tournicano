@@ -39,6 +39,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       return rank.toString();
     };
     const standings = round ? round.standings(standingsGroup) : [];
+    const totalRounds = roundIndex + 1; // rounds are 0-indexed
     const [
       groupWins,
       groupLosses,
@@ -61,6 +62,11 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
         "```\n" +
         standings
           .map((ranked) => {
+            const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
+            const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
+            const reliabilityStr = reliability < 1 
+              ? ` ${(reliability * 100).toFixed(0)}%`
+              : "";
             return (
               String(ranked.rank).padStart(2, " ") +
               ". " +
@@ -71,7 +77,8 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               (
                 (ranked.player.plusMinus >= 0 ? "+" : "") +
                 ranked.player.plusMinus
-              ).padStart(4, " ")
+              ).padStart(4, " ") +
+              reliabilityStr
             );
           })
           .join("\n") +
@@ -187,8 +194,10 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                   ),
                 )
               )] : [],
-            ...standings.map((ranked) =>
-              m(
+            ...standings.map((ranked) => {
+              const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
+              const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
+              return m(
                 "section.entry",
                 m("div.rank", m("p", award(ranked.rank))),
                 m(PlayerView, { player: ranked.player }),
@@ -196,10 +205,23 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                   "div.record",
                   m(
                     "p.win-percentage",
+                    {
+                      style: reliability < 1
+                        ? `--reliability: ${reliability};`
+                        : "",
+                      class: reliability < 1 ? "unreliable" : "",
+                    },
                     `${(ranked.player.winRatio * 100).toFixed(0)}%`,
                     m("div.progressbar", {
                       style: `width: ${ranked.player.winRatio * 100}%`,
                     }),
+                  ),
+                  m("div.reliability-bar", {
+                      style: reliability < 1 ? "" : "visibility: hidden;",
+                    },
+                    m("div.reliability-filled", {
+                      style: `width: ${reliability * 100}%`,
+                    })
                   ),
                   m(
                     "small",
@@ -218,8 +240,8 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                     `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`,
                   ),
                 ),
-              ),
-            ),
+              );
+            }),
           ]
           : m("p", "No scores submitted (yet)!"),
       ),
