@@ -1,6 +1,5 @@
 :root {
-  /* --pico-font-size: 100%; */
-  --pico-font-size: 110%;
+  --pico-font-size: 120%;
   --pico-font-weight: 500;
   --pico-spacing: 0.8rem;
   --pico-nav-element-spacing-horizontal: 0.4rem;
@@ -21,7 +20,7 @@
 
   :root,
   :host {
-    --pico-font-size: 120%;
+    --pico-font-size: 130%;
   }
 }
 
@@ -29,7 +28,7 @@
 
   :root,
   :host {
-    --pico-font-size: 130%;
+    --pico-font-size: 140%;
   }
 }
 
@@ -37,7 +36,7 @@
 
   :root,
   :host {
-    --pico-font-size: 140%;
+    --pico-font-size: 150%;
   }
 }
 
@@ -53,15 +52,7 @@
 
   :root,
   :host {
-    --pico-font-size: 180%;
-  }
-}
-
-@media (min-width: 1536px) {
-
-  :root,
-  :host {
-    --pico-font-size: 200%;
+    --pico-font-size: 170%;
   }
 }
 
@@ -92,7 +83,7 @@ header>button {
 
 h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 }
 
 h2 {
@@ -101,10 +92,6 @@ h2 {
 
 h3 {
   font-size: 1.1rem;
-}
-
-h4 {
-  font-size: 1.0rem;
 }
 
 /* Navigation */
