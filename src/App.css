@@ -3,8 +3,9 @@
   --pico-font-weight: 500;
   --pico-spacing: 0.8rem;
   --pico-nav-element-spacing-horizontal: 0.4rem;
-  --pico-nav-element-spacing-vertical: 0.7rem;
-  --pico-block-spacing-vertical: 0.8rem;
+  --pico-nav-element-spacing-vertical: 0.5rem;
+  --pico-block-spacing-vertical: 0.7rem;
+  --nav-offset: 3.2rem;
 }
 
 [data-theme=dark] {
@@ -132,14 +133,14 @@ nav li {
 /* Sliding pill highlight */
 nav .nav-highlight {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: var(--pico-nav-element-spacing-vertical);
   left: 2.5%;
   /* Narrower than 20% (100% / 5) to add padding */
   width: 15%;
-  height: 2.5rem;
+  height: 2.2rem;
   background: var(--pico-secondary-background);
   opacity: 0.5;
-  border-radius: 1.25rem;
+  border-radius: 1.1rem;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
   /* Initial position */
@@ -162,7 +163,7 @@ article.player {
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
-  padding: 1ex;
+  padding: 0.4ex;
   min-width: 0;
 }
 
@@ -220,7 +221,7 @@ main {
 
 main:not(.fullscreen):not(.actions) {
   /* leave room for the fixed nav */
-  padding-bottom: calc(3.6rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--nav-offset)+ env(safe-area-inset-bottom));
 }
 
 main.fullscreen {
@@ -232,10 +233,10 @@ main.fullscreen {
 
 main.actions {
   /* leave room for action buttons + nav + safe area */
-  padding-bottom: calc(4rem + 3.6rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(3.8rem + var(--nav-offset) + env(safe-area-inset-bottom));
 }
 
 main.actions.fullscreen {
   /* leave room for action buttons + safe area (no nav in fullscreen) */
-  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(3.8rem + env(safe-area-inset-bottom));
 }

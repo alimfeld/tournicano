@@ -1,7 +1,7 @@
 /* FAB Container */
 .fab-container {
   position: fixed;
-  bottom: calc(3.6rem + env(safe-area-inset-bottom));
+  bottom: calc(var(--nav-offset) + env(safe-area-inset-bottom));
   /* leave room for the fixed nav */
   z-index: 2;
   margin-bottom: var(--pico-spacing);
@@ -27,8 +27,8 @@
 
 /* Primary FAB Button */
 .fab-primary {
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 3.1rem;
+  height: 3.1rem;
   border-radius: 50%;
   border: none;
   background: var(--pico-primary-background);
@@ -137,7 +137,7 @@
 /* Secondary Actions Container */
 .fab-actions {
   position: absolute;
-  bottom: 4.5rem;
+  bottom: 4.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
