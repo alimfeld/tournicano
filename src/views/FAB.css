@@ -120,6 +120,33 @@
   background: var(--pico-form-element-invalid-active-border-color);
 }
 
+/* Warn variant - use Pico's pumpkin-450 for warnings */
+.fab-primary.warn {
+  background: #bf6e00;
+  border-color: #9c5900;
+  color: #fff;
+}
+
+.fab-primary.warn:hover:not(:disabled) {
+  background: #9c5900;
+}
+
+.fab-primary.warn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #bf6e00;
+}
+
+.fab-action-button.warn {
+  background: #bf6e00;
+  border-color: #9c5900;
+  color: #fff;
+}
+
+.fab-action-button.warn:hover {
+  background: #9c5900;
+}
+
 /* Icon transition */
 .fab-icon {
   position: absolute;
