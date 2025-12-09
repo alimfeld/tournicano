@@ -612,3 +612,80 @@ test("should sort matches by performance when performanceFactor > 0", ({ players
   expect(match0Perf).toBeGreaterThanOrEqual(match1Perf);
 });
 
+test("should penalize past opponents when forming teams", ({ players }) => {
+  // Set up 4 players where 0-1 and 2-3 have been opponents
+  // but no one has partnered before
+  for (let i = 0; i < 4; i++) {
+    players[i].matchCount = 1;
+  }
+  
+  // Players 0 and 1 faced each other in round 0
+  players[0].opponents = new Map([["1", [0]]]);
+  players[1].opponents = new Map([["0", [0]]]);
+  
+  // Players 2 and 3 faced each other in round 0
+  players[2].opponents = new Map([["3", [0]]]);
+  players[3].opponents = new Map([["2", [0]]]);
+  
+  const [matches, _paused] = matching(players.slice(0, 4), Americano, 1);
+  
+  // Since all players have equal match counts and no partner history,
+  // the opponent penalty should influence the pairing
+  // Expected: prefer pairing 0-2, 0-3, 1-2, or 1-3 over 0-1 or 2-3
+  const teamPairs = matches[0].map(team => [team[0].id, team[1].id].sort().join("-"));
+  
+  console.log("Teams formed:", teamPairs);
+  
+  // Check that we didn't pair past opponents if variety is considered
+  // (Note: with only 4 players and 1 match, we can only form 2 teams)
+  // The algorithm should avoid 0-1 AND 2-3 appearing together
+  const has01 = teamPairs.includes("0-1");
+  const has23 = teamPairs.includes("2-3");
+  
+  // At least one of the past opponent pairs should be avoided
+  expect(has01 && has23).toBe(false);
+});
+
+test("should weight partner history more heavily than opponent history", ({ players }) => {
+  // Set up scenario where player 0 has:
+  // - been partners with player 1 (once, round 0)
+  // - been opponents with player 2 (three times, rounds 0, 1, 2)
+  // Expected: should still prefer pairing 0-2 over 0-1 (partner penalty > opponent penalty)
+  
+  for (let i = 0; i < 8; i++) {
+    players[i].matchCount = 3;
+  }
+  
+  // Player 0 partnered with 1 in round 0
+  players[0].partners = new Map([["1", [0]]]);
+  players[1].partners = new Map([["0", [0]]]);
+  
+  // Player 0 opposed player 2 three times (rounds 0, 1, 2)
+  players[0].opponents = new Map([["2", [0, 1, 2]]]);
+  players[2].opponents = new Map([["0", [0, 1, 2]]]);
+  
+  const [matches, _paused] = matching(players.slice(0, 8), Americano, 2);
+  
+  // Find which player is paired with player 0
+  let player0Partner = null;
+  for (const match of matches) {
+    for (const team of match) {
+      if (team[0].id === "0") {
+        player0Partner = team[1].id;
+        break;
+      } else if (team[1].id === "0") {
+        player0Partner = team[0].id;
+        break;
+      }
+    }
+    if (player0Partner) break;
+  }
+  
+  console.log(`Player 0 paired with: ${player0Partner}`);
+  
+  // Partner penalty should be stronger than opponent penalty
+  // So player 0 should NOT be paired with player 1 (past partner)
+  // Even though player 2 was a frequent opponent, that penalty is only 20%
+  expect(player0Partner).not.toBe("1");
+});
+
