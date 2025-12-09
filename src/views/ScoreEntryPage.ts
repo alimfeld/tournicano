@@ -167,25 +167,25 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             "Submit",
           ),
           // Row 1: 1-3
-          m("button.key-number", { onclick: () => addDigit("1"), disabled: areNumbersDisabled }, "1"),
-          m("button.key-number", { onclick: () => addDigit("2"), disabled: areNumbersDisabled }, "2"),
-          m("button.key-number", { onclick: () => addDigit("3"), disabled: areNumbersDisabled }, "3"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("1"); }, disabled: areNumbersDisabled }, "1"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("2"); }, disabled: areNumbersDisabled }, "2"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("3"); }, disabled: areNumbersDisabled }, "3"),
           // Row 2: 4-6
-          m("button.key-number", { onclick: () => addDigit("4"), disabled: areNumbersDisabled }, "4"),
-          m("button.key-number", { onclick: () => addDigit("5"), disabled: areNumbersDisabled }, "5"),
-          m("button.key-number", { onclick: () => addDigit("6"), disabled: areNumbersDisabled }, "6"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("4"); }, disabled: areNumbersDisabled }, "4"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("5"); }, disabled: areNumbersDisabled }, "5"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("6"); }, disabled: areNumbersDisabled }, "6"),
           // Row 3: 7-9
-          m("button.key-number", { onclick: () => addDigit("7"), disabled: areNumbersDisabled }, "7"),
-          m("button.key-number", { onclick: () => addDigit("8"), disabled: areNumbersDisabled }, "8"),
-          m("button.key-number", { onclick: () => addDigit("9"), disabled: areNumbersDisabled }, "9"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("7"); }, disabled: areNumbersDisabled }, "7"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("8"); }, disabled: areNumbersDisabled }, "8"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("9"); }, disabled: areNumbersDisabled }, "9"),
           // Row 4: Colon, 0, Backspace
           m("button.key-action.secondary", {
-            onclick: addColon,
+            onpointerdown: (e: PointerEvent) => { e.preventDefault(); addColon(); },
             disabled: isColonDisabled,
           }, ":"),
-          m("button.key-number", { onclick: () => addDigit("0"), disabled: areNumbersDisabled }, "0"),
+          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("0"); }, disabled: areNumbersDisabled }, "0"),
           m("button.key-action.secondary", { 
-            onclick: backspace,
+            onpointerdown: (e: PointerEvent) => { e.preventDefault(); backspace(); },
             disabled: isBackspaceDisabled,
           }, "⌫"),
         ]),
