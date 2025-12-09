@@ -80,14 +80,42 @@ section.keyboard {
   gap: var(--pico-spacing);
 }
 
+/* Touch-optimized visual feedback on button press */
+section.keyboard button {
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+section.keyboard button:active:not(:disabled) {
+  transform: scale(0.95);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+section.keyboard button.key-number:active:not(:disabled) {
+  background: var(--pico-primary-hover-background);
+}
+
+section.keyboard button.key-action:active:not(:disabled) {
+  background: var(--pico-secondary-hover-background);
+}
+
 section.keyboard button.clear {
   background: var(--pico-form-element-invalid-focus-color);
   border-color: var(--pico-form-element-invalid-border-color);
 }
 
+section.keyboard button.clear:active:not(:disabled) {
+  background: var(--pico-form-element-invalid-active-border-color);
+}
+
 section.keyboard button.accept {
   background: var(--pico-form-element-valid-focus-color);
   border-color: var(--pico-form-element-valid-border-color);
+}
+
+section.keyboard button.accept:active:not(:disabled) {
+  background: var(--pico-form-element-valid-active-border-color);
 }
 
 div.score-text {

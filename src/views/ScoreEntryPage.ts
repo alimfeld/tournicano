@@ -33,10 +33,10 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
         // Before colon - entering team A score
         if (parts[0].length < 2) {
           state.scoreInput += digit;
-          // Auto-add colon after 2 digits
-          if (state.scoreInput.length === 2) {
-            state.scoreInput += ":";
-          }
+        }
+        // Auto-add colon after 2 digits
+        if (state.scoreInput.length === 2) {
+          state.scoreInput += ":";
         }
       } else if (parts.length === 2) {
         // After colon - entering team B score
@@ -63,7 +63,12 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
 
     const backspace = () => {
       if (state.scoreInput.length > 0) {
-        state.scoreInput = state.scoreInput.slice(0, -1);
+        // If we have exactly "XX:" (2 digits + colon), delete both the colon and the second digit
+        if (state.scoreInput.length === 3 && state.scoreInput.endsWith(":")) {
+          state.scoreInput = state.scoreInput.slice(0, 1);
+        } else {
+          state.scoreInput = state.scoreInput.slice(0, -1);
+        }
       }
     };
 
@@ -118,6 +123,12 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
 
     const isValid = parseScore() !== null;
     const isColonDisabled = state.scoreInput.length === 0 || state.scoreInput.includes(":");
+    const isBackspaceDisabled = state.scoreInput.length === 0;
+    // Disable numbers if current input position is full (2 digits on either side)
+    const parts = state.scoreInput.split(":");
+    const areNumbersDisabled = parts.length === 1 
+      ? parts[0].length >= 2  // Before colon: disable if 2+ digits
+      : parts[1].length >= 2; // After colon: disable if 2+ digits on right side
 
     return m.fragment({}, [
       m("main.score-entry.container-fluid.fullscreen", [
@@ -156,24 +167,27 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             "Submit",
           ),
           // Row 1: 1-3
-          m("button.key-number", { onclick: () => addDigit("1") }, "1"),
-          m("button.key-number", { onclick: () => addDigit("2") }, "2"),
-          m("button.key-number", { onclick: () => addDigit("3") }, "3"),
+          m("button.key-number", { onclick: () => addDigit("1"), disabled: areNumbersDisabled }, "1"),
+          m("button.key-number", { onclick: () => addDigit("2"), disabled: areNumbersDisabled }, "2"),
+          m("button.key-number", { onclick: () => addDigit("3"), disabled: areNumbersDisabled }, "3"),
           // Row 2: 4-6
-          m("button.key-number", { onclick: () => addDigit("4") }, "4"),
-          m("button.key-number", { onclick: () => addDigit("5") }, "5"),
-          m("button.key-number", { onclick: () => addDigit("6") }, "6"),
+          m("button.key-number", { onclick: () => addDigit("4"), disabled: areNumbersDisabled }, "4"),
+          m("button.key-number", { onclick: () => addDigit("5"), disabled: areNumbersDisabled }, "5"),
+          m("button.key-number", { onclick: () => addDigit("6"), disabled: areNumbersDisabled }, "6"),
           // Row 3: 7-9
-          m("button.key-number", { onclick: () => addDigit("7") }, "7"),
-          m("button.key-number", { onclick: () => addDigit("8") }, "8"),
-          m("button.key-number", { onclick: () => addDigit("9") }, "9"),
+          m("button.key-number", { onclick: () => addDigit("7"), disabled: areNumbersDisabled }, "7"),
+          m("button.key-number", { onclick: () => addDigit("8"), disabled: areNumbersDisabled }, "8"),
+          m("button.key-number", { onclick: () => addDigit("9"), disabled: areNumbersDisabled }, "9"),
           // Row 4: Colon, 0, Backspace
           m("button.key-action.secondary", {
             onclick: addColon,
             disabled: isColonDisabled,
           }, ":"),
-          m("button.key-number", { onclick: () => addDigit("0") }, "0"),
-          m("button.key-action.secondary", { onclick: backspace }, "⌫"),
+          m("button.key-number", { onclick: () => addDigit("0"), disabled: areNumbersDisabled }, "0"),
+          m("button.key-action.secondary", { 
+            onclick: backspace,
+            disabled: isBackspaceDisabled,
+          }, "⌫"),
         ]),
       ]),
     ]);
