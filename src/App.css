@@ -174,15 +174,15 @@ article.player img {
 
 @media (min-width: 768px) {
   article.player img {
-    width: 3.4rem;
-    height: 3.4rem;
+    width: 3.2rem;
+    height: 3.2rem;
   }
 }
 
 @media (min-width: 1024px) {
   article.player img {
-    width: 3.8rem;
-    height: 3.8rem;
+    width: 3.4rem;
+    height: 3.4rem;
   }
 }
 
