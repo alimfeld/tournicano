@@ -299,9 +299,7 @@ class RoundImpl implements Round {
   }
 
   standings(group?: number) {
-    const players = this.playerMap
-      .values()
-      .toArray()
+    const players = Array.from(this.playerMap.values())
       .filter((player) => group === undefined || player.group === group)
       .filter((player) => player.wins + player.draws + player.losses > 0)
       .toSorted((p, q) => {
@@ -388,7 +386,7 @@ class TournamentImpl implements Mutable<Tournament> {
       compact[1].forEach((cr) => {
         const previousRound = this.rounds.at(-1);
         const participating = previousRound
-          ? previousRound.playerMap.values().toArray()
+          ? Array.from(previousRound.playerMap.values())
           : [];
         const round = new RoundImpl(
           this,
@@ -410,7 +408,7 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   players(group?: number) {
-    const players = this.playerMap.values().toArray();
+    const players = Array.from(this.playerMap.values());
     if (group === undefined) {
       return players;
     }
@@ -448,7 +446,7 @@ class TournamentImpl implements Mutable<Tournament> {
     const participating: PlayerStatsImpl[] = [];
     const previousRound = this.rounds.at(-1);
     if (previousRound) {
-      participating.push(...previousRound.playerMap.values().toArray());
+      participating.push(...Array.from(previousRound.playerMap.values()));
     }
     participating.push(
       ...shuffle(this.players() // shuffle in players to break patterns
@@ -499,8 +497,6 @@ class TournamentImpl implements Mutable<Tournament> {
   serialize() {
     const compact: CompactTournament = [
       this.players()
-        .values()
-        .toArray()
         .map((p) => [p.id, p.name, p.group, p.active]),
       this.rounds.map((round) => [
         round.matches.map((match) => [
