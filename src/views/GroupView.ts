@@ -152,14 +152,6 @@ export const GroupView: m.Component<GroupAttrs> = {
               },
               renderPlayerMenu(player),
               m("div.player-info",
-                { 
-                  onclick: () => handleActivate(player),
-                  ontouchend: (e: Event) => {
-                    // Prevent double-firing on touch devices
-                    e.preventDefault();
-                    handleActivate(player);
-                  }
-                },
                 m(PlayerView, { player, compact: true })
               ),
               m("div.player-toggle",
@@ -168,13 +160,11 @@ export const GroupView: m.Component<GroupAttrs> = {
                   name: "active",
                   role: "switch",
                   checked: player.active,
-                  onclick: (e: Event) => {
-                    e.stopPropagation();
-                    handleActivate(player);
-                  },
+                  onclick: () => handleActivate(player),
                   ontouchend: (e: Event) => {
-                    // Touch devices should use the toggle directly
-                    e.stopPropagation();
+                    // Prevent double-firing on touch devices
+                    e.preventDefault();
+                    handleActivate(player);
                   }
                 })
               )
