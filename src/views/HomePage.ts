@@ -71,7 +71,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "🚀 Round Management"),
         m(
           "p",
-          "At any time, a new round can be created by pressing the respective button.",
+          "At any time, a new round can be created by pressing the respective button. The button changes color to green when all matches have scores submitted, indicating it's a good time to create the next round.",
         ),
         m(
           "p",
