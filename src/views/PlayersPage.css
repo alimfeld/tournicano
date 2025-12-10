@@ -6,6 +6,11 @@ main.players div.player-filter button {
   padding: 0.5ex 0;
 }
 
+/* Registration section */
+main.players div.registration-section form {
+  margin-bottom: calc(var(--pico-spacing) * 2);
+}
+
 /* Group header */
 main.players div.group-header {
   margin-bottom: var(--pico-spacing);

@@ -48,6 +48,27 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       m("header.players.container-fluid", m("h1", title)),
       m(
         "main.players.container-fluid.actions",
+        // Registration form - shown only when registration is open
+        settings.playersEditable ?
+          m(
+            "div.registration-section",
+            m("div.group-header", m("h2", "Register Players")),
+            m(
+              "form",
+              { onsubmit: (event: InputEvent) => event.preventDefault() },
+              m("textarea", {
+                id: "players",
+                placeholder: "Separate players by comma or period and groups by newline...",
+                autocapitalize: "words",
+              }),
+              m("input.add", {
+                type: "submit",
+                value: "Add",
+                onclick: registerPlayers,
+              }),
+            )
+          ) : null,
+        // Filter buttons
         m(
           "div.player-filter",
           { role: "group" },
@@ -82,6 +103,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             "Inactive",
           ),
         ),
+        // Player groups
         m(
           "section.players",
           tournament.groups.map((group) =>
@@ -93,21 +115,6 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             }),
           ),
         ),
-        settings.playersEditable ?
-          m(
-            "form",
-            { onsubmit: (event: InputEvent) => event.preventDefault() },
-            m("textarea", {
-              id: "players",
-              placeholder: "Separate players by comma or period and groups by newline...",
-              autocapitalize: "words",
-            }),
-            m("input.add", {
-              type: "submit",
-              value: "Register",
-              onclick: registerPlayers,
-            }),
-          ) : null,
       ),
       m(FAB, {
         icon: "⋮",
