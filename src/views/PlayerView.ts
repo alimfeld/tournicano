@@ -8,6 +8,7 @@ export interface PlayerAttrs {
   debug?: boolean;
   pre?: ChildArray;
   post?: ChildArray;
+  compact?: boolean;
 }
 
 const isPlayerStats = (player: Player | PlayerStats): player is PlayerStats => {
@@ -17,9 +18,18 @@ const isPlayerStats = (player: Player | PlayerStats): player is PlayerStats => {
 export const PlayerView: m.Component<PlayerAttrs> = {
   view: (vnode) => {
     const player = vnode.attrs.player;
+    const compact = vnode.attrs.compact || false;
     const avatar = createAvatar(bottts, {
       seed: player.name,
     });
+    
+    if (compact) {
+      return m("div.player-compact",
+        m("img.avatar-small", { src: avatar.toDataUri() }),
+        m("span.player-name", player.name)
+      );
+    }
+    
     return m(
       "article.player",
       vnode.attrs.pre,
