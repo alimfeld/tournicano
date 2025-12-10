@@ -12,14 +12,14 @@
     "@dicebear/core": "^9.2.4",
     "@graph-algorithm/maximum-matching": "^3.0.0",
     "@picocss/pico": "^2.1.1",
-    "mithril": "^2.3.7"
+    "mithril": "^2.3.8"
   },
   "devDependencies": {
     "@types/mithril": "^2.2.7",
-    "@vite-pwa/assets-generator": "^1.0.1",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.4",
-    "vite-plugin-pwa": "^1.0.3",
-    "vitest": "^4.0.6"
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.0.15"
   }
 }
