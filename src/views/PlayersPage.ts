@@ -68,8 +68,8 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               }),
             )
           ) : null,
-        // Filter buttons
-        m(
+        // Filter buttons - shown only when there is at least one player
+        total > 0 ? m(
           "div.player-filter",
           { role: "group" },
           m(
@@ -102,7 +102,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             },
             "Inactive",
           ),
-        ),
+        ) : null,
         // Player groups
         m(
           "section.players",
@@ -151,6 +151,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             onclick: () => {
               tournament.reset();
               settings.setPlayersEditable(true);
+              changePlayerFilter("all");
             },
             variant: "del",
             disabled: tournament.players().length === 0,
