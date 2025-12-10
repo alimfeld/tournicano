@@ -416,7 +416,7 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   get groups() {
-    return [...new Set(this.playerMap.values().map((p) => p.group))].sort();
+    return [...new Set(Array.from(this.playerMap.values()).map((p) => p.group))].sort();
   }
 
   registerPlayers(names: string[], group: number) {

@@ -186,7 +186,7 @@ test("should balance matchings", ({ players, scores }) => {
     round.standings().forEach((ranked) => {
       const player = ranked.player;
       expect(
-        player.partners.values().reduce((acc, rounds) => (acc += rounds.length), 0),
+        Array.from(player.partners.values()).reduce((acc, rounds) => (acc += rounds.length), 0),
       ).toBe(player.matchCount);
       round.standings().forEach((ranked) => {
         const partner = ranked.player;
@@ -195,8 +195,7 @@ test("should balance matchings", ({ players, scores }) => {
         );
       });
       expect(
-        player.opponents
-          .values()
+        Array.from(player.opponents.values())
           .reduce((acc, rounds) => (acc += rounds.length), 0),
       ).toBe(player.matchCount * 2);
     });

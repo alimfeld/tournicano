@@ -31,7 +31,6 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
     };
     const [active, total] = tournament
       .players()
-      .values()
       .reduce(
         (acc, player) => {
           if (player.active) {
