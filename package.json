@@ -1,8 +1,10 @@
 {
   "name": "tournicano",
   "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-version.js",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest"
