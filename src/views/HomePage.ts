@@ -49,19 +49,15 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "A filter allows displaying only active or inactive players.",
+          "A filter allows displaying all, only active, or only inactive players. The filter is only shown when at least one player is registered.",
         ),
         m(
           "p",
-          "Any player who hasn't yet participated in a round can be deleted.",
+          "Individual player actions are available via a ☰ hamburger menu next to each player (visible when registration is open): delete players who haven't yet participated in a round, or reassign players to adjacent groups using the ↑ and ↓ menu options.",
         ),
         m(
           "p",
-          "Players may be reassigned to adjacent groups using the ↑ and ↓ buttons.",
-        ),
-        m(
-          "p",
-          "Some quick actions are available via the ⋮ button. Registration can be closed to remove UI clutter (UI elements to add/remove players and move players between groups). All players can be activated, deactivated, or deleted (which will also delete any rounds of a started tournament). In addition, there is an option to ⿻ share/export all player names (this allows for later import by pasting those names into the text field to add players). Exported player names are separated by commas.",
+          "Global player actions are available via the ⋮ button: open/close registration to reduce UI clutter, activate/deactivate all players, delete all players (which will also reset the tournament), or ⿻ share/export all player names for later import.",
         ),
         m(
           "p",
