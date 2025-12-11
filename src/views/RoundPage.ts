@@ -29,7 +29,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
-    
+
     // Check if all matches in the tournament have scores submitted
     const allMatchesHaveScores = tournament.rounds.every(r =>
       r.matches.every(m => m.score !== undefined)
@@ -102,7 +102,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
       m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
-        variant: allMatchesHaveScores ? "ins" : "warn",
+        variant: allMatchesHaveScores ? "ins" : undefined,
         onclick: () => {
           tournament.createRound(settings.matchingSpec, matchesPerRound);
           changeRound(roundCount);
@@ -113,6 +113,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
         icon: "⋮",
         iconOpen: "✕",
         position: "left",
+        variant: "secondary",
         fullscreen: fullscreen,
         actions: [
           {

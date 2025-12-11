@@ -6,7 +6,7 @@ export interface FABAction {
   label: string;
   onclick: () => void;
   disabled?: boolean;
-  variant?: "ins" | "del" | "warn";
+  variant?: "ins" | "del" | "secondary";
   active?: boolean;
   confirmation?: {
     title: string;
@@ -22,7 +22,7 @@ export interface FABAttrs {
   position?: "left" | "right";
   fullscreen?: boolean;
   disabled?: boolean;
-  variant?: "ins" | "del" | "warn";
+  variant?: "ins" | "del" | "secondary";
 }
 
 interface FABState {

@@ -22,7 +22,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
     (state as PlayersPageState).keepVisiblePlayers = new Set();
     (state as PlayersPageState).inactivityTimeout = null;
   },
-  
+
   onremove: ({ state }) => {
     // Clear pending timeout when component is removed
     const pageState = state as PlayersPageState;
@@ -30,10 +30,10 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       clearTimeout(pageState.inactivityTimeout);
     }
   },
-  
+
   view: ({ state, attrs: { settings, tournament, playerFilter, changePlayerFilter } }) => {
     const pageState = state as PlayersPageState;
-    
+
     // Handler for player activity - manages shared keep-visible state
     const handlePlayerActivity = (playerId: PlayerId, shouldKeepVisible: boolean) => {
       // Clear any existing timeout and restart the inactivity period
@@ -41,14 +41,14 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         clearTimeout(pageState.inactivityTimeout);
         pageState.inactivityTimeout = null;
       }
-      
+
       // Update the keep-visible set
       if (shouldKeepVisible) {
         pageState.keepVisiblePlayers.add(playerId);
       } else {
         pageState.keepVisiblePlayers.delete(playerId);
       }
-      
+
       // Start new inactivity timeout to remove all kept-visible players
       if (pageState.keepVisiblePlayers.size > 0) {
         pageState.inactivityTimeout = window.setTimeout(() => {
@@ -58,7 +58,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
         }, 2000); // 2 seconds of inactivity
       }
     };
-    
+
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
@@ -165,6 +165,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       m(FAB, {
         icon: "⋮",
         iconOpen: "✕",
+        variant: "secondary",
         disabled: tournament.players().length === 0,
         actions: [
           {

@@ -64,7 +64,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           .map((ranked) => {
             const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
             const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
-            const reliabilityStr = reliability < 1 
+            const reliabilityStr = reliability < 1
               ? ` ${(reliability * 100).toFixed(0)}%`
               : "";
             return (
@@ -217,8 +217,8 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                     }),
                   ),
                   m("div.reliability-bar", {
-                      style: reliability < 1 ? "" : "visibility: hidden;",
-                    },
+                    style: reliability < 1 ? "" : "visibility: hidden;",
+                  },
                     m("div.reliability-filled", {
                       style: `width: ${reliability * 100}%`,
                     })
@@ -247,6 +247,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       ),
       m(FAB, {
         icon: "⿻",
+        variant: "secondary",
         onclick: async () => {
           const data = {
             text: format(),
