@@ -168,7 +168,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                     `(${standings.length})`,
                   ),
                 ),
-                m("div.record",
+                m("div.win-percentage-column",
                   m(
                     "p.win-percentage",
                     `${(groupWinRatio * 100).toFixed(0)}%`,
@@ -182,7 +182,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                   ),
                 ),
                 m(
-                  "div.points",
+                  "div.points-column",
                   m(
                     "p.plus-minus",
                     (groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus
@@ -204,41 +204,36 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                   rightBadge: ranked.rank.toString()
                 }),
                 m(
-                  "div.record",
+                  "div.win-percentage-column",
                   m(
                     "p.win-percentage",
-                    {
-                      style: reliability < 1
-                        ? `--reliability: ${reliability};`
-                        : "",
-                      class: reliability < 1 ? "unreliable" : "",
-                    },
                     `${(ranked.player.winRatio * 100).toFixed(0)}%`,
                     m("div.progressbar", {
                       style: `width: ${ranked.player.winRatio * 100}%`,
                     }),
                   ),
-                  m("div.reliability-bar", {
-                    style: reliability < 1 ? "" : "visibility: hidden;",
-                  },
-                    m("div.reliability-filled", {
-                      style: `width: ${reliability * 100}%`,
-                    })
-                  ),
                   m(
-                    "small",
-                    `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`,
+                    "div.reliability-and-record",
+                    m(
+                      "small.wins-draws-losses",
+                      `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`,
+                    ),
+                    m("div.reliability-pie-chart",
+                      m("div.pie", {
+                        style: `--reliability: ${reliability};`,
+                      })
+                    ),
                   ),
                 ),
                 m(
-                  "div.points",
+                  "div.points-column",
                   m(
                     "p.plus-minus",
                     (ranked.player.plusMinus >= 0 ? "+" : "") +
                     ranked.player.plusMinus,
                   ),
                   m(
-                    "small",
+                    "small.points-detail",
                     `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`,
                   ),
                 ),

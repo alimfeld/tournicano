@@ -5,7 +5,7 @@ header.standings {
 
 main.standings section {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   column-gap: var(--pico-spacing);
   align-items: center;
   border-bottom: 1px solid;
@@ -26,15 +26,24 @@ main.standings section div.total-players {
   text-align: center;
 }
 
-main.standings section div.record {
-  text-align: center;
-  padding-left: 10%;
+main.standings section div.win-percentage-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pico-spacing);
+  padding-left: var(--pico-spacing);
 }
 
 @media (min-width: 768px) {
-  main.standings section div.record {
-    padding-left: 15%;
+  main.standings section div.win-percentage-column {
+    padding-left: 20%;
   }
+}
+
+main.standings section div.points-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pico-spacing);
+  align-items: flex-end;
 }
 
 main.standings section p.win-percentage {
@@ -42,12 +51,36 @@ main.standings section p.win-percentage {
   border: 1px solid;
   border-color: var(--pico-form-element-valid-focus-color);
   border-radius: 0.5ex;
+  margin: 0;
+  text-align: center;
+  align-self: stretch;
 }
 
-main.standings section p.win-percentage.unreliable {
-  --red-stop: calc((1 - var(--reliability)) * 100%);
-  --green-stop: calc(var(--reliability) * 100%);
-  border-color: color-mix(in srgb, var(--pico-form-element-invalid-focus-color) var(--red-stop), var(--pico-form-element-valid-focus-color) var(--green-stop));
+main.standings section small.wins-draws-losses {
+  margin: 0;
+}
+
+main.standings section div.reliability-and-record {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  justify-content: space-between;
+}
+
+main.standings section small.points-detail {
+  margin: 0;
+}
+
+main.standings section div.reliability-pie-chart {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+main.standings section p.plus-minus {
+  margin: 0;
+  white-space: nowrap;
 }
 
 main.standings section div.progressbar {
@@ -61,27 +94,14 @@ main.standings section div.progressbar {
   z-index: -1;
 }
 
-main.standings section p.win-percentage.unreliable div.progressbar {
-  background: color-mix(in srgb, var(--pico-form-element-invalid-focus-color) var(--red-stop), var(--pico-form-element-valid-focus-color) var(--green-stop));
-}
-
-main.standings section div.reliability-bar {
-  position: relative;
-  width: 100%;
-  height: 3px;
-  background: transparent;
-  margin-top: calc(var(--pico-typography-spacing-vertical) * -0.5);
-  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 0.5);
-  border-radius: 2px;
-}
-
-main.standings section div.reliability-filled {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: var(--pico-form-element-valid-focus-color);
-  border-radius: 2px;
+main.standings section div.pie {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: conic-gradient(var(--pico-muted-border-color) 0deg,
+      var(--pico-muted-border-color) calc((1 - var(--reliability)) * 360deg),
+      var(--pico-form-element-valid-focus-color) calc((1 - var(--reliability)) * 360deg),
+      var(--pico-form-element-valid-focus-color) 360deg);
 }
 
 main.standings section.group-stats {
@@ -98,13 +118,4 @@ main.standings section.group-stats p.win-percentage {
 
 main.standings section.group-stats div.progressbar {
   background: var(--pico-muted-color);
-}
-
-main.standings section div.points {
-  text-align: center;
-}
-
-main.standings section p.plus-minus {
-  margin-bottom: calc(var(--pico-typography-spacing-vertical) + 3px);
-  white-space: nowrap;
 }
