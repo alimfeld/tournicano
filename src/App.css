@@ -6,6 +6,7 @@
   --pico-nav-element-spacing-vertical: 0.5rem;
   --pico-block-spacing-vertical: 0.7rem;
   --nav-offset: 3.2rem;
+  --inc-font-weight: 550;
 }
 
 [data-theme=dark] {
@@ -189,7 +190,7 @@ article.player img {
 
 article.player p {
   color: var(--pico-form-element-color);
-  font-weight: 550;
+  font-weight: var(--inc-font-weight);
   width: 100%;
   overflow: hidden;
   white-space: nowrap;

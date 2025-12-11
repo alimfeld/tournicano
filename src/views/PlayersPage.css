@@ -147,7 +147,7 @@ main.players img.avatar-small {
 }
 
 main.players span.player-name {
-  font-weight: 550;
+  font-weight: var(--inc-font-weight);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
