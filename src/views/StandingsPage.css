@@ -95,11 +95,11 @@ main.standings section div.progressbar {
 }
 
 main.standings section div.pie {
-  width: 1rem;
-  height: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
   border-radius: 50%;
-  background: conic-gradient(var(--pico-muted-border-color) 0deg,
-      var(--pico-muted-border-color) calc((1 - var(--reliability)) * 360deg),
+  background: conic-gradient(var(--pico-background-color) 0deg,
+      var(--pico-background-color) calc((1 - var(--reliability)) * 360deg),
       var(--pico-form-element-valid-focus-color) calc((1 - var(--reliability)) * 360deg),
       var(--pico-form-element-valid-focus-color) 360deg);
 }
