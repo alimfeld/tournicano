@@ -10,8 +10,8 @@ export interface GroupAttrs {
 }
 
 interface GroupState {
-  fadingPlayers: Set<PlayerId>;
-  fadeTimeouts: Map<PlayerId, number>;
+  keepVisiblePlayers: Set<PlayerId>; // Players to keep visible despite filter
+  inactivityTimeout: number | null;
 }
 
 const getGroupLetter = (index: number): string => String.fromCharCode(65 + index);
@@ -38,15 +38,16 @@ const createMenuItem = (
 
 export const GroupView: m.Component<GroupAttrs> = {
   oninit: ({ state }) => {
-    (state as GroupState).fadingPlayers = new Set();
-    (state as GroupState).fadeTimeouts = new Map();
+    (state as GroupState).keepVisiblePlayers = new Set();
+    (state as GroupState).inactivityTimeout = null;
   },
   
   onremove: ({ state }) => {
-    // Clear all pending timeouts when component is removed
+    // Clear pending timeout when component is removed
     const groupState = state as GroupState;
-    groupState.fadeTimeouts.forEach(timeout => clearTimeout(timeout));
-    groupState.fadeTimeouts.clear();
+    if (groupState.inactivityTimeout !== null) {
+      clearTimeout(groupState.inactivityTimeout);
+    }
   },
   
   view: ({ state, attrs: { tournament, playerFilter, groupIndex, playersEditable } }) => {
@@ -60,47 +61,39 @@ export const GroupView: m.Component<GroupAttrs> = {
         (playerFilter === "inactive" && !p.active);
     };
     
-    // Include both matching players AND players that are fading out
+    // Include both matching players AND players that should be kept visible
     const players = allPlayers.filter(p =>
-      groupState.fadingPlayers.has(p.id) || matchesFilter(p)
+      matchesFilter(p) || groupState.keepVisiblePlayers.has(p.id)
     );
     
     const activeCount = players.reduce((acc, player) => acc + (player.active ? 1 : 0), 0);
     const title = `${getGroupLetter(groupIndex)} (${playerFilter === "inactive" ? players.length : activeCount}/${allPlayers.length})`;
     
-    // Handle player activation with fade-out
+    // Handle player activation with delayed removal
     const handleActivate = (player: RegisteredPlayer) => {
       player.activate(!player.active);
       
-      // If player no longer matches filter after toggle, start fade-out
+      // Clear any existing timeout and restart the inactivity period
+      if (groupState.inactivityTimeout !== null) {
+        clearTimeout(groupState.inactivityTimeout);
+        groupState.inactivityTimeout = null;
+      }
+      
+      // If player no longer matches filter, add to keep-visible set
       if (!matchesFilter(player)) {
-        groupState.fadingPlayers.add(player.id);
-        
-        // Clear any existing timeout for this player
-        const existingTimeout = groupState.fadeTimeouts.get(player.id);
-        if (existingTimeout) {
-          clearTimeout(existingTimeout);
-        }
-        
-        // Set new timeout to remove player after fade duration
-        const timeout = window.setTimeout(() => {
-          groupState.fadingPlayers.delete(player.id);
-          groupState.fadeTimeouts.delete(player.id);
-          m.redraw();
-        }, 3000); // 3 seconds
-        
-        groupState.fadeTimeouts.set(player.id, timeout);
+        groupState.keepVisiblePlayers.add(player.id);
       } else {
-        // Player matches filter again (reversed action during fade)
-        // Remove from fading set and clear timeout
-        if (groupState.fadingPlayers.has(player.id)) {
-          groupState.fadingPlayers.delete(player.id);
-          const existingTimeout = groupState.fadeTimeouts.get(player.id);
-          if (existingTimeout) {
-            clearTimeout(existingTimeout);
-            groupState.fadeTimeouts.delete(player.id);
-          }
-        }
+        // Player matches filter again, remove from keep-visible set
+        groupState.keepVisiblePlayers.delete(player.id);
+      }
+      
+      // Start new inactivity timeout to remove all kept-visible players
+      if (groupState.keepVisiblePlayers.size > 0) {
+        groupState.inactivityTimeout = window.setTimeout(() => {
+          groupState.keepVisiblePlayers.clear();
+          groupState.inactivityTimeout = null;
+          m.redraw();
+        }, 2000); // 2 seconds of inactivity
       }
     };
     
@@ -142,8 +135,7 @@ export const GroupView: m.Component<GroupAttrs> = {
         players
           .toSorted((p, q) => p.name.localeCompare(q.name))
           .map(player => {
-            const isFading = groupState.fadingPlayers.has(player.id);
-            const rowClass = `${player.active ? "active" : "inactive"}${isFading ? " fading-out" : ""}`;
+            const rowClass = player.active ? "active" : "inactive";
             
             return m("div.player-row",
               {

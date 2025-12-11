@@ -46,41 +46,6 @@ main.players div.player-row.inactive .player-compact {
   opacity: 0.5;
 }
 
-/* Fade-in animation: inactive player becoming active (fade in before removal from inactive filter) */
-main.players div.player-row.active.fading-out {
-  animation: fadeIn 1.5s ease-in forwards;
-  pointer-events: all; /* Keep clickable during fade */
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0.5;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Fade-out animation: active player becoming inactive (fade out before removal from active filter) */
-main.players div.player-row.inactive.fading-out {
-  animation: fadeOut 1.5s ease-out forwards;
-  pointer-events: all; /* Keep clickable during fade */
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0.2;
-  }
-}
-
-/* Reset inner opacity for inactive fading players to avoid double opacity */
-main.players div.player-row.inactive.fading-out .player-compact {
-  opacity: 1 !important; /* Important to override the base inactive opacity */
-}
-
 /* Hamburger menu */
 main.players details.dropdown.player-menu {
   width: auto;
