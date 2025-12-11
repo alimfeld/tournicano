@@ -83,6 +83,10 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          "Players who are performing exceptionally well (win ratio above 75%) are marked with a 🔥 fire badge to highlight their hot streak.",
+        ),
+        m(
+          "p",
           "You can navigate back and forth between rounds and change scores of previously completed rounds.",
         ),
         m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed. Additionally, you can ⏿ prevent the screen from turning off when showing the round.",
