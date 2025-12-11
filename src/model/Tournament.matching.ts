@@ -421,15 +421,13 @@ const teamUpVarietyWeight = (
   // Partner penalty
   const roundsTeamedUp = a.entity.partners.get(b.entity.id) || [];
   const partnerPenalty = roundsTeamedUp.length === 0 ? 0 : (() => {
-    const samePartnerSumA = a.entity.partners
-      .values()
+    const samePartnerSumA = Array.from(a.entity.partners.values())
       .reduce((acc, rounds) => (acc += rounds.length - 1), 1);
-    const samePartnerSumB = b.entity.partners
-      .values()
+    const samePartnerSumB = Array.from(b.entity.partners.values())
       .reduce((acc, rounds) => (acc += rounds.length - 1), 1);
     return roundsTeamedUp.length * // the number of times the players teamed up already
       (
-        roundsTeamedUp.at(-1)! + 1 + // the last round (index) the players teamed up
+        roundsTeamedUp[roundsTeamedUp.length - 1]! + 1 + // the last round (index) the players teamed up
         samePartnerSumA + samePartnerSumB // the number of times both players were teamed up with the same partner in the past
       );
   })();

@@ -31,7 +31,7 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
   ) { };
 
   isParticipating(): boolean {
-    const lastRound = this.tournament.rounds.at(-1);
+    const lastRound = this.tournament.rounds[this.tournament.rounds.length - 1];
     if (lastRound) {
       return lastRound.playerMap.has(this.id);
     }
@@ -286,7 +286,7 @@ class RoundImpl implements Round {
   }
 
   isLast(): boolean {
-    return this.tournament.rounds.at(-1) === this;
+    return this.tournament.rounds[this.tournament.rounds.length - 1] === this;
   }
 
   delete(): boolean {
@@ -320,9 +320,8 @@ class RoundImpl implements Round {
   addPerformance(id: PlayerId, performance: Performance) {
     this.playerMap.get(id)!.add(performance);
     if (this.index + 1 < this.tournament.rounds.length) {
-      this.tournament.rounds
-        .at(this.index + 1)
-        ?.addPerformance(id, performance);
+      const nextRound = this.tournament.rounds[this.index + 1];
+      nextRound?.addPerformance(id, performance);
     }
   }
 
@@ -384,7 +383,7 @@ class TournamentImpl implements Mutable<Tournament> {
         this.playerMap.set(player.id, player);
       });
       compact[1].forEach((cr) => {
-        const previousRound = this.rounds.at(-1);
+        const previousRound = this.rounds[this.rounds.length - 1];
         const participating = previousRound
           ? Array.from(previousRound.playerMap.values())
           : [];
@@ -444,7 +443,7 @@ class TournamentImpl implements Mutable<Tournament> {
     // Any players participating in the previous round (along with their stats) plus
     // active registered players not yet competing!
     const participating: PlayerStatsImpl[] = [];
-    const previousRound = this.rounds.at(-1);
+    const previousRound = this.rounds[this.rounds.length - 1];
     if (previousRound) {
       participating.push(...Array.from(previousRound.playerMap.values()));
     }
