@@ -688,3 +688,211 @@ test("should weight partner history more heavily than opponent history", ({ play
   expect(player0Partner).not.toBe("1");
 });
 
+// Tests for activePlayerCount property
+test("should return active player count - initial state", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  // All players initially active
+  expect(tournament.activePlayerCount).toBe(10);
+  expect(tournament.activePlayerCount).toBe(tournament.players().length);
+});
+
+test("should return active player count - after individual deactivation", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  // Deactivate 3 specific players
+  tournament.players()[0].activate(false);
+  tournament.players()[3].activate(false);
+  tournament.players()[7].activate(false);
+  
+  expect(tournament.activePlayerCount).toBe(7);
+  
+  // Verify the correct players are counted as active
+  const activePlayers = tournament.players().filter(p => p.active);
+  expect(activePlayers).toHaveLength(7);
+  expect(tournament.activePlayerCount).toBe(activePlayers.length);
+});
+
+test("should return active player count - bulk operations", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  // Deactivate all players
+  tournament.activateAll(false);
+  expect(tournament.activePlayerCount).toBe(0);
+  
+  // Reactivate some players
+  tournament.players()[0].activate(true);
+  tournament.players()[1].activate(true);
+  tournament.players()[4].activate(true);
+  tournament.players()[8].activate(true);
+  tournament.players()[9].activate(true);
+  
+  expect(tournament.activePlayerCount).toBe(5);
+  
+  // Reactivate all players
+  tournament.activateAll(true);
+  expect(tournament.activePlayerCount).toBe(10);
+});
+
+test("should return active player count - with groups", () => {
+  const tournament = tournamentFactory.create();
+  
+  // Register players in different groups
+  tournament.registerPlayers(["Alice", "Bob", "Charlie"], 0);
+  tournament.registerPlayers(["Dave", "Eve", "Frank"], 1);
+  
+  // All players active initially
+  expect(tournament.activePlayerCount).toBe(6);
+  
+  // Deactivate all players in group 0
+  tournament.activateGroup(0, false);
+  expect(tournament.activePlayerCount).toBe(3);
+  
+  // Deactivate all players in group 1
+  tournament.activateGroup(1, false);
+  expect(tournament.activePlayerCount).toBe(0);
+  
+  // Reactivate group 0
+  tournament.activateGroup(0, true);
+  expect(tournament.activePlayerCount).toBe(3);
+});
+
+test("should return active player count - empty tournament", () => {
+  const tournament = tournamentFactory.create();
+  
+  expect(tournament.activePlayerCount).toBe(0);
+  expect(tournament.players()).toHaveLength(0);
+});
+
+// Tests for hasAllScoresSubmitted property
+test("should return hasAllScoresSubmitted - empty tournament", () => {
+  const tournament = tournamentFactory.create();
+  
+  // Empty tournament (no rounds) should return true (vacuous truth)
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  expect(tournament.rounds).toHaveLength(0);
+});
+
+test("should return hasAllScoresSubmitted - progressive score entry", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  // Create 3 rounds with 2 matches each
+  const round1 = tournament.createRound(Americano, 2);
+  const round2 = tournament.createRound(Americano, 2);
+  const round3 = tournament.createRound(Americano, 2);
+  
+  expect(tournament.rounds).toHaveLength(3);
+  
+  // Initially, no scores submitted
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit scores for round 1 (2 out of 6 matches)
+  round1.matches[0].submitScore([11, 5]);
+  round1.matches[1].submitScore([8, 11]);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit scores for round 2 (4 out of 6 matches total)
+  round2.matches[0].submitScore([11, 7]);
+  round2.matches[1].submitScore([6, 11]);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit scores for round 3 (6 out of 6 matches total)
+  round3.matches[0].submitScore([11, 3]);
+  round3.matches[1].submitScore([9, 11]);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  
+  // Clear one score
+  round2.matches[0].submitScore(undefined);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Re-submit the score
+  round2.matches[0].submitScore([11, 7]);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+});
+
+test("should return hasAllScoresSubmitted - single round", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  const round = tournament.createRound(Americano, 2);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit first match score
+  round.matches[0].submitScore([11, 5]);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit second match score
+  round.matches[1].submitScore([8, 11]);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+});
+
+test("should return hasAllScoresSubmitted - after round deletion", ({ players, scores }) => {
+  const tournament = runTournament(players);
+  
+  // Create 2 rounds with all scores
+  const round1 = tournament.createRound(Americano, 2);
+  round1.matches[0].submitScore(scores[0][0]);
+  round1.matches[1].submitScore(scores[0][1]);
+  
+  const round2 = tournament.createRound(Americano, 2);
+  round2.matches[0].submitScore(scores[1][0]);
+  round2.matches[1].submitScore(scores[1][1]);
+  
+  expect(tournament.rounds).toHaveLength(2);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  
+  // Delete last round
+  round2.delete();
+  expect(tournament.rounds).toHaveLength(1);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  
+  // Clear a score in the remaining round
+  round1.matches[0].submitScore(undefined);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Re-submit the score
+  round1.matches[0].submitScore(scores[0][0]);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  
+  // Delete the last remaining round
+  round1.delete();
+  expect(tournament.rounds).toHaveLength(0);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+});
+
+test("should return hasAllScoresSubmitted - after tournament restart", ({ players, scores }) => {
+  const tournament = runTournament(players, scores);
+  
+  // All scores submitted from runTournament
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  expect(tournament.rounds.length).toBeGreaterThan(0);
+  
+  // Restart tournament (deletes all rounds but keeps players)
+  tournament.restart();
+  
+  expect(tournament.rounds).toHaveLength(0);
+  expect(tournament.players()).toHaveLength(players.length);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+});
+
+test("should return hasAllScoresSubmitted - mixed score states", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  const round = tournament.createRound(Americano, 2);
+  
+  // No scores
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit and then clear a score
+  round.matches[0].submitScore([11, 5]);
+  round.matches[0].submitScore(undefined);
+  expect(tournament.hasAllScoresSubmitted).toBe(false);
+  
+  // Submit both scores with one being a draw
+  round.matches[0].submitScore([10, 10]);
+  round.matches[1].submitScore([11, 9]);
+  expect(tournament.hasAllScoresSubmitted).toBe(true);
+  
+  // Verify draw is still counted as a submitted score
+  expect(round.matches[0].score).toEqual([10, 10]);
+});
+

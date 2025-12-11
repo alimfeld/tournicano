@@ -35,10 +35,7 @@
   color: var(--pico-primary-inverse);
   font-size: 1.5rem;
   cursor: pointer;
-  box-shadow:
-    0 0.25rem 0.5rem rgba(0, 0, 0, 0.2),
-    0 0.5rem 1rem rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease, background 0.2s ease;
   display: flex;
   align-items: center;
@@ -54,10 +51,7 @@
 }
 
 [data-theme=dark] .fab-primary {
-  box-shadow:
-    0 0.25rem 0.5rem rgba(0, 0, 0, 0.4),
-    0 0.5rem 1rem rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.4);
 }
 
 .fab-primary:disabled {
@@ -203,10 +197,7 @@
   padding: 0.5rem 1rem;
   border-radius: 1rem;
   white-space: nowrap;
-  box-shadow:
-    0 0.2rem 0.4rem rgba(0, 0, 0, 0.15),
-    0 0.4rem 0.8rem rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.15);
   font-size: 0.9rem;
   border: none;
   cursor: pointer;
@@ -224,10 +215,7 @@
 }
 
 [data-theme=dark] .fab-action-label {
-  box-shadow:
-    0 0.2rem 0.4rem rgba(0, 0, 0, 0.3),
-    0 0.4rem 0.8rem rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.3);
 }
 
 /* Action Button */
@@ -240,10 +228,7 @@
   color: var(--pico-secondary-inverse);
   font-size: 1.2rem;
   cursor: pointer;
-  box-shadow:
-    0 0.2rem 0.4rem rgba(0, 0, 0, 0.2),
-    0 0.4rem 0.8rem rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease, background 0.2s ease;
   display: flex;
   align-items: center;
@@ -259,10 +244,7 @@
 }
 
 [data-theme=dark] .fab-action-button {
-  box-shadow:
-    0 0.2rem 0.4rem rgba(0, 0, 0, 0.4),
-    0 0.4rem 0.8rem rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.4);
 }
 
 .fab-action-button:active {
@@ -298,6 +280,20 @@
   backdrop-filter: blur(2px);
   z-index: 2;
   animation: fab-backdrop-appear 0.2s ease;
+}
+
+/* Disable backdrop blur on older devices or when reduced motion is preferred */
+@media (prefers-reduced-motion: reduce) {
+  .fab-backdrop {
+    backdrop-filter: none;
+  }
+}
+
+/* Disable backdrop blur on devices that may struggle with it */
+@supports not (backdrop-filter: blur(2px)) {
+  .fab-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+  }
 }
 
 @keyframes fab-backdrop-appear {

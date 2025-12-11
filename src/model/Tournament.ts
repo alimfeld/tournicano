@@ -83,6 +83,8 @@ export interface TournamentListener {
 export interface Tournament {
   readonly rounds: Round[];
   readonly groups: number[];
+  readonly activePlayerCount: number;
+  readonly hasAllScoresSubmitted: boolean;
   players(group?: number): RegisteredPlayer[];
   registerPlayers(names: string[], group?: number): void;
   activateAll(active: boolean): void;

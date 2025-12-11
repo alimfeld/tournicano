@@ -418,6 +418,16 @@ class TournamentImpl implements Mutable<Tournament> {
     return [...new Set(Array.from(this.playerMap.values()).map((p) => p.group))].sort();
   }
 
+  get activePlayerCount() {
+    return this.players().filter((p) => p.active).length;
+  }
+
+  get hasAllScoresSubmitted() {
+    return this.rounds.every(r =>
+      r.matches.every(m => m.score !== undefined)
+    );
+  }
+
   registerPlayers(names: string[], group: number) {
     names.forEach((name) => {
       const registeredNames = new Set(this.players().map((p) => p.name));

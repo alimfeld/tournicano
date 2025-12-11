@@ -1,7 +1,6 @@
 import m, { ChildArray } from "mithril";
-import { createAvatar } from "@dicebear/core";
-import { bottts } from "@dicebear/collection";
 import { Player, PlayerStats } from "../model/Tournament";
+import { getAvatar } from "./AvatarCache.ts";
 
 export interface PlayerAttrs {
   player: Player | PlayerStats;
@@ -21,13 +20,11 @@ export const PlayerView: m.Component<PlayerAttrs> = {
   view: (vnode) => {
     const player = vnode.attrs.player;
     const compact = vnode.attrs.compact || false;
-    const avatar = createAvatar(bottts, {
-      seed: player.name,
-    });
+    const avatarUri = getAvatar(player.name);
 
     if (compact) {
       return m("div.player-compact",
-        m("img.avatar-small", { src: avatar.toDataUri() }),
+        m("img.avatar-small", { src: avatarUri }),
         m("span.player-name", player.name)
       );
     }
@@ -37,7 +34,7 @@ export const PlayerView: m.Component<PlayerAttrs> = {
       vnode.attrs.badge ? m("span.player-badge", vnode.attrs.badge) : null,
       vnode.attrs.rank ? m("span.player-rank", vnode.attrs.rank) : null,
       vnode.attrs.pre,
-      m("img", { src: avatar.toDataUri() }),
+      m("img", { src: avatarUri }),
       m("p", player.name),
       vnode.attrs.debug && isPlayerStats(player)
         ? m("div.debug",
