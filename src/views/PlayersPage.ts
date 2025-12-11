@@ -217,7 +217,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
                     tournament
                       .players(group)
                       .map((player) => player.name)
-                      .toSorted((p, q) => p.localeCompare(q))
+                      .toSorted((p, q) => p < q ? -1 : p > q ? 1 : 0)
                       .join(", "),
                   )
                   .join("\n"),

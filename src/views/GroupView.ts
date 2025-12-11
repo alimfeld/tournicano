@@ -99,7 +99,7 @@ export const GroupView: m.Component<GroupAttrs> = {
       // Only render the table if there are players to show
       players.length > 0 ? m("section.group",
         players
-          .toSorted((p, q) => p.name.localeCompare(q.name))
+          .toSorted((p, q) => p.name < q.name ? -1 : p.name > q.name ? 1 : 0)
           .map(player => {
             const rowClass = player.active ? "active" : "inactive";
             

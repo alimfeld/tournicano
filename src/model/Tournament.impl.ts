@@ -304,7 +304,10 @@ class RoundImpl implements Round {
       .filter((player) => player.wins + player.draws + player.losses > 0)
       .toSorted((p, q) => {
         const result = p.compare(q);
-        return result === 0 ? p.name.localeCompare(q.name) : result;
+        if (result === 0) {
+          return p.name < q.name ? -1 : p.name > q.name ? 1 : 0;
+        }
+        return result;
       });
     let rank = 1;
     return players.map((player, i) => {
