@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./RoundPage.css";
 import { PlayerView } from "./PlayerView.ts";
-import { Tournament, Match, PlayerStats } from "../model/Tournament.ts";
+import { Tournament, Match } from "../model/Tournament.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
 import { Swipeable } from "./Swipeable.ts";
@@ -35,10 +35,6 @@ export const RoundPage: m.Component<RoundAttrs> = {
       r.matches.every(m => m.score !== undefined)
     );
 
-    const renderPlayer = (player: PlayerStats) => {
-      const badge = player.winRatio > 0.75 ? "🔥" : undefined;
-      return m(PlayerView, { player, debug: settings.debug, badge: badge });
-    }
     return m.fragment({ key: `round-${roundIndex}` }, [
       !fullscreen ?
         m(
@@ -88,15 +84,15 @@ export const RoundPage: m.Component<RoundAttrs> = {
         round
           ? [
             ...round.matches.map((match, matchIndex) =>
-              m(MatchView, { roundIndex, match, matchIndex, debug: settings.debug, fullscreen, openScoreEntry, renderPlayer }),
+              m(MatchView, { roundIndex, match, matchIndex, debug: settings.debug, fullscreen, openScoreEntry }),
             ),
             round.paused.length > 0
               ? [
-                m("h2", "💤"),
                 m(
                   "section.paused",
                   round.paused.map((player) =>
-                    renderPlayer(player),
+                    m(PlayerView, { player, debug: settings.debug, badge: "💤" })
+
                   ),
                 ),
               ]

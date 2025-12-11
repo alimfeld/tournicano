@@ -1,5 +1,6 @@
 import m from "mithril";
 import { Match, PlayerStats, Team } from "../model/Tournament.ts";
+import { PlayerView } from "./PlayerView.ts";
 
 export interface MatchAttrs {
   roundIndex: number;
@@ -8,12 +9,11 @@ export interface MatchAttrs {
   debug: boolean;
   fullscreen: boolean;
   openScoreEntry: (roundIndex: number, matchIndex: number, match: Match) => void;
-  renderPlayer: (player: PlayerStats) => m.Children;
 }
 
 export const MatchView = (): m.Component<MatchAttrs> => {
   return {
-    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen, openScoreEntry, renderPlayer } }) => {
+    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen, openScoreEntry } }) => {
       const scoreString = match.score
         ? `${match.score[0]}:${match.score[1]}`
         : "";
@@ -27,6 +27,10 @@ export const MatchView = (): m.Component<MatchAttrs> => {
       const diffTeamGroup = (team: Team) => {
         return Math.abs(team.player1.group - team.player2.group);
       };
+      const renderPlayer = (player: PlayerStats) => {
+        const badge = player.winRatio > 0.75 ? "🔥" : undefined;
+        return m(PlayerView, { player, debug, badge: badge });
+      }
       const renderMatchDebug = (match: Match) => {
         const opponentSum =
           match.teamA.player1.opponents.get(match.teamB.player1.id)!.length +

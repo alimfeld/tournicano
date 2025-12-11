@@ -203,13 +203,14 @@ article.player .player-badge {
   position: absolute;
   top: 0;
   right: 0;
+  padding: 0 0.4ex;
 }
 
 article.player .player-rank {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 0 0.5ex;
+  padding: 0 0.4ex;
   font-size: 0.8rem;
   border-radius: var(--pico-border-radius);
   background: var(--pico-contrast-background);
