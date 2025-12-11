@@ -13,6 +13,7 @@ import { HomePage } from "./views/HomePage.ts";
 import { ScoreEntryPage } from "./views/ScoreEntryPage.ts";
 import { Match } from "./model/Tournament.ts";
 import { NavView } from "./views/NavView.ts";
+import { debounce } from "./model/Util.ts";
 
 const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
@@ -85,17 +86,21 @@ const createState: () => State = () => {
   return state;
 };
 
+const debouncedSettingsSave = debounce((settings: Settings) => {
+  localStorage.setItem(SETTINGS_KEY, settings.serialize());
+  syncTheme(settings.theme);
+}, 500);
+
 const settingsListener: SettingsListener = {
-  onchange: (settings) => {
-    localStorage.setItem(SETTINGS_KEY, settings.serialize());
-    syncTheme(settings.theme);
-  },
+  onchange: debouncedSettingsSave,
 };
 
+const debouncedTournamentSave = debounce((tournament: Tournament) => {
+  localStorage.setItem(TOURNAMENT_KEY, tournament.serialize());
+}, 500);
+
 const tournamentListener: TournamentListener = {
-  onchange: (tournament) => {
-    localStorage.setItem(TOURNAMENT_KEY, tournament.serialize());
-  },
+  onchange: debouncedTournamentSave,
 };
 
 export const App = () => {

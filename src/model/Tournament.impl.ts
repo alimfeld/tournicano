@@ -441,11 +441,17 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   activateAll(active: boolean) {
-    this.players().forEach((player) => player.activate(active));
+    this.players().forEach((player) => {
+      player.active = active;
+    });
+    this.notifyChange();
   }
 
   activateGroup(group: number, active: boolean) {
-    this.players(group).forEach((player) => player.activate(active));
+    this.players(group).forEach((player) => {
+      player.active = active;
+    });
+    this.notifyChange();
   }
 
   createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
