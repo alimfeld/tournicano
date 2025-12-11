@@ -9,6 +9,8 @@ export interface PlayerAttrs {
   pre?: ChildArray;
   post?: ChildArray;
   compact?: boolean;
+  rightBadge?: string;
+  leftBadge?: string;
 }
 
 const isPlayerStats = (player: Player | PlayerStats): player is PlayerStats => {
@@ -32,6 +34,8 @@ export const PlayerView: m.Component<PlayerAttrs> = {
     
     return m(
       "article.player",
+      vnode.attrs.rightBadge ? m("span.player-badge-right", vnode.attrs.rightBadge) : null,
+      vnode.attrs.leftBadge ? m("span.player-badge-left", vnode.attrs.leftBadge) : null,
       vnode.attrs.pre,
       m("img", { src: avatar.toDataUri() }),
       m("p", player.name),

@@ -5,7 +5,8 @@ header.standings {
 
 main.standings section {
   display: grid;
-  grid-template-columns: 9% 31% 30% 30%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--pico-spacing);
   align-items: center;
   border-bottom: 1px solid;
   border-color: var(--pico-muted-border-color);
@@ -13,7 +14,7 @@ main.standings section {
 
 @media (min-width: 768px) {
   main.standings section {
-    grid-template-columns: 10% 22% 40% 28%;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr) minmax(0, 1.5fr);
   }
 }
 
@@ -25,14 +26,15 @@ main.standings section div.total-players {
   text-align: center;
 }
 
-main.standings section div.rank {
-  white-space: nowrap;
-  overflow: hidden;
-}
-
 main.standings section div.record {
   text-align: center;
-  padding: 0 10% 0 10%;
+  padding-left: 10%;
+}
+
+@media (min-width: 768px) {
+  main.standings section div.record {
+    padding-left: 15%;
+  }
 }
 
 main.standings section p.win-percentage {
@@ -104,4 +106,5 @@ main.standings section div.points {
 
 main.standings section p.plus-minus {
   margin-bottom: calc(var(--pico-typography-spacing-vertical) + 3px);
+  white-space: nowrap;
 }

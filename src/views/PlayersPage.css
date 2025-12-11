@@ -35,7 +35,8 @@ main.players div.player-row {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--pico-muted-border-color);
   gap: 0.75rem;
-  min-height: 3rem; /* Ensure adequate touch target size */
+  /* Ensure adequate touch target size */
+  min-height: 3rem;
 }
 
 main.players div.player-row:last-child {
@@ -50,14 +51,17 @@ main.players div.player-row.inactive .player-compact {
 main.players details.dropdown.player-menu {
   width: auto;
   margin: 0;
-  flex-shrink: 0; /* Prevent menu from shrinking */
+  /* Prevent menu from shrinking */
+  flex-shrink: 0;
 }
 
 main.players details.dropdown.player-menu summary {
-  padding: 0.5rem; /* Larger touch target */
+  /* Larger touch target */
+  padding: 0.5rem;
   margin: 0;
   min-width: 2.5rem;
-  min-height: 2.5rem; /* Adequate touch target height */
+  /* Adequate touch target height */
+  min-height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,7 +72,8 @@ main.players details.dropdown.player-menu summary {
   background: transparent;
   box-shadow: none;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+  /* Remove tap highlight on iOS */
+  -webkit-tap-highlight-color: transparent;
 }
 
 main.players details.dropdown.player-menu summary:focus,
@@ -116,10 +121,14 @@ main.players div.player-info {
   align-items: center;
   cursor: pointer;
   min-width: 0;
-  padding: 0.25rem 0; /* Increase touch target area */
-  margin: -0.25rem 0; /* Compensate for padding */
-  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
-  user-select: none; /* Prevent text selection on double-tap */
+  padding: 0.25rem 0;
+  /* Increase touch target area */
+  margin: -0.25rem 0;
+  /* Compensate for padding */
+  -webkit-tap-highlight-color: transparent;
+  /* Remove tap highlight on iOS */
+  user-select: none;
+  /* Prevent text selection on double-tap */
   -webkit-user-select: none;
 }
 
@@ -138,7 +147,7 @@ main.players img.avatar-small {
 }
 
 main.players span.player-name {
-  font-weight: 500;
+  font-weight: 550;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -146,7 +155,8 @@ main.players span.player-name {
 
 /* Player toggle */
 main.players div.player-toggle {
-  flex-shrink: 0; /* Prevent toggle from shrinking */
+  /* Prevent toggle from shrinking */
+  flex-shrink: 0;
 }
 
 main.players div.player-toggle input.active {
@@ -159,4 +169,3 @@ input.add {
   border-color: var(--pico-form-element-valid-border-color);
   background: var(--pico-form-element-valid-focus-color);
 }
-

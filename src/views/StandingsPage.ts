@@ -26,17 +26,17 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       showGroupSwitcher && (group === undefined || groups.indexOf(group) >= 0)
         ? group
         : undefined;
-    const award: (rank: number) => string = (rank) => {
+    const award: (rank: number) => string | undefined = (rank) => {
       if (rank === 1) {
-        return "1🥇";
+        return "🥇";
       }
       if (rank === 2) {
-        return "2🥈";
+        return "🥈";
       }
       if (rank === 3) {
-        return "3🥉";
+        return "🥉";
       }
-      return rank.toString();
+      return undefined;
     };
     const standings = round ? round.standings(standingsGroup) : [];
     const totalRounds = roundIndex + 1; // rounds are 0-indexed
@@ -161,7 +161,6 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           ? [
             showGroupSwitcher && standingsGroup !== undefined ? [
               m("section.group-stats",
-                m("div"),
                 m("div.total-players",
                   m("p", "Group"),
                   m(
@@ -199,8 +198,11 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
               return m(
                 "section.entry",
-                m("div.rank", m("p", award(ranked.rank))),
-                m(PlayerView, { player: ranked.player }),
+                m(PlayerView, {
+                  player: ranked.player,
+                  leftBadge: award(ranked.rank),
+                  rightBadge: ranked.rank.toString()
+                }),
                 m(
                   "div.record",
                   m(

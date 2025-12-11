@@ -163,8 +163,9 @@ article.player {
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
-  padding: 0.4ex;
+  padding: 0.5ex 0.2ex;
   min-width: 0;
+  position: relative;
 }
 
 article.player img {
@@ -188,12 +189,30 @@ article.player img {
 
 article.player p {
   color: var(--pico-form-element-color);
+  font-weight: 550;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   text-align: center;
   margin: 0;
+}
+
+article.player .player-badge-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+article.player .player-badge-right {
+  position: absolute;
+  top: 0;
+  right: -1ex;
+  padding: 0 0.5ex;
+  font-size: 0.9rem;
+  border-radius: var(--pico-border-radius);
+  background: var(--pico-muted-color);
+  color: var(--pico-background-color);
 }
 
 /* Global debug styles */
