@@ -103,7 +103,7 @@ export const App = () => {
   state.settings.addListener(settingsListener);
   state.tournament.addListener(tournamentListener);
   let wakeLock: WakeLockSentinel | null = null;
-  
+
   // Request or release wake lock based on settings and current page
   const updateWakeLock = async () => {
     if (state.settings.wakeLock && state.page === Page.ROUNDS) {
@@ -165,11 +165,11 @@ export const App = () => {
     state.fullscreen = !state.fullscreen;
   }
   const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
-    state.scoreEntryMatch = { 
-      roundIndex, 
-      matchIndex, 
+    state.scoreEntryMatch = {
+      roundIndex,
+      matchIndex,
       match,
-      scrollPosition: window.scrollY 
+      scrollPosition: window.scrollY
     };
     nav(Page.SCORE_ENTRY);
   }
@@ -177,7 +177,7 @@ export const App = () => {
   return {
     view: () => {
       const showNav = state.page !== Page.SCORE_ENTRY && !state.fullscreen;
-      
+
       let pageContent;
       switch (state.page) {
         case Page.HOME: {
@@ -229,7 +229,6 @@ export const App = () => {
             pageContent = null;
           } else {
             pageContent = m(ScoreEntryPage, {
-              roundIndex: state.scoreEntryMatch.roundIndex,
               matchIndex: state.scoreEntryMatch.matchIndex,
               match: state.scoreEntryMatch.match,
               onClose: () => {
@@ -247,7 +246,7 @@ export const App = () => {
           break;
         }
       }
-      
+
       return [
         pageContent,
         showNav ? m(NavView, { nav, currentPage: state.page }) : null,

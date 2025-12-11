@@ -1,6 +1,5 @@
 import m from "mithril";
-import { PlayerView } from "./PlayerView.ts";
-import { Match, Team } from "../model/Tournament.ts";
+import { Match, PlayerStats, Team } from "../model/Tournament.ts";
 
 export interface MatchAttrs {
   roundIndex: number;
@@ -9,11 +8,12 @@ export interface MatchAttrs {
   debug: boolean;
   fullscreen: boolean;
   openScoreEntry: (roundIndex: number, matchIndex: number, match: Match) => void;
+  renderPlayer: (player: PlayerStats) => m.Children;
 }
 
 export const MatchView = (): m.Component<MatchAttrs> => {
   return {
-    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen, openScoreEntry } }) => {
+    view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen, openScoreEntry, renderPlayer } }) => {
       const scoreString = match.score
         ? `${match.score[0]}:${match.score[1]}`
         : "";
@@ -77,8 +77,8 @@ export const MatchView = (): m.Component<MatchAttrs> => {
       const renderTeam = (team: Team) => {
         return m(
           "section.team",
-          m(PlayerView, { player: team.player1, debug }),
-          m(PlayerView, { player: team.player2, debug }),
+          renderPlayer(team.player1),
+          renderPlayer(team.player2),
         );
       };
       return m.fragment({ key: `match-${matchIndex}` },

@@ -4,7 +4,6 @@ import { PlayerView } from "./PlayerView.ts";
 import { Match, Score } from "../model/Tournament.ts";
 
 export interface ScoreEntryAttrs {
-  roundIndex: number;
   matchIndex: number;
   match: Match;
   onClose: () => void;
@@ -25,7 +24,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
     }
   },
 
-  view: ({ attrs: { roundIndex, matchIndex, match, onClose }, state }) => {
+  view: ({ attrs: { matchIndex, match, onClose }, state }) => {
     const addDigit = (digit: string) => {
       const parts = state.scoreInput.split(":");
 
@@ -126,7 +125,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
     const isBackspaceDisabled = state.scoreInput.length === 0;
     // Disable numbers if current input position is full (2 digits on either side)
     const parts = state.scoreInput.split(":");
-    const areNumbersDisabled = parts.length === 1 
+    const areNumbersDisabled = parts.length === 1
       ? parts[0].length >= 2  // Before colon: disable if 2+ digits
       : parts[1].length >= 2; // After colon: disable if 2+ digits on right side
 
@@ -184,7 +183,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             disabled: isColonDisabled,
           }, ":"),
           m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("0"); }, disabled: areNumbersDisabled }, "0"),
-          m("button.key-action.secondary", { 
+          m("button.key-action.secondary", {
             onpointerdown: (e: PointerEvent) => { e.preventDefault(); backspace(); },
             disabled: isBackspaceDisabled,
           }, "⌫"),
