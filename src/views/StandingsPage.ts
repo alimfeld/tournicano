@@ -200,8 +200,8 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                 "section.entry",
                 m(PlayerView, {
                   player: ranked.player,
-                  leftBadge: award(ranked.rank),
-                  rightBadge: ranked.rank.toString()
+                  badge: award(ranked.rank),
+                  rank: ranked.rank.toString()
                 }),
                 m(
                   "div.win-percentage-column",

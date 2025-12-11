@@ -9,8 +9,8 @@ export interface PlayerAttrs {
   pre?: ChildArray;
   post?: ChildArray;
   compact?: boolean;
-  rightBadge?: string;
-  leftBadge?: string;
+  badge?: string;
+  rank?: string;
 }
 
 const isPlayerStats = (player: Player | PlayerStats): player is PlayerStats => {
@@ -24,18 +24,18 @@ export const PlayerView: m.Component<PlayerAttrs> = {
     const avatar = createAvatar(bottts, {
       seed: player.name,
     });
-    
+
     if (compact) {
       return m("div.player-compact",
         m("img.avatar-small", { src: avatar.toDataUri() }),
         m("span.player-name", player.name)
       );
     }
-    
+
     return m(
       "article.player",
-      vnode.attrs.rightBadge ? m("span.player-badge-right", vnode.attrs.rightBadge) : null,
-      vnode.attrs.leftBadge ? m("span.player-badge-left", vnode.attrs.leftBadge) : null,
+      vnode.attrs.badge ? m("span.player-badge", vnode.attrs.badge) : null,
+      vnode.attrs.rank ? m("span.player-rank", vnode.attrs.rank) : null,
       vnode.attrs.pre,
       m("img", { src: avatar.toDataUri() }),
       m("p", player.name),

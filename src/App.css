@@ -199,21 +199,21 @@ article.player p {
   margin: 0;
 }
 
-article.player .player-badge-left {
+article.player .player-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+article.player .player-rank {
   position: absolute;
   top: 0;
   left: 0;
-}
-
-article.player .player-badge-right {
-  position: absolute;
-  top: 0;
-  right: -1ex;
   padding: 0 0.5ex;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   border-radius: var(--pico-border-radius);
-  background: var(--pico-muted-color);
-  color: var(--pico-background-color);
+  background: var(--pico-contrast-background);
+  color: var(--pico-contrast-inverse);
 }
 
 /* Global debug styles */
