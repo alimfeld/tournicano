@@ -7,11 +7,8 @@ export interface GroupAttrs {
   playerFilter: string;
   groupIndex: number;
   playersEditable: boolean;
-}
-
-interface GroupState {
-  keepVisiblePlayers: Set<PlayerId>; // Players to keep visible despite filter
-  inactivityTimeout: number | null;
+  keepVisiblePlayers: Set<PlayerId>;
+  onPlayerActivity: (playerId: PlayerId, shouldKeepVisible: boolean) => void;
 }
 
 const getGroupLetter = (index: number): string => String.fromCharCode(65 + index);
@@ -37,21 +34,7 @@ const createMenuItem = (
 };
 
 export const GroupView: m.Component<GroupAttrs> = {
-  oninit: ({ state }) => {
-    (state as GroupState).keepVisiblePlayers = new Set();
-    (state as GroupState).inactivityTimeout = null;
-  },
-  
-  onremove: ({ state }) => {
-    // Clear pending timeout when component is removed
-    const groupState = state as GroupState;
-    if (groupState.inactivityTimeout !== null) {
-      clearTimeout(groupState.inactivityTimeout);
-    }
-  },
-  
-  view: ({ state, attrs: { tournament, playerFilter, groupIndex, playersEditable } }) => {
-    const groupState = state as GroupState;
+  view: ({ attrs: { tournament, playerFilter, groupIndex, playersEditable, keepVisiblePlayers, onPlayerActivity } }) => {
     const allPlayers = tournament.players(groupIndex);
     
     // Helper function to check if player matches current filter
@@ -63,7 +46,7 @@ export const GroupView: m.Component<GroupAttrs> = {
     
     // Include both matching players AND players that should be kept visible
     const players = allPlayers.filter(p =>
-      matchesFilter(p) || groupState.keepVisiblePlayers.has(p.id)
+      matchesFilter(p) || keepVisiblePlayers.has(p.id)
     );
     
     const activeCount = players.reduce((acc, player) => acc + (player.active ? 1 : 0), 0);
@@ -73,28 +56,11 @@ export const GroupView: m.Component<GroupAttrs> = {
     const handleActivate = (player: RegisteredPlayer) => {
       player.activate(!player.active);
       
-      // Clear any existing timeout and restart the inactivity period
-      if (groupState.inactivityTimeout !== null) {
-        clearTimeout(groupState.inactivityTimeout);
-        groupState.inactivityTimeout = null;
-      }
+      // Determine if player should be kept visible
+      const shouldKeepVisible = !matchesFilter(player);
       
-      // If player no longer matches filter, add to keep-visible set
-      if (!matchesFilter(player)) {
-        groupState.keepVisiblePlayers.add(player.id);
-      } else {
-        // Player matches filter again, remove from keep-visible set
-        groupState.keepVisiblePlayers.delete(player.id);
-      }
-      
-      // Start new inactivity timeout to remove all kept-visible players
-      if (groupState.keepVisiblePlayers.size > 0) {
-        groupState.inactivityTimeout = window.setTimeout(() => {
-          groupState.keepVisiblePlayers.clear();
-          groupState.inactivityTimeout = null;
-          m.redraw();
-        }, 2000); // 2 seconds of inactivity
-      }
+      // Notify parent of player activity
+      onPlayerActivity(player.id, shouldKeepVisible);
     };
     
     const renderPlayerMenu = (player: RegisteredPlayer) => {

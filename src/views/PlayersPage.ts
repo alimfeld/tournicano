@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { Tournament } from "../model/Tournament.ts";
+import { Tournament, PlayerId } from "../model/Tournament.ts";
 import { GroupView } from "./GroupView.ts";
 import { FAB } from "./FAB.ts";
 import { Settings } from "../model/Settings.ts";
@@ -12,8 +12,53 @@ export interface PlayersAttrs {
   changePlayerFilter: (playerFilter: string) => void;
 }
 
+interface PlayersPageState {
+  keepVisiblePlayers: Set<PlayerId>; // Players to keep visible across all groups
+  inactivityTimeout: number | null;
+}
+
 export const PlayersPage: m.Component<PlayersAttrs> = {
-  view: ({ attrs: { settings, tournament, playerFilter, changePlayerFilter } }) => {
+  oninit: ({ state }) => {
+    (state as PlayersPageState).keepVisiblePlayers = new Set();
+    (state as PlayersPageState).inactivityTimeout = null;
+  },
+  
+  onremove: ({ state }) => {
+    // Clear pending timeout when component is removed
+    const pageState = state as PlayersPageState;
+    if (pageState.inactivityTimeout !== null) {
+      clearTimeout(pageState.inactivityTimeout);
+    }
+  },
+  
+  view: ({ state, attrs: { settings, tournament, playerFilter, changePlayerFilter } }) => {
+    const pageState = state as PlayersPageState;
+    
+    // Handler for player activity - manages shared keep-visible state
+    const handlePlayerActivity = (playerId: PlayerId, shouldKeepVisible: boolean) => {
+      // Clear any existing timeout and restart the inactivity period
+      if (pageState.inactivityTimeout !== null) {
+        clearTimeout(pageState.inactivityTimeout);
+        pageState.inactivityTimeout = null;
+      }
+      
+      // Update the keep-visible set
+      if (shouldKeepVisible) {
+        pageState.keepVisiblePlayers.add(playerId);
+      } else {
+        pageState.keepVisiblePlayers.delete(playerId);
+      }
+      
+      // Start new inactivity timeout to remove all kept-visible players
+      if (pageState.keepVisiblePlayers.size > 0) {
+        pageState.inactivityTimeout = window.setTimeout(() => {
+          pageState.keepVisiblePlayers.clear();
+          pageState.inactivityTimeout = null;
+          m.redraw();
+        }, 2000); // 2 seconds of inactivity
+      }
+    };
+    
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
@@ -111,6 +156,8 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               playerFilter,
               groupIndex: group,
               playersEditable: settings.playersEditable,
+              keepVisiblePlayers: pageState.keepVisiblePlayers,
+              onPlayerActivity: handlePlayerActivity,
             }),
           ),
         ),
