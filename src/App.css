@@ -212,6 +212,8 @@ article.player .player-rank {
   left: 0;
   padding: 0 0.4ex;
   font-size: 0.8rem;
+  min-width: calc(2ch + 0.8ex);
+  text-align: center;
   border-radius: var(--pico-border-radius);
   background: var(--pico-contrast-background);
   color: var(--pico-contrast-inverse);
