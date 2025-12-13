@@ -148,7 +148,7 @@
 /* Secondary Actions Container */
 .fab-actions {
   position: absolute;
-  bottom: 4.2rem;
+  bottom: 4.3rem;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -225,7 +225,7 @@
   height: 2.8rem;
   border-radius: 50%;
   border: none;
-  background: var(--pico-secondary);
+  background: var(--pico-secondary-background);
   color: var(--pico-secondary-inverse);
   font-size: 1.2rem;
   cursor: pointer;
