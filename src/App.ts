@@ -112,6 +112,7 @@ export const App = () => {
 
   // PWA update handling
   let needRefresh = false;
+  let isUpdating = false;
 
   const updateServiceWorker = registerSW({
     onNeedRefresh() {
@@ -132,6 +133,12 @@ export const App = () => {
   const dismissUpdate = () => {
     needRefresh = false;
     m.redraw();
+  };
+
+  const applyUpdate = async () => {
+    isUpdating = true;
+    m.redraw();
+    await updateServiceWorker();
   };
 
   // Request or release wake lock based on settings and current page
@@ -278,17 +285,29 @@ export const App = () => {
       }
 
       return [
-        // PWA update notification
-        needRefresh ? m("article.pwa-update-toast", [
-          m("header", m("strong", "🔄 Update Available")),
-          m("p", "A new version of Tournicano is ready. Update now to get the latest features and improvements."),
-          m("footer", [
-            m("button.secondary", {
-              onclick: dismissUpdate
-            }, "Later"),
-            m("button", {
-              onclick: updateServiceWorker
-            }, "Update Now")
+        // PWA update dialog
+        needRefresh ? m("dialog[open]", [
+          m("article", [
+            m("h3", "🔄 Update Available"),
+            m("p", [
+              "A new version of Tournicano is ready. Update now to get the latest features and improvements. ",
+              m("a", {
+                href: "https://github.com/alimfeld/tournicano/commits/main/",
+                target: "_blank",
+                rel: "noopener noreferrer"
+              }, "View changes")
+            ]),
+            m("footer", [
+              m("button.secondary", {
+                onclick: dismissUpdate,
+                disabled: isUpdating
+              }, "Later"),
+              m("button", {
+                onclick: applyUpdate,
+                disabled: isUpdating,
+                "aria-busy": isUpdating
+              }, isUpdating ? "Updating..." : "Update Now")
+            ])
           ])
         ]) : null,
         pageContent,
