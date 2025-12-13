@@ -116,8 +116,9 @@
 
 /* Secondary variant - use Pico's secondary colors */
 .fab-primary.secondary {
-  background: var(--pico-secondary);
-  border-color: var(--pico-secondary);
+  background: var(--pico-secondary-background);
+  border-color: var(--pico-secondary-background);
+  color: var(--pico-secondary-inverse);
 }
 
 .fab-primary.secondary:hover:not(:disabled) {
@@ -127,7 +128,7 @@
 .fab-primary.secondary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--pico-secondary);
+  background: var(--pico-secondary-background);
 }
 
 /* Icon transition */
