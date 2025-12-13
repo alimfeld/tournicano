@@ -14,6 +14,7 @@ import { ScoreEntryPage } from "./views/ScoreEntryPage.ts";
 import { Match } from "./model/Tournament.ts";
 import { NavView } from "./views/NavView.ts";
 import { debounce } from "./model/Util.ts";
+import { registerSW } from "virtual:pwa-register";
 
 const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
@@ -108,6 +109,30 @@ export const App = () => {
   state.settings.addListener(settingsListener);
   state.tournament.addListener(tournamentListener);
   let wakeLock: WakeLockSentinel | null = null;
+
+  // PWA update handling
+  let needRefresh = false;
+
+  const updateServiceWorker = registerSW({
+    onNeedRefresh() {
+      needRefresh = true;
+      m.redraw();
+    },
+    onOfflineReady() {
+      console.log('App ready to work offline');
+    },
+    onRegistered(registration) {
+      console.log('SW Registered:', registration);
+    },
+    onRegisterError(error) {
+      console.log('SW registration error:', error);
+    },
+  });
+
+  const dismissUpdate = () => {
+    needRefresh = false;
+    m.redraw();
+  };
 
   // Request or release wake lock based on settings and current page
   const updateWakeLock = async () => {
@@ -253,6 +278,19 @@ export const App = () => {
       }
 
       return [
+        // PWA update notification
+        needRefresh ? m("article.pwa-update-toast", [
+          m("header", m("strong", "🔄 Update Available")),
+          m("p", "A new version of Tournicano is ready. Update now to get the latest features and improvements."),
+          m("footer", [
+            m("button.secondary", {
+              onclick: dismissUpdate
+            }, "Later"),
+            m("button", {
+              onclick: updateServiceWorker
+            }, "Update Now")
+          ])
+        ]) : null,
         pageContent,
         showNav ? m(NavView, { nav, currentPage: state.page }) : null,
       ];

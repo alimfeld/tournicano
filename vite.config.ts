@@ -15,6 +15,7 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
+      registerType: 'prompt',
       manifest: {
         name: "Tournicano",
         short_name: "Tournicano",
