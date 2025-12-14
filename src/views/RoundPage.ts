@@ -93,7 +93,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
               ]
               : null,
           ]
-          : [m("p", "No rounds created (yet)!")],
+          : [m("p", "No rounds yet. Add players and press the + button to create your first round!")],
       ),
       m(FAB, {
         icon: "＋",
@@ -148,7 +148,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             },
             confirmation: {
               title: `🚨 Delete Round ${roundIndex + 1}?`,
-              description: "This will delete the current round!",
+              description: "This will delete the current round and all its matches. This action cannot be undone!",
             },
             variant: "del",
             disabled: !round || !round.isLast(),
@@ -162,7 +162,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
             confirmation: {
               title: "🚨 Restart Tournament?",
               description:
-                "This will delete all rounds (but keep the registered players)!",
+                "This will delete all rounds and scores, but keep the registered players. This action cannot be undone!",
             },
             variant: "del",
             disabled: tournament.rounds.length === 0,

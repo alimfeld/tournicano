@@ -240,7 +240,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               );
             }),
           ]
-          : m("p", "No scores submitted (yet)!"),
+          : m("p", "No scores yet. Go to the Rounds page and enter match scores to see standings!"),
       ),
       m(FAB, {
         icon: "⿻",

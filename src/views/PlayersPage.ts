@@ -102,7 +102,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               { onsubmit: (event: InputEvent) => event.preventDefault() },
               m("textarea", {
                 id: "players",
-                placeholder: "Separate players by comma or period and groups by newline...",
+                placeholder: "Separate players with commas or periods, and groups with newlines...",
                 autocapitalize: "words",
               }),
               m("input.add", {
@@ -203,8 +203,8 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             variant: "del",
             disabled: tournament.players().length === 0,
             confirmation: {
-              title: "🚨 Delete all players?",
-              description: "This will delete all players and reset the tournament. This action can't be undone!",
+              title: "🚨 Delete All Players?",
+              description: "This will delete all players and reset the tournament. This action cannot be undone!",
             }
           },
           {

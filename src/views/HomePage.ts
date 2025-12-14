@@ -22,18 +22,24 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "✨ Features"),
         m(
           "ul",
-          m("li", "Simple 🤖 player management"),
-          m("li", "Easy 🚀 round management"),
-          m("li", "Live 🏆 standings"),
-          m("li", "Graph-algorithm-powered matching"),
-          m("li", "Fair distribution of court time"),
-          m("li", "Player avatar display"),
-          m("li", "Installable (add to home screen)"),
+          m("li", "🤖 Simple player management"),
+          m("li", "🚀 Easy round management"),
+          m("li", "🏆 Live standings"),
+          m("li", "🤝 Smart player matching"),
+          m("li", "⚖️ Fair distribution of court time"),
+          m("li", "👤 Player avatar display"),
+          m("li", "📲 Installable (add to home screen)"),
+          m("li", "🔄 Automatic updates"),
         ),
         m("h2", "🤖 Player Management"),
         m(
           "p",
-          "Players are added by typing or pasting their names into a text field. Player names can consist of multiple words and are separated by commas or periods. (Note: On many devices, double-tapping the space bar produces a period.) Each name maps to a consistent avatar image that will be displayed for the player.",
+          "Players are added by typing or pasting their names into a text field. Separate player names with commas or periods. Each name automatically gets a unique 👤 avatar image.",
+        ),
+        m(
+          "p",
+          m("b", "Tip"),
+          ": On many devices, double-tap the space bar to insert a period.",
         ),
         m(
           "p",
@@ -53,11 +59,23 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Individual player actions are available via a ☰ hamburger menu next to each player (visible when registration is open): delete players who haven't yet participated in a round, or reassign players to adjacent groups using the ↑ and ↓ menu options.",
+          "Individual player actions are available via the ☰ menu next to each player (visible when registration is open):",
+        ),
+        m(
+          "ul",
+          m("li", "Delete players who haven't yet participated"),
+          m("li", "Reassign players to adjacent groups using ↑ and ↓"),
         ),
         m(
           "p",
-          "Global player actions are available via the ⋮ button: open/close registration to reduce UI clutter, activate/deactivate all players, delete all players (which will also reset the tournament), or ⿻ share/export all player names for later import.",
+          "Global player actions are available via the ⋮ button:",
+        ),
+        m(
+          "ul",
+          m("li", "Open/close registration to reduce UI clutter"),
+          m("li", "Activate/deactivate all players"),
+          m("li", "Delete all players (resets the tournament)"),
+          m("li", "⿻ Share/export player names for later import"),
         ),
         m(
           "p",
@@ -75,11 +93,11 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Excess players are 💤 paused for the round using an algorithm that balances each player's play ratio (i.e., the number of matches played over the number of rounds the player participated in).",
+          "When there are more players than available courts, excess players are 💤 paused for the round. An algorithm ensures ⚖️ fair rotation by giving priority to players who have played fewer matches.",
         ),
         m(
           "p",
-          "For each match, there is a button to enter the score. Scores can be entered using a maximum of two digits per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
+          "For each match, there is a button to enter the score. Enter scores with up to two digits per team, separated by a colon (e.g., 21:15). Scores can also be cleared.",
         ),
         m(
           "p",
@@ -87,9 +105,19 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "You can navigate back and forth between rounds and change scores of previously completed rounds.",
+          "You can change scores of previously completed rounds by using the navigation arrows in the header or by swiping left/right on touch devices.",
         ),
-        m("p", "Some quick actions are available via the ⋮ button. The most recent round can be deleted, the tournament can be restarted (deleting all rounds), full screen can be toggled, and debug information can be displayed. Additionally, you can ⏿ prevent the screen from turning off when showing the round.",
+        m(
+          "p",
+          "Quick actions are available via the ⋮ button:",
+        ),
+        m(
+          "ul",
+          m("li", "Delete the most recent round"),
+          m("li", "Restart the tournament (deletes all rounds)"),
+          m("li", "Toggle full screen mode"),
+          m("li", "Display debug information"),
+          m("li", "⏿ Prevent screen from turning off"),
         ),
         m("h2", "🏆 Standings"),
         m(
@@ -102,7 +130,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "You can navigate back and forth to see the standings of any specific round.",
+          "View standings for any round by using the navigation arrows in the header or by swiping left/right on touch devices.",
         ),
         m(
           "p",
@@ -111,7 +139,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "🤝 Matching"),
         m(
           "p",
-          'In each round, players form teams ("team up"), and teams are paired into matches ("match up") using a graph algorithm to find a (perfect) maximum-weight matching.',
+          "In each round, players form teams and teams are paired into matches using a smart algorithm that optimizes player combinations.",
         ),
         m("p", "The algorithm considers the following factors:"),
         m(
@@ -132,6 +160,45 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           m("b", "Note"),
           ": For performance-based matching to be effective, scores must be entered. For group-based matching to be effective, multiple player groups must be created.",
+        ),
+        m("h2", "📲 Installation"),
+        m(
+          "p",
+          "Tournicano can be installed on your device to work like a native app. Once installed, it will be available from your home screen and can work offline.",
+        ),
+        m(
+          "p",
+          m("b", "iOS (iPhone/iPad)"),
+          ": Open Tournicano in Safari, tap the Share button, then select 'Add to Home Screen'.",
+        ),
+        m(
+          "p",
+          m("b", "Android"),
+          ": Open Tournicano in Chrome, tap the menu (⋮), then select 'Add to Home screen' or 'Install app'.",
+        ),
+        m(
+          "p",
+          m("b", "Desktop (Chrome/Edge)"),
+          ": Look for an install icon in the address bar, or open the browser menu and select 'Install Tournicano'.",
+        ),
+        m(
+          "p",
+          m("b", "Note"),
+          ": Installation is optional. Tournicano works perfectly fine in your browser without installation.",
+        ),
+        m("h2", "🔄 Updates"),
+        m(
+          "p",
+          "When a new version of Tournicano is available, a pop-up will appear giving you the option to update now or later.",
+        ),
+        m(
+          "p",
+          "The update pop-up includes a link to see what's new in the latest version. When you choose to update, the app will reload with the improvements.",
+        ),
+        m(
+          "p",
+          m("b", "Note"),
+          ": Updates are detected automatically when you're online. You don't need to check for updates manually.",
         ),
         m("h2", "🚫 Out of scope"),
         m(

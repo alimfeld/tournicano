@@ -155,7 +155,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
               disabled: !match.score,
               onclick: clear,
             },
-            "Delete",
+            "Clear",
           ),
           m(
             "button.accept",
