@@ -180,6 +180,14 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               disabled: true,
             }),
           ),
+          m(
+            "p",
+            m("a", {
+              href: "https://github.com/alimfeld/tournicano/commits/main/",
+              target: "_blank",
+              rel: "noopener noreferrer"
+            }, "View changes")
+          ),
           checkForUpdates
             ? m(
                 "button.outline",

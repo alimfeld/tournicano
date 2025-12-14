@@ -377,14 +377,12 @@ export const App = () => {
         needRefresh ? m("dialog[open]", [
           m("article", [
             m("h3", "🔄 Update Available"),
-            m("p", [
-              "A new version of Tournicano is ready. Update now to get the latest features and improvements. ",
-              m("a", {
-                href: "https://github.com/alimfeld/tournicano/commits/main/",
-                target: "_blank",
-                rel: "noopener noreferrer"
-              }, "View changes")
-            ]),
+            m("p", "A new version of Tournicano is ready. Update now to get the latest features and improvements."),
+            m("p", m("a", {
+              href: "https://github.com/alimfeld/tournicano/commits/main/",
+              target: "_blank",
+              rel: "noopener noreferrer"
+            }, "View changes")),
             m("footer", [
               m("button.secondary", {
                 onclick: dismissUpdate,
