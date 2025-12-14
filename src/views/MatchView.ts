@@ -27,7 +27,7 @@ export const MatchView: m.Component<MatchAttrs> = {
       return Math.abs(team.player1.group - team.player2.group);
     };
     const renderPlayer = (player: PlayerStats) => {
-      const badge = player.winRatio > 0.75 ? "🔥" : undefined;
+      const badge = player.winRatio >= 0.75 ? "🔥" : undefined;
       return m(PlayerView, { 
         key: `player-${player.id}`,
         player, 

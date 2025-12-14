@@ -104,7 +104,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Players who are performing exceptionally well (win ratio above 75%) are marked with a 🔥 fire badge to highlight their hot streak.",
+          "Players who are performing exceptionally well (win ratio 75% or higher) are marked with a 🔥 fire badge to highlight their hot streak.",
         ),
         m(
           "p",
