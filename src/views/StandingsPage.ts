@@ -11,11 +11,12 @@ export interface StandingsAttrs {
   group: number | undefined;
   changeRound: (index: number) => void;
   changeGroup: (group: number | undefined) => void;
+  showToast: (message: string, duration?: number) => void;
 }
 
 export const StandingsPage: m.Component<StandingsAttrs> = {
   view: ({
-    attrs: { tournament, roundIndex, group, changeRound, changeGroup },
+    attrs: { tournament, roundIndex, group, changeRound, changeGroup, showToast },
   }) => {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
@@ -242,17 +243,26 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           ]
           : m("p", "No scores yet. Go to the Rounds page and enter match scores to see standings!"),
       ),
-      m(FAB, {
+       m(FAB, {
         icon: "⿻",
         variant: "secondary",
         onclick: async () => {
-          const data = {
-            text: format(),
-          };
+          const text = format();
+          
           try {
-            await navigator.share(data);
+            await navigator.share({ text });
+            showToast("✓ Standings shared successfully");
           } catch (err) {
-            console.log(err);
+            // If share fails or is cancelled, try clipboard as fallback
+            if (err instanceof Error && err.name !== 'AbortError') {
+              try {
+                await navigator.clipboard.writeText(text);
+                showToast("✓ Standings copied to clipboard");
+              } catch (clipboardErr) {
+                showToast("⚠️ Failed to share or copy standings");
+              }
+            }
+            // If user cancelled, don't show any message
           }
         },
         disabled: standings.length === 0,

@@ -13,6 +13,7 @@ import { HomePage } from "./views/HomePage.ts";
 import { ScoreEntryPage } from "./views/ScoreEntryPage.ts";
 import { Match } from "./model/Tournament.ts";
 import { NavView } from "./views/NavView.ts";
+import { Toast } from "./views/Toast.ts";
 import { debounce } from "./model/Util.ts";
 import { registerSW } from "virtual:pwa-register";
 
@@ -40,6 +41,8 @@ interface State {
   group: number | undefined;
   playerFilter: string;
   fullscreen: boolean;
+  toastMessage: string | null;
+  toastTimeout: number | null;
   scoreEntryMatch?: {
     roundIndex: number;
     matchIndex: number;
@@ -80,7 +83,9 @@ const createState: () => State = () => {
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
     group: storedGroup !== null ? parseInt(storedGroup) : undefined,
     playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
-    fullscreen: false
+    fullscreen: false,
+    toastMessage: null,
+    toastTimeout: null
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -109,6 +114,34 @@ export const App = () => {
   state.settings.addListener(settingsListener);
   state.tournament.addListener(tournamentListener);
   let wakeLock: WakeLockSentinel | null = null;
+
+  // Toast management
+  const showToast = (message: string, duration: number = 4000) => {
+    // Clear any existing timeout
+    if (state.toastTimeout !== null) {
+      clearTimeout(state.toastTimeout);
+    }
+    
+    state.toastMessage = message;
+    
+    // Auto-hide after duration
+    state.toastTimeout = window.setTimeout(() => {
+      state.toastMessage = null;
+      state.toastTimeout = null;
+      m.redraw();
+    }, duration);
+    
+    m.redraw();
+  };
+
+  const dismissToast = () => {
+    if (state.toastTimeout !== null) {
+      clearTimeout(state.toastTimeout);
+      state.toastTimeout = null;
+    }
+    state.toastMessage = null;
+    m.redraw();
+  };
 
   // PWA update handling
   let needRefresh = false;
@@ -233,6 +266,7 @@ export const App = () => {
             tournament: state.tournament,
             playerFilter: state.playerFilter,
             changePlayerFilter,
+            showToast,
           });
           break;
         }
@@ -256,6 +290,7 @@ export const App = () => {
             group: state.group,
             changeRound,
             changeGroup,
+            showToast,
           });
           break;
         }
@@ -312,6 +347,7 @@ export const App = () => {
         ]) : null,
         pageContent,
         showNav ? m(NavView, { nav, currentPage: state.page }) : null,
+        m(Toast, { message: state.toastMessage, onDismiss: dismissToast }),
       ];
     },
   };

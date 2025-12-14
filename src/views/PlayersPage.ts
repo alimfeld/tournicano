@@ -10,6 +10,7 @@ export interface PlayersAttrs {
   tournament: Tournament;
   playerFilter: string;
   changePlayerFilter: (playerFilter: string) => void;
+  showToast: (message: string, duration?: number) => void;
 }
 
 interface PlayersPageState {
@@ -31,7 +32,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
     }
   },
 
-  view: ({ state, attrs: { settings, tournament, playerFilter, changePlayerFilter } }) => {
+  view: ({ state, attrs: { settings, tournament, playerFilter, changePlayerFilter, showToast } }) => {
     const pageState = state as PlayersPageState;
 
     // Handler for player activity - manages shared keep-visible state
@@ -62,17 +63,31 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
     const registerPlayers = () => {
       const input = document.getElementById("players") as HTMLInputElement;
       const groups = input.value.split(/\n/);
+      let allAdded: string[] = [];
+      let allDuplicates: string[] = [];
+      
       groups.forEach((group, i) => {
         if (i < 4) {
           const line = group.trim();
           if (line) {
             // Split by comma or period (.) - double-tapping space produces a period on many devices
             const names = line.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
-            tournament.registerPlayers(names, i);
+            const result = tournament.registerPlayers(names, i);
+            allAdded = allAdded.concat(result.added);
+            allDuplicates = allDuplicates.concat(result.duplicates);
           }
         }
       });
       input.value = "";
+      
+      // Show feedback message
+      if (allDuplicates.length > 0) {
+        const duplicateNames = allDuplicates.join(", ");
+        showToast(`⚠️ Duplicate players ignored: ${duplicateNames}`);
+      } else if (allAdded.length > 0) {
+        const count = allAdded.length;
+        showToast(`✓ Added ${count} player${count > 1 ? 's' : ''}`);
+      }
     };
     const [active, total] = tournament
       .players()
@@ -211,21 +226,30 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
             icon: "⿻",
             label: "Share / Export",
             onclick: async () => {
-              const data = {
-                text: tournament.groups
-                  .map((group) =>
-                    tournament
-                      .players(group)
-                      .map((player) => player.name)
-                      .toSorted((p, q) => p < q ? -1 : p > q ? 1 : 0)
-                      .join(", "),
-                  )
-                  .join("\n"),
-              };
+              const text = tournament.groups
+                .map((group) =>
+                  tournament
+                    .players(group)
+                    .map((player) => player.name)
+                    .toSorted((p, q) => p < q ? -1 : p > q ? 1 : 0)
+                    .join(", "),
+                )
+                .join("\n");
+              
               try {
-                await navigator.share(data);
+                await navigator.share({ text });
+                showToast("✓ Players shared successfully");
               } catch (err) {
-                console.log(err);
+                // If share fails or is cancelled, try clipboard as fallback
+                if (err instanceof Error && err.name !== 'AbortError') {
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    showToast("✓ Players copied to clipboard");
+                  } catch (clipboardErr) {
+                    showToast("⚠️ Failed to share or copy players");
+                  }
+                }
+                // If user cancelled, don't show any message
               }
             },
             disabled: tournament.players().length === 0,
