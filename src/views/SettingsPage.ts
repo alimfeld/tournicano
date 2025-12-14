@@ -8,13 +8,16 @@ import {
   Tournicano,
 } from "../model/Tournament.matching.ts";
 import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
+import { BUILD_VERSION } from "../version.ts";
 
 export interface SettingsAttrs {
   settings: Settings;
+  checkForUpdates?: () => void;
+  checkingForUpdates?: boolean;
 }
 
 export const SettingsPage: m.Component<SettingsAttrs> = {
-  view: ({ attrs: { settings } }) => {
+  view: ({ attrs: { settings, checkForUpdates, checkingForUpdates } }) => {
     const isAmericano =
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Americano);
     const isAmericanoMixed =
@@ -162,6 +165,33 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             },
           }),
           m("label", { htmlFor: "light" }, "Light"),
+        ),
+        m("hr"),
+        m("h2", "App"),
+        m(
+          "fieldset",
+          m(
+            "label",
+            "Version:",
+            m("input", {
+              type: "text",
+              value: BUILD_VERSION,
+              readonly: true,
+              disabled: true,
+            }),
+          ),
+          checkForUpdates
+            ? m(
+                "button.outline",
+                {
+                  type: "button",
+                  onclick: checkForUpdates,
+                  disabled: checkingForUpdates,
+                  "aria-busy": checkingForUpdates,
+                },
+                checkingForUpdates ? "Checking..." : "Check for Updates",
+              )
+            : null,
         ),
       ),
     ];

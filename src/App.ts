@@ -43,6 +43,8 @@ interface State {
   fullscreen: boolean;
   toastMessage: string | null;
   toastTimeout: number | null;
+  checkingForUpdates: boolean;
+  serviceWorkerRegistered: boolean;
   scoreEntryMatch?: {
     roundIndex: number;
     matchIndex: number;
@@ -85,7 +87,9 @@ const createState: () => State = () => {
     playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
     fullscreen: false,
     toastMessage: null,
-    toastTimeout: null
+    toastTimeout: null,
+    checkingForUpdates: false,
+    serviceWorkerRegistered: false
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -157,6 +161,8 @@ export const App = () => {
     },
     onRegistered(registration) {
       console.log('SW Registered:', registration);
+      state.serviceWorkerRegistered = true;
+      m.redraw();
     },
     onRegisterError(error) {
       console.log('SW registration error:', error);
@@ -172,6 +178,39 @@ export const App = () => {
     isUpdating = true;
     m.redraw();
     await updateServiceWorker();
+  };
+
+  const checkForUpdates = async () => {
+    if (state.checkingForUpdates) return;
+    
+    state.checkingForUpdates = true;
+    m.redraw();
+    
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        // Should never happen since button only shows when registered
+        state.checkingForUpdates = false;
+        m.redraw();
+        return;
+      }
+      
+      await registration.update();
+      
+      // Wait a bit to see if an update was found
+      setTimeout(() => {
+        state.checkingForUpdates = false;
+        if (!needRefresh) {
+          showToast("You're already running the latest version");
+        }
+        m.redraw();
+      }, 1000);
+    } catch (error) {
+      console.error("Error checking for updates:", error);
+      state.checkingForUpdates = false;
+      showToast("Error checking for updates");
+      m.redraw();
+    }
   };
 
   // Request or release wake lock based on settings and current page
@@ -257,6 +296,8 @@ export const App = () => {
         case Page.SETTINGS: {
           pageContent = m(SettingsPage, {
             settings: state.settings,
+            checkForUpdates: state.serviceWorkerRegistered ? checkForUpdates : undefined,
+            checkingForUpdates: state.checkingForUpdates
           });
           break;
         }

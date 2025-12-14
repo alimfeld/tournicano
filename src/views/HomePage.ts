@@ -1,6 +1,5 @@
 import m from "mithril";
 import "./HomePage.css";
-import { BUILD_VERSION } from "../version.ts";
 
 export interface HomeAttrs {}
 
@@ -10,7 +9,6 @@ export const HomePage: m.Component<HomeAttrs> = {
       m("header.home.container-fluid", m("h1", "Tournicano")),
       m(
         "main.home.container-fluid",
-        m("div.version", m("span", `v${BUILD_VERSION}`)),
         m("h2", "👉 What is it?"),
         m(
           "p",
@@ -203,7 +201,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         m(
           "p",
           m("b", "Note"),
-          ": Updates are detected automatically when you're online. You don't need to check for updates manually.",
+          ": Updates are detected automatically when you're online. You can also manually check for updates in ⚙️ Settings.",
         ),
         m("h2", "🚫 Out of scope"),
         m(
