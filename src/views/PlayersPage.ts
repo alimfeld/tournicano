@@ -117,6 +117,7 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               { onsubmit: (event: InputEvent) => event.preventDefault() },
               m("textarea", {
                 id: "players",
+                rows: 3,
                 placeholder: "Separate players with commas or periods, and groups with newlines...",
                 autocapitalize: "words",
               }),
