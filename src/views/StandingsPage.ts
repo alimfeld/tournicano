@@ -11,7 +11,7 @@ export interface StandingsAttrs {
   group: number | undefined;
   changeRound: (index: number) => void;
   changeGroup: (group: number | undefined) => void;
-  showToast: (message: string, duration?: number) => void;
+  showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
 }
 
 export const StandingsPage: m.Component<StandingsAttrs> = {
@@ -251,15 +251,15 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           
           try {
             await navigator.share({ text });
-            showToast("✓ Standings shared successfully");
+            showToast("Standings shared successfully", "success");
           } catch (err) {
             // If share fails or is cancelled, try clipboard as fallback
             if (err instanceof Error && err.name !== 'AbortError') {
               try {
                 await navigator.clipboard.writeText(text);
-                showToast("✓ Standings copied to clipboard");
+                showToast("Standings copied to clipboard", "success");
               } catch (clipboardErr) {
-                showToast("⚠️ Failed to share or copy standings");
+                showToast("Failed to share or copy standings", "error");
               }
             }
             // If user cancelled, don't show any message

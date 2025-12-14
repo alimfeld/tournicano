@@ -42,6 +42,7 @@ interface State {
   playerFilter: string;
   fullscreen: boolean;
   toastMessage: string | null;
+  toastType: "success" | "error" | "info";
   toastTimeout: number | null;
   checkingForUpdates: boolean;
   serviceWorkerRegistered: boolean;
@@ -87,6 +88,7 @@ const createState: () => State = () => {
     playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
     fullscreen: false,
     toastMessage: null,
+    toastType: "info" as "success" | "error" | "info",
     toastTimeout: null,
     checkingForUpdates: false,
     serviceWorkerRegistered: false
@@ -120,13 +122,14 @@ export const App = () => {
   let wakeLock: WakeLockSentinel | null = null;
 
   // Toast management
-  const showToast = (message: string, duration: number = 4000) => {
+  const showToast = (message: string, type: "success" | "error" | "info" = "info", duration: number = 4000) => {
     // Clear any existing timeout
     if (state.toastTimeout !== null) {
       clearTimeout(state.toastTimeout);
     }
     
     state.toastMessage = message;
+    state.toastType = type;
     
     // Auto-hide after duration
     state.toastTimeout = window.setTimeout(() => {
@@ -201,14 +204,14 @@ export const App = () => {
       setTimeout(() => {
         state.checkingForUpdates = false;
         if (!needRefresh) {
-          showToast("You're already running the latest version");
+          showToast("You're already running the latest version", "info");
         }
         m.redraw();
       }, 1000);
     } catch (error) {
       console.error("Error checking for updates:", error);
       state.checkingForUpdates = false;
-      showToast("Error checking for updates");
+      showToast("Error checking for updates", "error");
       m.redraw();
     }
   };
@@ -388,7 +391,7 @@ export const App = () => {
         ]) : null,
         pageContent,
         showNav ? m(NavView, { nav, currentPage: state.page }) : null,
-        m(Toast, { message: state.toastMessage, onDismiss: dismissToast }),
+        m(Toast, { message: state.toastMessage, type: state.toastType, onDismiss: dismissToast }),
       ];
     },
   };

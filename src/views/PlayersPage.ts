@@ -10,7 +10,7 @@ export interface PlayersAttrs {
   tournament: Tournament;
   playerFilter: string;
   changePlayerFilter: (playerFilter: string) => void;
-  showToast: (message: string, duration?: number) => void;
+  showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
 }
 
 interface PlayersPageState {
@@ -83,10 +83,10 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
       // Show feedback message
       if (allDuplicates.length > 0) {
         const duplicateNames = allDuplicates.join(", ");
-        showToast(`⚠️ Duplicate players ignored: ${duplicateNames}`);
+        showToast(`Duplicate players ignored: ${duplicateNames}`, "error");
       } else if (allAdded.length > 0) {
         const count = allAdded.length;
-        showToast(`✓ Added ${count} player${count > 1 ? 's' : ''}`);
+        showToast(`Added ${count} player${count > 1 ? 's' : ''}`, "success");
       }
     };
     const [active, total] = tournament
@@ -238,15 +238,15 @@ export const PlayersPage: m.Component<PlayersAttrs> = {
               
               try {
                 await navigator.share({ text });
-                showToast("✓ Players shared successfully");
+                showToast("Players shared successfully", "success");
               } catch (err) {
                 // If share fails or is cancelled, try clipboard as fallback
                 if (err instanceof Error && err.name !== 'AbortError') {
                   try {
                     await navigator.clipboard.writeText(text);
-                    showToast("✓ Players copied to clipboard");
+                    showToast("Players copied to clipboard", "success");
                   } catch (clipboardErr) {
-                    showToast("⚠️ Failed to share or copy players");
+                    showToast("Failed to share or copy players", "error");
                   }
                 }
                 // If user cancelled, don't show any message

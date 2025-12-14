@@ -1,30 +1,66 @@
-/* Toast notification */
-div.toast {
+/* Base toast styles */
+.toast {
   position: fixed;
   bottom: 5rem;
-  left: 50%;
-  transform: translateX(-50%);
+  left: var(--pico-block-spacing-horizontal);
+  right: var(--pico-block-spacing-horizontal);
   padding: 0.75rem 1.5rem;
   background: var(--pico-secondary-background);
   color: var(--pico-secondary-inverse);
   border: 1px solid var(--pico-secondary);
   border-radius: var(--pico-border-radius);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
   font-size: 0.9rem;
-  white-space: nowrap;
   cursor: pointer;
   animation: slideUp 0.3s ease-out;
+  z-index: 1000;
+}
+
+/* Icon modifiers */
+.toast.success,
+.toast.error {
+  padding-left: 2.75rem;
+  color: var(--pico-primary-inverse);
+}
+
+.toast.success::before,
+.toast.error::before {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  filter: brightness(0) invert(1);
+}
+
+.toast.success {
+  background: var(--pico-form-element-valid-border-color);
+  border-color: var(--pico-form-element-valid-active-border-color);
+}
+
+.toast.success::before {
+  background-image: var(--pico-icon-valid);
+}
+
+.toast.error {
+  background: var(--pico-form-element-invalid-border-color);
+  border-color: var(--pico-form-element-invalid-active-border-color);
+}
+
+.toast.error::before {
+  background-image: var(--pico-icon-invalid);
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(1rem);
+    transform: translateY(1rem);
   }
 
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
