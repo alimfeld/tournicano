@@ -181,6 +181,7 @@ export const App = () => {
     isUpdating = true;
     m.redraw();
     await updateServiceWorker();
+    // The updateServiceWorker will trigger a page reload after the new SW is activated
   };
 
   const checkForUpdates = async () => {
@@ -193,6 +194,14 @@ export const App = () => {
       const registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
         // Should never happen since button only shows when registered
+        state.checkingForUpdates = false;
+        m.redraw();
+        return;
+      }
+      
+      // Check if there's already a waiting service worker
+      if (registration.waiting) {
+        needRefresh = true;
         state.checkingForUpdates = false;
         m.redraw();
         return;
