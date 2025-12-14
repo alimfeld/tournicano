@@ -58,34 +58,6 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
     const matchCount = groupWins + groupLosses + groupDraws;
     const groupWinRatio = matchCount === 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
     const groupPlusMinus = groupPointsFor - groupPointsAgainst;
-    const format = () => {
-      return (
-        "```\n" +
-        standings
-          .map((ranked) => {
-            const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
-            const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
-            const reliabilityStr = reliability < 1
-              ? ` ${(reliability * 100).toFixed(0)}%`
-              : "";
-            return (
-              String(ranked.rank).padStart(2, " ") +
-              ". " +
-              ranked.player.name.slice(0, 10).padEnd(10, ".") +
-              " " +
-              (ranked.player.winRatio * 100).toFixed(0).padStart(3, " ") +
-              "% " +
-              (
-                (ranked.player.plusMinus >= 0 ? "+" : "") +
-                ranked.player.plusMinus
-              ).padStart(4, " ") +
-              reliabilityStr
-            );
-          })
-          .join("\n") +
-        "\n```"
-      );
-    };
     return [
       m(
         "header.standings.container-fluid",
@@ -244,28 +216,55 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           : m("p", "No scores yet. Go to the Rounds page and enter match scores to see standings!"),
       ),
        m(FAB, {
-        icon: "⿻",
+        icon: "⋮",
+        iconOpen: "✕",
         variant: "secondary",
-        onclick: async () => {
-          const text = format();
-          
-          try {
-            await navigator.share({ text });
-            showToast("Standings shared successfully", "success");
-          } catch (err) {
-            // If share fails or is cancelled, try clipboard as fallback
-            if (err instanceof Error && err.name !== 'AbortError') {
+        disabled: tournament.rounds.length === 0,
+        actions: [
+          {
+            icon: "⿻",
+            label: "Share / Export",
+            onclick: async () => {
+              const text = tournament.exportText(roundIndex);
+              
               try {
-                await navigator.clipboard.writeText(text);
-                showToast("Standings copied to clipboard", "success");
-              } catch (clipboardErr) {
-                showToast("Failed to share or copy standings", "error");
+                await navigator.share({ text });
+                showToast("Tournament data shared successfully", "success");
+              } catch (err) {
+                // If share fails or is cancelled, try clipboard as fallback
+                if (err instanceof Error && err.name !== 'AbortError') {
+                  try {
+                    await navigator.clipboard.writeText(text);
+                    showToast("Tournament data copied to clipboard", "success");
+                  } catch (clipboardErr) {
+                    showToast("Failed to share or copy tournament data", "error");
+                  }
+                }
+                // If user cancelled, don't show any message
               }
-            }
-            // If user cancelled, don't show any message
-          }
-        },
-        disabled: standings.length === 0,
+            },
+          },
+          {
+            icon: "↓",
+            label: "Download JSON",
+            onclick: () => {
+              const json = tournament.exportJSON(roundIndex);
+              const blob = new Blob([json], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.style.display = "none";
+              a.href = url;
+              const date = new Date().toISOString().slice(0, 10);
+              const rounds = roundIndex + 1 < roundCount ? `-round${roundIndex + 1}` : "";
+              a.download = `tournament-${date}${rounds}.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              showToast("Tournament JSON downloaded", "success");
+            },
+          },
+        ],
       }),
     ];
   },

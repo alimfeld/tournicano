@@ -73,7 +73,6 @@ export interface Round {
   standings(group?: number): RankedPlayer[];
   isLast(): boolean;
   delete(): boolean;
-  toString(): string;
 }
 
 export interface TournamentListener {
@@ -94,6 +93,8 @@ export interface Tournament {
   reset(): void;
   serialize(): string;
   addListener(listener: TournamentListener): void;
+  exportJSON(roundIndex?: number): string;
+  exportText(roundIndex?: number): string;
 }
 
 export interface TournamentFactory {
