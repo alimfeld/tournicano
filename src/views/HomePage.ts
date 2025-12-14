@@ -43,6 +43,11 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
+          m("b", "Tip"),
+          ": To manage multiple rosters of players (e.g., different leagues, events, or club members), export the current player list using ⿻ Share/export (via the ⋮ button) and save it to a file. To load a roster later, first delete all currently registered players, then copy the saved file content and paste it into the registration text field.",
+        ),
+        m(
+          "p",
           "Players can be assigned to groups. Separate groups of players with a newline when entering their names. A maximum of 4 groups is supported.",
         ),
         m(
