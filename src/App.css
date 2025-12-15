@@ -210,13 +210,12 @@ article.player .player-rank {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 0 0.4ex;
   font-size: 0.8rem;
-  min-width: calc(2ch + 0.8ex);
+  min-width: calc(2ch + 0.5ex);
   text-align: center;
+  border: 1px solid;
   border-radius: var(--pico-border-radius);
-  background: var(--pico-contrast-background);
-  color: var(--pico-contrast-inverse);
+  border-color: var(--pico-muted-border-color);
 }
 
 /* Global debug styles */
