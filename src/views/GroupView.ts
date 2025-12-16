@@ -36,42 +36,37 @@ const createMenuItem = (
 export const GroupView: m.Component<GroupAttrs> = {
   view: ({ attrs: { tournament, playerFilter, groupIndex, playersEditable, keepVisiblePlayers, onPlayerActivity } }) => {
     const allPlayers = tournament.players(groupIndex);
-    
+
     // Helper function to check if player matches current filter
     const matchesFilter = (p: RegisteredPlayer): boolean => {
       return playerFilter === "all" ||
         (playerFilter === "active" && p.active) ||
         (playerFilter === "inactive" && !p.active);
     };
-    
+
     // Include both matching players AND players that should be kept visible
     const players = allPlayers.filter(p =>
       matchesFilter(p) || keepVisiblePlayers.has(p.id)
     );
-    
+
     const activeCount = players.reduce((acc, player) => acc + (player.active ? 1 : 0), 0);
     const title = `${getGroupLetter(groupIndex)} (${playerFilter === "inactive" ? players.length : activeCount}/${allPlayers.length})`;
-    
+
     // Handle player activation with delayed removal
     const handleActivate = (player: RegisteredPlayer) => {
       player.activate(!player.active);
-      
+
       // Determine if player should be kept visible
       const shouldKeepVisible = !matchesFilter(player);
-      
+
       // Notify parent of player activity
       onPlayerActivity(player.id, shouldKeepVisible);
     };
-    
+
     const renderPlayerMenu = (player: RegisteredPlayer) => {
       if (!playersEditable) return null;
-      
+
       return m("details.dropdown.player-menu",
-        {
-          // Prevent menu interactions from activating/deactivating the player
-          onclick: (e: Event) => e.stopPropagation(),
-          ontouchstart: (e: Event) => e.stopPropagation()
-        },
         m("summary", { role: "button", class: "secondary outline" }, "☰"),
         m("ul",
           groupIndex > 0 ? createMenuItem(
@@ -93,7 +88,7 @@ export const GroupView: m.Component<GroupAttrs> = {
         )
       );
     };
-    
+
     return [
       m("div.group-header", m("h2", title)),
       // Only render the table if there are players to show
@@ -102,7 +97,7 @@ export const GroupView: m.Component<GroupAttrs> = {
           .toSorted((p, q) => p.name < q.name ? -1 : p.name > q.name ? 1 : 0)
           .map(player => {
             const rowClass = player.active ? "active" : "inactive";
-            
+
             return m("div.player-row",
               {
                 key: player.id, // Keyed element for stable identity
@@ -118,12 +113,7 @@ export const GroupView: m.Component<GroupAttrs> = {
                   name: "active",
                   role: "switch",
                   checked: player.active,
-                  onclick: () => handleActivate(player),
-                  ontouchend: (e: Event) => {
-                    // Prevent double-firing on touch devices
-                    e.preventDefault();
-                    handleActivate(player);
-                  }
+                  onclick: () => handleActivate(player)
                 })
               )
             );
