@@ -29,6 +29,54 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("li", "📲 Installable (add to home screen)"),
           m("li", "🔄 Automatic updates"),
         ),
+        m("h2", "⚡ Quick Start"),
+        m(
+          "p",
+          "Follow these steps to set up and run your first tournament:",
+        ),
+        m(
+          "ol",
+          m(
+            "li",
+            m("b", "Configure Settings"),
+            " – Go to ⚙️ Settings and set the number of courts and choose your tournament mode (e.g., Americano).",
+          ),
+          m(
+            "li",
+            m("b", "Register Players"),
+            " – Go to 🤖 Players and add player names by typing or pasting them (separated by commas or periods).",
+          ),
+          m(
+            "li",
+            m("b", "Start First Round"),
+            " – Go to 🚀 Rounds and press the ➕ button to create the first round.",
+          ),
+          m(
+            "li",
+            m("b", "Submit Results"),
+            " – After games are played, enter the scores for each match and press ➕ to continue to the next round.",
+          ),
+          m(
+            "li",
+            m("b", "View Standings"),
+            " – At any time, check the 🏆 Standings page to see player rankings.",
+          ),
+        ),
+        m(
+          "p",
+          m("b", "💡 Tip"),
+          ": For mixed doubles, select Americano Mixed mode in ⚙️ Settings and separate players into two groups with a newline when registering.",
+        ),
+        m(
+          "p",
+          m("b", "💡 Tip"),
+          ": At any time during the tournament you can activate/deactivate players or register additional players on the 🤖 Players page. Changes will be considered for any newly created round.",
+        ),
+        m(
+          "p",
+          m("b", "💡 Tip"),
+          ": If you're using a shared device (e.g., iPad) for everyone to view matches and submit results, use the ⏿ Keep Screen On feature (via the ⋮ button on the 🚀 Rounds page).",
+        ),
         m("h2", "🤖 Player Management"),
         m(
           "p",
@@ -36,12 +84,12 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          m("b", "Tip"),
+          m("b", "💡 Tip"),
           ": On many devices, double-tap the space bar to insert a period.",
         ),
         m(
           "p",
-          m("b", "Tip"),
+          m("b", "💡 Tip"),
           ": To manage multiple rosters of players (e.g., different leagues, events, or club members), export the current player list using ⿻ Share/export (via the ⋮ button) and save it to a file. To load a roster later, first delete all currently registered players, then copy the saved file content and paste it into the registration text field.",
         ),
         m(
@@ -82,7 +130,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          m("b", "Note"),
+          m("b", "📝 Note"),
           ": Player names must be unique. Any non-unique names are ignored when adding players.",
         ),
         m("h2", "🚀 Round Management"),
@@ -161,7 +209,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          m("b", "Note"),
+          m("b", "📝 Note"),
           ": For performance-based matching to be effective, scores must be entered. For group-based matching to be effective, multiple player groups must be created.",
         ),
         m("h2", "📲 Installation"),
@@ -186,7 +234,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          m("b", "Note"),
+          m("b", "📝 Note"),
           ": Installation is optional. Tournicano works perfectly fine in your browser without installation.",
         ),
         m("h2", "🔄 Updates"),
@@ -200,7 +248,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          m("b", "Note"),
+          m("b", "📝 Note"),
           ": Updates are detected automatically when you're online. You can also manually check for updates in ⚙️ Settings.",
         ),
         m("h2", "🚫 Out of scope"),
