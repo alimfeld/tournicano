@@ -334,6 +334,7 @@ export const App = () => {
             fullscreen: state.fullscreen,
             toggleFullscreen,
             openScoreEntry,
+            showToast,
           });
           break;
         }

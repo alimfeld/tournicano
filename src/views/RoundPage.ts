@@ -16,11 +16,12 @@ export interface RoundAttrs {
   fullscreen: boolean;
   toggleFullscreen: () => void;
   openScoreEntry: (roundIndex: number, matchIndex: number, match: Match) => void;
+  showToast?: (message: string, type?: "success" | "error" | "info") => void;
 }
 
 export const RoundPage: m.Component<RoundAttrs> = {
   view: ({
-    attrs: { settings, tournament, roundIndex, changeRound, wakeLock, fullscreen, toggleFullscreen, openScoreEntry },
+    attrs: { settings, tournament, roundIndex, changeRound, wakeLock, fullscreen, toggleFullscreen, openScoreEntry, showToast },
   }) => {
     const matchesPerRound = Math.min(
       Math.floor(tournament.activePlayerCount / 4),
@@ -100,6 +101,10 @@ export const RoundPage: m.Component<RoundAttrs> = {
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
         onclick: () => {
+          const newRoundNumber = roundCount + 1;
+          if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0 && showToast) {
+            showToast(`Round ${newRoundNumber} created with incomplete scores from previous rounds`, "error");
+          }
           tournament.createRound(settings.matchingSpec, matchesPerRound);
           changeRound(roundCount);
         },
