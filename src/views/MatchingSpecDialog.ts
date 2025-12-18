@@ -288,7 +288,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                   (document.getElementById(ID) as HTMLDialogElement).close();
                 },
               },
-              "OK",
+              "Apply",
             ),
           ),
         ),

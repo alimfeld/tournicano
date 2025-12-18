@@ -8,13 +8,16 @@ export interface Player {
   readonly group: number;
 }
 
-export interface RegisteredPlayer extends Player {
+export interface TournamentPlayer extends Player {
+  readonly registered: boolean;
   readonly active: boolean;
-  isParticipating(): boolean;
+  register(notify?: boolean): boolean;
+  unregister(notify?: boolean): boolean;
+  inAnyRound(): boolean;
   rename(name: string): boolean;
   setGroup(group: number): void;
   activate(active: boolean): void;
-  withdraw(): boolean;
+  delete(): boolean;
 }
 
 // Stats based on round matchings
@@ -83,9 +86,12 @@ export interface Tournament {
   readonly rounds: Round[];
   readonly groups: number[];
   readonly activePlayerCount: number;
+  readonly registeredCount: number;
   readonly hasAllScoresSubmitted: boolean;
-  players(group?: number): RegisteredPlayer[];
-  registerPlayers(names: string[], group?: number): { added: string[], duplicates: string[] };
+  players(group?: number): TournamentPlayer[];
+  addPlayers(names: string[], group?: number): { added: string[], duplicates: string[] };
+  registerAll(): void;
+  unregisterAll(): void;
   activateAll(active: boolean): void;
   activateGroup(group: number, active: boolean): void;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;

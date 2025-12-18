@@ -1,7 +1,7 @@
 /* Base toast styles */
 .toast {
   position: fixed;
-  bottom: calc(var(--nav-offset) + 1rem + env(safe-area-inset-bottom));
+  top: calc(var(--pico-spacing) + env(safe-area-inset-top));
   left: calc(var(--pico-block-spacing-horizontal) / 2);
   right: calc(var(--pico-block-spacing-horizontal) / 2);
   padding: 0.75rem 1.5rem;
@@ -12,7 +12,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   font-size: 0.9rem;
   cursor: pointer;
-  animation: slideUp 0.3s ease-out;
+  animation: slideDown 0.3s ease-out;
   z-index: 1000;
 }
 
@@ -53,10 +53,10 @@
   background-image: var(--pico-icon-invalid);
 }
 
-@keyframes slideUp {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(1rem);
+    transform: translateY(-1rem);
   }
 
   to {

@@ -4,7 +4,7 @@ import {
   Performance,
   PlayerStats,
   PlayerId,
-  RegisteredPlayer,
+  TournamentPlayer,
   Round,
   Score,
   Team,
@@ -65,16 +65,41 @@ export const tournamentFactory: TournamentFactory = {
   },
 };
 
-class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
+class TournamentPlayerImpl implements Mutable<TournamentPlayer> {
   constructor(
     private tournament: TournamentImpl,
     readonly id: string,
     public name: string,
     public group: number = 0,
-    public active = true,
+    public registered = false,
+    public active = false,
   ) { };
 
-  isParticipating(): boolean {
+  register(notify = true): boolean {
+    if (this.registered) {
+      return false;
+    }
+    this.registered = true;
+    this.active = true;
+    if (notify) {
+      this.tournament.notifyChange();
+    }
+    return true;
+  }
+
+  unregister(notify = true): boolean {
+    if (this.inAnyRound()) {
+      return false;
+    }
+    this.registered = false;
+    this.active = false;
+    if (notify) {
+      this.tournament.notifyChange();
+    }
+    return true;
+  }
+
+  inAnyRound(): boolean {
     const lastRound = this.tournament.rounds[this.tournament.rounds.length - 1];
     if (lastRound) {
       return lastRound.playerMap.has(this.id);
@@ -83,10 +108,10 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
   }
 
   rename(name: string) {
-    const registeredNames = new Set(
+    const existingNames = new Set(
       this.tournament.players().map((p) => p.name),
     );
-    if (!registeredNames.has(name)) {
+    if (!existingNames.has(name)) {
       this.name = name;
       this.tournament.notifyChange();
       return true;
@@ -100,13 +125,17 @@ class RegisteredPlayerImpl implements Mutable<RegisteredPlayer> {
   }
 
   activate(active: boolean) {
+    // Can only activate if registered
+    if (active && !this.registered) {
+      return;
+    }
     this.active = active;
     this.tournament.notifyChange();
   }
 
-  withdraw() {
+  delete() {
     let success = false;
-    if (!this.isParticipating()) {
+    if (!this.inAnyRound()) {
       success = this.tournament.playerMap.delete(this.id);
       if (success) {
         this.tournament.notifyChange();
@@ -373,7 +402,7 @@ class RoundImpl implements Round {
   }
 }
 
-type CompactPlayer = [PlayerId, string, number, boolean];
+type CompactPlayer = [PlayerId, string, number, boolean, boolean]; // id, name, group, registered, active
 
 type CompactTeam = [PlayerId, PlayerId];
 
@@ -389,19 +418,20 @@ type CompactTournament = [CompactPlayer[], CompactRound[]];
 
 class TournamentImpl implements Mutable<Tournament> {
   private listeners: TournamentListener[] = [];
-  playerMap: Map<PlayerId, RegisteredPlayerImpl> = new Map();
+  playerMap: Map<PlayerId, TournamentPlayerImpl> = new Map();
   rounds: RoundImpl[] = [];
 
   constructor(serialized?: string) {
     if (serialized) {
       const compact = JSON.parse(serialized) as CompactTournament;
       compact[0].forEach((cp) => {
-        const player = new RegisteredPlayerImpl(
+        const player = new TournamentPlayerImpl(
           this,
           cp[0],
           cp[1],
           cp[2],
-          cp[3],
+          cp[3] ?? false,  // registered - maps from old active value during migration
+          cp[4] ?? true,   // active - default true for migration (old active at index 3 becomes registered)
         );
         this.playerMap.set(player.id, player);
       });
@@ -442,7 +472,11 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   get activePlayerCount() {
-    return this.players().filter((p) => p.active).length;
+    return this.players().filter((p) => p.registered && p.active).length;
+  }
+
+  get registeredCount() {
+    return this.players().filter((p) => p.registered).length;
   }
 
   get hasAllScoresSubmitted() {
@@ -451,15 +485,15 @@ class TournamentImpl implements Mutable<Tournament> {
     );
   }
 
-  registerPlayers(names: string[], group: number) {
+  addPlayers(names: string[], group: number = 0) {
     const added: string[] = [];
     const duplicates: string[] = [];
-    
+
     names.forEach((name) => {
-      const registeredNames = new Set(this.players().map((p) => p.name));
-      if (!registeredNames.has(name)) {
+      const existingNames = new Set(this.players().map((p) => p.name));
+      if (!existingNames.has(name)) {
         const id = crypto.randomUUID();
-        const player = new RegisteredPlayerImpl(this, id, name, group);
+        const player = new TournamentPlayerImpl(this, id, name, group, true, true);
         this.playerMap.set(player.id, player);
         added.push(name);
       } else {
@@ -468,6 +502,20 @@ class TournamentImpl implements Mutable<Tournament> {
     });
     this.notifyChange();
     return { added, duplicates };
+  }
+
+  registerAll() {
+    this.players().forEach((player) => {
+      player.register(false); // Skip individual notifications
+    });
+    this.notifyChange(); // Single notification for bulk operation
+  }
+
+  unregisterAll() {
+    this.players().forEach((player) => {
+      player.unregister(false); // Skip individual notifications
+    });
+    this.notifyChange(); // Single notification for bulk operation
   }
 
   activateAll(active: boolean) {
@@ -487,7 +535,7 @@ class TournamentImpl implements Mutable<Tournament> {
   createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
     // Determine participating players for this round:
     // Any players participating in the previous round (along with their stats) plus
-    // active registered players not yet competing!
+    // active players not yet in any round!
     const participating: PlayerStatsImpl[] = [];
     const previousRound = this.rounds[this.rounds.length - 1];
     if (previousRound) {
@@ -496,13 +544,14 @@ class TournamentImpl implements Mutable<Tournament> {
     participating.push(
       ...shuffle(this.players() // shuffle in players to break patterns
         .filter((p) => {
-          return p.active && !p.isParticipating();
+          return p.registered && p.active && !p.inAnyRound();
         })
         .map((p) => new PlayerStatsImpl(this, p.id))),
     );
-    const [competing, inactive] = participating.reduce(
+    const [active, inactive] = participating.reduce(
       (acc: [PlayerStatsImpl[], PlayerId[]], player) => {
-        if (this.playerMap.get(player.id)!.active) {
+        const tournamentPlayer = this.playerMap.get(player.id)!;
+        if (tournamentPlayer.registered && tournamentPlayer.active) {
           acc[0].push(player);
         } else {
           acc[1].push(player.id);
@@ -511,7 +560,7 @@ class TournamentImpl implements Mutable<Tournament> {
       },
       [[], []],
     );
-    const [matched, paused] = matching(competing, spec || Americano, maxMatches);
+    const [matched, paused] = matching(active, spec || Americano, maxMatches);
     const round = new RoundImpl(
       this,
       this.rounds.length,
@@ -542,7 +591,7 @@ class TournamentImpl implements Mutable<Tournament> {
   serialize() {
     const compact: CompactTournament = [
       this.players()
-        .map((p) => [p.id, p.name, p.group, p.active]),
+        .map((p) => [p.id, p.name, p.group, p.registered, p.active]),
       this.rounds.map((round) => [
         round.matches.map((match) => [
           [match.teamA.player1.id, match.teamA.player2.id],
@@ -570,12 +619,12 @@ class TournamentImpl implements Mutable<Tournament> {
 
   private exportData(roundIndex?: number): TournamentExportData {
     // Determine which round to export (default to latest)
-    const targetRoundIndex = roundIndex !== undefined 
+    const targetRoundIndex = roundIndex !== undefined
       ? Math.max(0, Math.min(roundIndex, this.rounds.length - 1))
       : this.rounds.length - 1;
-    
+
     const targetRound = this.rounds[targetRoundIndex];
-    
+
     if (!targetRound) {
       // No rounds yet - still build players list
       const players = Array.from(this.playerMap.values())
@@ -608,8 +657,8 @@ class TournamentImpl implements Mutable<Tournament> {
       };
     }
 
-    // Build players list
-    const players = Array.from(this.playerMap.values())
+    // Build players list - only include players who participated in rounds
+    const players = Array.from(targetRound.playerMap.values())
       .map(player => ({
         name: player.name,
         group: this.groupToLabel(player.group),
@@ -689,13 +738,16 @@ class TournamentImpl implements Mutable<Tournament> {
       }
     });
 
+    // Get unique groups from participating players only
+    const participatingGroups = [...new Set(Array.from(targetRound.playerMap.values()).map(p => p.group))].sort();
+
     return {
       version: 1,
       metadata: {
         exportDate: new Date().toISOString(),
         roundCount: targetRoundIndex + 1,
         playerCount: targetRound.playerMap.size,
-        groups: this.groups.map(g => this.groupToLabel(g)),
+        groups: participatingGroups.map(g => this.groupToLabel(g)),
       },
       players,
       rounds,
@@ -730,10 +782,10 @@ class TournamentImpl implements Mutable<Tournament> {
     if (data.players.length > 0) {
       result += "PLAYERS\n";
       result += "-------\n";
-      
+
       // Check if there are multiple groups
       const hasMultipleGroups = data.metadata.groups.length > 1;
-      
+
       if (hasMultipleGroups) {
         // Group players by their group letter
         const playersByGroup: { [group: string]: string[] } = {};
@@ -743,7 +795,7 @@ class TournamentImpl implements Mutable<Tournament> {
           }
           playersByGroup[player.group].push(player.name);
         });
-        
+
         // Output each group
         Object.entries(playersByGroup).sort((a, b) => a[0].localeCompare(b[0])).forEach(([group, names]) => {
           result += `Group ${group}: ${names.join(", ")}\n`;
@@ -759,11 +811,11 @@ class TournamentImpl implements Mutable<Tournament> {
     data.rounds.forEach((round) => {
       result += `ROUND ${round.roundNumber}\n`;
       result += "-".repeat(`ROUND ${round.roundNumber}`.length) + "\n";
-      
+
       if (round.matches.length > 0) {
         // Calculate dynamic padding for this round
         const matchCountPad = String(round.matches.length).length;
-        
+
         // Find longest player names in this round
         let maxNameLength = 0;
         round.matches.forEach((match) => {
@@ -776,14 +828,14 @@ class TournamentImpl implements Mutable<Tournament> {
           );
         });
         const namePad = Math.max(maxNameLength, 8); // At least 8 chars
-        
+
         round.matches.forEach((match, idx) => {
           const matchNum = String(idx + 1).padStart(matchCountPad, " ");
           const p1 = match.teamA.player1.padEnd(namePad, " ");
           const p2 = match.teamA.player2.padEnd(namePad, " ");
           const p3 = match.teamB.player1.padEnd(namePad, " ");
           const p4 = match.teamB.player2.padEnd(namePad, " ");
-          
+
           result += `Match ${matchNum}: ${p1} & ${p2} vs. ${p3} & ${p4}`;
           if (match.score) {
             result += ` - ${match.score[0]}:${match.score[1]}`;
@@ -806,7 +858,7 @@ class TournamentImpl implements Mutable<Tournament> {
     if (data.standings.overall.length > 0) {
       result += `OVERALL STANDINGS (after Round ${data.metadata.roundCount})\n`;
       result += "-".repeat(`OVERALL STANDINGS (after Round ${data.metadata.roundCount})`.length) + "\n";
-      
+
       // Calculate dynamic padding based on data
       const maxRank = data.standings.overall.length;
       const rankPad = String(maxRank).length;
@@ -817,7 +869,7 @@ class TournamentImpl implements Mutable<Tournament> {
       const maxPointsFor = Math.max(...data.standings.overall.map(p => p.pointsFor));
       const maxPointsAgainst = Math.max(...data.standings.overall.map(p => p.pointsAgainst));
       const pointsPad = Math.max(String(maxPointsFor).length, String(maxPointsAgainst).length);
-      
+
       data.standings.overall.forEach((ranked) => {
         const reliabilityPercent = Math.round(ranked.reliability * 100);
         const winRatioPercent = Math.round(ranked.winRatio * 100);
@@ -834,7 +886,7 @@ class TournamentImpl implements Mutable<Tournament> {
       if (standings.length > 0) {
         result += `GROUP ${groupLabel} STANDINGS (after Round ${data.metadata.roundCount})\n`;
         result += "-".repeat(`GROUP ${groupLabel} STANDINGS (after Round ${data.metadata.roundCount})`.length) + "\n";
-        
+
         // Calculate dynamic padding for this group
         const maxRank = standings.length;
         const rankPad = String(maxRank).length;
@@ -845,7 +897,7 @@ class TournamentImpl implements Mutable<Tournament> {
         const maxPointsFor = Math.max(...standings.map(p => p.pointsFor));
         const maxPointsAgainst = Math.max(...standings.map(p => p.pointsAgainst));
         const pointsPad = Math.max(String(maxPointsFor).length, String(maxPointsAgainst).length);
-        
+
         standings.forEach((ranked) => {
           const reliabilityPercent = Math.round(ranked.reliability * 100);
           const winRatioPercent = Math.round(ranked.winRatio * 100);

@@ -2,8 +2,16 @@ header.players {
   text-align: center;
 }
 
-main.players div.player-filter button {
+div.player-filter button {
   padding: 0.5ex 0;
+  flex: 1;
+}
+
+/* Active filter styling */
+div.player-filter button[aria-current="page"] {
+  font-weight: var(--inc-font-weight);
+  pointer-events: none;
+  cursor: default;
 }
 
 /* Registration section */
@@ -151,6 +159,13 @@ main.players span.player-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+main.players span.player-lock {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-left: 0.25rem;
+  flex-shrink: 0;
 }
 
 /* Player toggle */

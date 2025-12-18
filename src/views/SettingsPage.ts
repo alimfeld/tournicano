@@ -1,6 +1,7 @@
 import m from "mithril";
 import "./SettingsPage.css";
 import { Settings } from "../model/Settings.ts";
+import { Tournament } from "../model/Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
@@ -12,12 +13,14 @@ import { BUILD_VERSION } from "../version.ts";
 
 export interface SettingsAttrs {
   settings: Settings;
+  tournament: Tournament;
+  showToast?: (message: string, type?: "success" | "error" | "info") => void;
   checkForUpdates?: () => void;
   checkingForUpdates?: boolean;
 }
 
 export const SettingsPage: m.Component<SettingsAttrs> = {
-  view: ({ attrs: { settings, checkForUpdates, checkingForUpdates } }) => {
+  view: ({ attrs: { settings, tournament, showToast, checkForUpdates, checkingForUpdates } }) => {
     const isAmericano =
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Americano);
     const isAmericanoMixed =
@@ -26,6 +29,13 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Mexicano);
     const isTournicano =
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Tournicano);
+
+    const handleMatchingSpecChange = (matchingSpec: typeof Americano) => {
+      settings.setMatchingSpec(matchingSpec);
+      if (tournament.rounds.length > 0 && showToast) {
+        showToast("Tournament mode changed during ongoing tournament. This will affect all newly created rounds.", "error");
+      }
+    };
     return [
       m("header.settings.container-fluid", m("h1", "Settings")),
       m(
@@ -48,7 +58,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
                   (event.target as HTMLInputElement).valueAsNumber,
                 ),
             }),
-            m("small", "The number of courts you have available"),
+            m("small", "How many matches can be played at the same time"),
           ),
         ),
         m(
@@ -61,9 +71,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               name: "matching-spec",
               id: "americano",
               checked: isAmericano,
-              onchange: () => {
-                settings.setMatchingSpec(Americano);
-              },
+              onchange: () => handleMatchingSpecChange(Americano),
             }),
             "Americano",
           ),
@@ -74,9 +82,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               name: "matching-spec",
               id: "americano-mixed",
               checked: isAmericanoMixed,
-              onchange: () => {
-                settings.setMatchingSpec(AmericanoMixed);
-              },
+              onchange: () => handleMatchingSpecChange(AmericanoMixed),
             }),
             "Americano Mixed",
           ),
@@ -87,9 +93,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               name: "matching-spec",
               id: "mexicano",
               checked: isMexicano,
-              onchange: () => {
-                settings.setMatchingSpec(Mexicano);
-              },
+              onchange: () => handleMatchingSpecChange(Mexicano),
             }),
             "Mexicano",
           ),
@@ -100,9 +104,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               name: "matching-spec",
               id: "tournicano",
               checked: isTournicano,
-              onchange: () => {
-                settings.setMatchingSpec(Tournicano);
-              },
+              onchange: () => handleMatchingSpecChange(Tournicano),
             }),
             "Tournicano",
           ),
@@ -126,9 +128,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           action: "Customize...",
           disabled: false,
           matchingSpec: settings.matchingSpec,
-          onconfirm: (matchingSpec) => {
-            settings.setMatchingSpec(matchingSpec);
-          },
+          onconfirm: handleMatchingSpecChange,
         }),
         m("hr"),
         m("h2", "UI"),
@@ -197,7 +197,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
                   disabled: checkingForUpdates,
                   "aria-busy": checkingForUpdates,
                 },
-                checkingForUpdates ? "Checking..." : "Check for Updates",
+                checkingForUpdates ? "Checking for updates..." : "Check for Updates",
               )
             : null,
         ),

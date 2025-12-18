@@ -40,6 +40,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       return undefined;
     };
     const standings = round ? round.standings(standingsGroup) : [];
+    const allStandings = standingsGroup === undefined ? standings : (round ? round.standings(undefined) : []);
     const totalRounds = roundIndex + 1; // rounds are 0-indexed
     const [
       groupWins,
@@ -102,14 +103,15 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               }
               : undefined,
         },
-        showGroupSwitcher
+        showGroupSwitcher && allStandings.length > 0
           ? m(
             "div.group-switcher",
             { role: "group" },
             m(
               "button",
               {
-                disabled: standingsGroup === undefined,
+                "aria-current": standingsGroup === undefined ? "page" : undefined,
+                class: standingsGroup === undefined ? "" : "outline",
                 onclick: () => {
                   changeGroup(undefined);
                 },
@@ -120,7 +122,8 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               m(
                 "button",
                 {
-                  disabled: standingsGroup === g,
+                  "aria-current": standingsGroup === g ? "page" : undefined,
+                  class: standingsGroup === g ? "" : "outline",
                   onclick: () => {
                     changeGroup(g);
                   },
@@ -213,11 +216,12 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               );
             }),
           ]
-          : m("p", "No scores yet. Go to the Rounds page and enter match scores to see standings!"),
+          : m("p", ["No scores yet.", m("br"), "💡 Go to the Rounds page and enter match scores to see standings!"]),
       ),
        m(FAB, {
         icon: "⋮",
         iconOpen: "✕",
+        position: "left",
         variant: "secondary",
         disabled: tournament.rounds.length === 0,
         actions: [
@@ -261,7 +265,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
-              showToast("Tournament JSON downloaded", "success");
+              showToast("Tournament data downloaded", "success");
             },
           },
         ],

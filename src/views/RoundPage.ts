@@ -93,7 +93,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
               ]
               : null,
           ]
-          : [m("p", "No rounds yet. Add players and press the + button to create your first round!")],
+          : [m("p", ["No rounds yet.", m("br"), "💡 Press the + button to create your first round (requires at least 4 active players)!"])],
       ),
       m(FAB, {
         icon: "＋",
@@ -111,6 +111,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
         position: "left",
         variant: "secondary",
         fullscreen: fullscreen,
+        disabled: tournament.rounds.length === 0,
         actions: [
           {
             icon: "⛶",
@@ -139,7 +140,7 @@ export const RoundPage: m.Component<RoundAttrs> = {
           },
           {
             icon: "－",
-            label: "Delete Round",
+            label: "Delete Last Round",
             onclick: () => {
               if (round) {
                 round.delete();
@@ -148,21 +149,26 @@ export const RoundPage: m.Component<RoundAttrs> = {
             },
             confirmation: {
               title: `🚨 Delete Round ${roundIndex + 1}?`,
-              description: "This will delete the current round and all its matches. This action cannot be undone!",
+              description: [
+                "This will delete the round and all its matches.",
+                "This action cannot be undone!"
+              ],
             },
             variant: "del",
             disabled: !round || !round.isLast(),
           },
           {
             icon: "↺",
-            label: "Restart Tournament",
+            label: "Delete All Rounds",
             onclick: () => {
               tournament.restart();
             },
             confirmation: {
-              title: "🚨 Restart Tournament?",
-              description:
-                "This will delete all rounds and scores, but keep the registered players. This action cannot be undone!",
+              title: "🚨 Delete All Rounds?",
+              description: [
+                "This will delete all rounds, but keep all players and their registration status.",
+                "This action cannot be undone!"
+              ],
             },
             variant: "del",
             disabled: tournament.rounds.length === 0,

@@ -18,8 +18,15 @@ main.standings section {
   }
 }
 
-main.standings div.group-switcher button {
+div.group-switcher button {
   padding: 0.5ex 0;
+}
+
+/* Active group filter styling */
+div.group-switcher button[aria-current="page"] {
+  font-weight: var(--inc-font-weight);
+  pointer-events: none;
+  cursor: default;
 }
 
 main.standings section div.total-players {

@@ -10,6 +10,7 @@ export interface PlayerAttrs {
   compact?: boolean;
   badge?: string;
   rank?: string;
+  locked?: boolean;
 }
 
 const isPlayerStats = (player: Player | PlayerStats): player is PlayerStats => {
@@ -25,7 +26,8 @@ export const PlayerView: m.Component<PlayerAttrs> = {
     if (compact) {
       return m("div.player-compact",
         m("img.avatar-small", { src: avatarUri }),
-        m("span.player-name", player.name)
+        m("span.player-name", player.name),
+        vnode.attrs.locked ? m("span.player-lock", "🔒") : null
       );
     }
 

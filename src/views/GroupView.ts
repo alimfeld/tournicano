@@ -1,14 +1,12 @@
 import m from "mithril";
 import { PlayerView } from "./PlayerView.ts";
-import { Tournament, RegisteredPlayer, PlayerId } from "../model/Tournament.ts";
+import { Tournament, TournamentPlayer } from "../model/Tournament.ts";
 
 export interface GroupAttrs {
   tournament: Tournament;
   playerFilter: string;
   groupIndex: number;
-  playersEditable: boolean;
-  keepVisiblePlayers: Set<PlayerId>;
-  onPlayerActivity: (playerId: PlayerId, shouldKeepVisible: boolean) => void;
+  showToast: (message: string, type?: "success" | "error" | "info") => void;
 }
 
 const getGroupLetter = (index: number): string => String.fromCharCode(65 + index);
@@ -34,38 +32,42 @@ const createMenuItem = (
 };
 
 export const GroupView: m.Component<GroupAttrs> = {
-  view: ({ attrs: { tournament, playerFilter, groupIndex, playersEditable, keepVisiblePlayers, onPlayerActivity } }) => {
+  view: ({ attrs: { tournament, playerFilter, groupIndex, showToast } }) => {
     const allPlayers = tournament.players(groupIndex);
 
     // Helper function to check if player matches current filter
-    const matchesFilter = (p: RegisteredPlayer): boolean => {
-      return playerFilter === "all" ||
-        (playerFilter === "active" && p.active) ||
-        (playerFilter === "inactive" && !p.active);
+    const matchesFilter = (p: TournamentPlayer): boolean => {
+      return playerFilter === "all" || (playerFilter === "registered" && p.registered);
     };
 
-    // Include both matching players AND players that should be kept visible
-    const players = allPlayers.filter(p =>
-      matchesFilter(p) || keepVisiblePlayers.has(p.id)
-    );
+    // Filter players based on current filter
+    const players = allPlayers.filter(matchesFilter);
 
     const activeCount = players.reduce((acc, player) => acc + (player.active ? 1 : 0), 0);
-    const title = `${getGroupLetter(groupIndex)} (${playerFilter === "inactive" ? players.length : activeCount}/${allPlayers.length})`;
+    const registeredCount = allPlayers.reduce((acc, player) => acc + (player.registered ? 1 : 0), 0);
 
-    // Handle player activation with delayed removal
-    const handleActivate = (player: RegisteredPlayer) => {
+    // Show different counts based on active filter
+    const title = playerFilter === "all"
+      ? `${getGroupLetter(groupIndex)} (${registeredCount}/${allPlayers.length})`
+      : `${getGroupLetter(groupIndex)} (${activeCount}/${registeredCount})`;
+
+    // Handle player activation
+    const handleActivate = (player: TournamentPlayer) => {
       player.activate(!player.active);
-
-      // Determine if player should be kept visible
-      const shouldKeepVisible = !matchesFilter(player);
-
-      // Notify parent of player activity
-      onPlayerActivity(player.id, shouldKeepVisible);
     };
 
-    const renderPlayerMenu = (player: RegisteredPlayer) => {
-      if (!playersEditable) return null;
+    // Handle registered toggle
+    const handleRegisteredToggle = (player: TournamentPlayer, showToast: (msg: string, type?: "success" | "error" | "info") => void) => {
+      if (player.registered) {
+        if (!player.unregister()) {
+          showToast("Cannot unregister players who are in any round", "error");
+        }
+      } else {
+        player.register();
+      }
+    };
 
+    const renderPlayerMenu = (player: TournamentPlayer) => {
       return m("details.dropdown.player-menu",
         m("summary", { role: "button", class: "secondary outline" }, "☰"),
         m("ul",
@@ -79,9 +81,9 @@ export const GroupView: m.Component<GroupAttrs> = {
             () => player.setGroup(groupIndex + 1),
             `↓ Move to Group ${getGroupLetter(groupIndex + 1)}`
           ) : null,
-          !player.isParticipating() ? createMenuItem(
+          !player.inAnyRound() ? createMenuItem(
             "#",
-            () => player.withdraw(),
+            () => player.delete(),
             "␡ Delete Player",
             "delete"
           ) : null
@@ -96,7 +98,10 @@ export const GroupView: m.Component<GroupAttrs> = {
         players
           .toSorted((p, q) => p.name < q.name ? -1 : p.name > q.name ? 1 : 0)
           .map(player => {
-            const rowClass = player.active ? "active" : "inactive";
+            // Only show activation status when viewing registered filter
+            const rowClass = playerFilter === "registered"
+              ? (player.active ? "active" : "inactive")
+              : "";
 
             return m("div.player-row",
               {
@@ -105,17 +110,30 @@ export const GroupView: m.Component<GroupAttrs> = {
               },
               renderPlayerMenu(player),
               m("div.player-info",
-                m(PlayerView, { player, compact: true })
+                m(PlayerView, { player, compact: true, locked: player.inAnyRound() })
               ),
-              m("div.player-toggle",
+              // Show registered checkbox only when viewing all players
+              // Disable checkbox if player is in a round (can't be unregistered)
+              playerFilter === "all" ? m("div.player-toggle",
+                m("input.registered", {
+                  type: "checkbox",
+                  name: "registered",
+                  checked: player.registered,
+                  disabled: player.registered && player.inAnyRound(),
+                  onclick: () => handleRegisteredToggle(player, showToast)
+                })
+              ) : null,
+              // Show Active toggle only when viewing registered filter
+              playerFilter === "registered" ? m("div.player-toggle",
                 m("input.active", {
                   type: "checkbox",
                   name: "active",
                   role: "switch",
                   checked: player.active,
+                  disabled: !player.registered,
                   onclick: () => handleActivate(player)
                 })
-              )
+              ) : null
             );
           })
       ) : null,

@@ -79,6 +79,13 @@ section.keyboard {
   gap: var(--pico-spacing);
 }
 
+div.action-row {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pico-spacing);
+}
+
 /* Touch-optimized visual feedback on button press */
 section.keyboard button {
   transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
@@ -115,6 +122,15 @@ section.keyboard button.accept {
 
 section.keyboard button.accept:active:not(:disabled) {
   background: var(--pico-form-element-valid-active-border-color);
+}
+
+section.keyboard button.backspace {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+section.keyboard button.backspace:active:not(:disabled) {
+  background: var(--pico-form-element-invalid-active-border-color);
 }
 
 div.score-text {

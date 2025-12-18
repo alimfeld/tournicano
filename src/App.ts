@@ -127,17 +127,17 @@ export const App = () => {
     if (state.toastTimeout !== null) {
       clearTimeout(state.toastTimeout);
     }
-    
+
     state.toastMessage = message;
     state.toastType = type;
-    
+
     // Auto-hide after duration
     state.toastTimeout = window.setTimeout(() => {
       state.toastMessage = null;
       state.toastTimeout = null;
       m.redraw();
     }, duration);
-    
+
     m.redraw();
   };
 
@@ -186,10 +186,10 @@ export const App = () => {
 
   const checkForUpdates = async () => {
     if (state.checkingForUpdates) return;
-    
+
     state.checkingForUpdates = true;
     m.redraw();
-    
+
     try {
       const registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
@@ -198,7 +198,7 @@ export const App = () => {
         m.redraw();
         return;
       }
-      
+
       // Check if there's already a waiting service worker
       if (registration.waiting) {
         needRefresh = true;
@@ -206,9 +206,9 @@ export const App = () => {
         m.redraw();
         return;
       }
-      
+
       await registration.update();
-      
+
       // Wait a bit to see if an update was found
       setTimeout(() => {
         state.checkingForUpdates = false;
@@ -308,6 +308,8 @@ export const App = () => {
         case Page.SETTINGS: {
           pageContent = m(SettingsPage, {
             settings: state.settings,
+            tournament: state.tournament,
+            showToast,
             checkForUpdates: state.serviceWorkerRegistered ? checkForUpdates : undefined,
             checkingForUpdates: state.checkingForUpdates
           });
@@ -315,7 +317,6 @@ export const App = () => {
         }
         case Page.PLAYERS: {
           pageContent = m(PlayersPage, {
-            settings: state.settings,
             tournament: state.tournament,
             playerFilter: state.playerFilter,
             changePlayerFilter,

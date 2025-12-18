@@ -74,7 +74,7 @@ const runTournament = (
   spec?: MatchingSpec,
 ) => {
   const tournament = tournamentFactory.create();
-  tournament.registerPlayers(players.map((p) => p.name));
+  tournament.addPlayers(players.map((p) => p.name));
   scores.forEach((scores) => {
     const round = tournament.createRound(spec, scores.length);
     round.matches.forEach((match, i) => match.submitScore(scores[i]));
@@ -103,7 +103,7 @@ test("should create empty tournament", () => {
   expect(tournament.rounds).toHaveLength(0);
 });
 
-test("should register players", ({ players }) => {
+test("should add players", ({ players }) => {
   const tournament = runTournament(players);
   expect(tournament.players()).toHaveLength(players.length);
   expect(tournament.players().map((p) => p.name)).toStrictEqual(
@@ -114,10 +114,10 @@ test("should register players", ({ players }) => {
   });
 });
 
-test("should not register players twice", ({ players }) => {
+test("should not add players twice", ({ players }) => {
   const tournament = runTournament(players);
   expect(tournament.players()).toHaveLength(players.length);
-  tournament.registerPlayers(players.map((p) => p.name));
+  tournament.addPlayers(players.map((p) => p.name));
   expect(tournament.players()).toHaveLength(players.length);
 });
 
@@ -129,7 +129,7 @@ test("should rename player", ({ players }) => {
   expect(player.name).toBe("Foo");
 });
 
-test("should not rename player to already registered name", ({ players }) => {
+test("should not rename player to existing name", ({ players }) => {
   const tournament = runTournament(players);
   const player = tournament.players()[0];
   const name = player.name;
@@ -146,10 +146,75 @@ test("should activate player", ({ players }) => {
   expect(player.active).toBe(true);
 });
 
+test("should have players registered by default", ({ players }) => {
+  const tournament = runTournament(players);
+  tournament.players().forEach((p) => {
+    expect(p.registered).toBe(true);
+  });
+});
+
+test("should register player", ({ players }) => {
+  const tournament = runTournament(players);
+  const player = tournament.players()[0];
+
+  // Unregister first, then register back
+  player.unregister();
+  expect(player.registered).toBe(false);
+
+  const success = player.register();
+  expect(success).toBe(true);
+  expect(player.registered).toBe(true);
+  expect(player.active).toBe(true); // Should be auto-activated
+});
+
+test("should not register player if already registered", ({ players }) => {
+  const tournament = runTournament(players);
+  const player = tournament.players()[0];
+
+  expect(player.registered).toBe(true);
+  const success = player.register();
+  expect(success).toBe(false);
+  expect(player.registered).toBe(true);
+});
+
+test("should unregister player", ({ players }) => {
+  const tournament = runTournament(players);
+  const player = tournament.players()[0];
+
+  expect(player.registered).toBe(true);
+  const success = player.unregister();
+  expect(success).toBe(true);
+  expect(player.registered).toBe(false);
+});
+
+test("should allow unregistering player multiple times", ({ players }) => {
+  const tournament = runTournament(players);
+  const player = tournament.players()[0];
+
+  player.unregister();
+  expect(player.registered).toBe(false);
+
+  // unregister() returns true even if already not registered
+  // (as long as player is not in a round)
+  const success = player.unregister();
+  expect(success).toBe(true);
+  expect(player.registered).toBe(false);
+});
+
+test("should not unregister player if in a round", ({ players, scores }) => {
+  const tournament = runTournament(players, scores);
+  const player = tournament.players()[0];
+
+  expect(player.registered).toBe(true);
+  const success = player.unregister();
+  expect(success).toBe(false);
+  expect(player.registered).toBe(true);
+});
+
 test("should withdraw non-participating player", ({ players }) => {
   const tournament = runTournament(players);
   const player = tournament.players()[0];
-  const success = player.withdraw();
+  const success = player.delete();
   expect(success).toBeTruthy();
   expect(tournament.players()).toHaveLength(players.length - 1);
 });
@@ -157,7 +222,7 @@ test("should withdraw non-participating player", ({ players }) => {
 test("should not withdraw participating player", ({ players, scores }) => {
   const tournament = runTournament(players, scores);
   const player = tournament.players()[0];
-  const success = player.withdraw();
+  const success = player.delete();
   expect(success).toBeFalsy();
   expect(tournament.players()).toHaveLength(players.length);
 });
@@ -206,11 +271,11 @@ test("should serialize tournament", ({ players, scores }) => {
   const serialized = tournament.serialize();
   const fromSerialized = tournamentFactory.create(serialized);
   expect(fromSerialized.rounds).toHaveLength(tournament.rounds.length);
-  
+
   // Compare round data directly
   fromSerialized.rounds.forEach((round, i) => {
     const origRound = tournament.rounds[i]!;
-    
+
     // Compare matches
     expect(round.matches).toHaveLength(origRound.matches.length);
     round.matches.forEach((match, j) => {
@@ -221,13 +286,13 @@ test("should serialize tournament", ({ players, scores }) => {
       expect(match.teamB.player2.name).toBe(origMatch.teamB.player2.name);
       expect(match.score).toEqual(origMatch.score);
     });
-    
+
     // Compare paused players
     expect(round.paused).toHaveLength(origRound.paused.length);
     round.paused.forEach((player, j) => {
       expect(player.name).toBe(origRound.paused[j].name);
     });
-    
+
     // Compare standings
     const standings = round.standings();
     const origStandings = origRound.standings();
@@ -243,6 +308,76 @@ test("should serialize tournament", ({ players, scores }) => {
       expect(ranked.player.pointsAgainst).toBe(origRanked.player.pointsAgainst);
     });
   });
+});
+
+test("should serialize and deserialize registration status", ({ players }) => {
+  const tournament = runTournament(players);
+
+  // Unregister some players
+  tournament.players()[0].unregister();
+  tournament.players()[3].unregister();
+  tournament.players()[7].unregister();
+
+  expect(tournament.registeredCount).toBe(7);
+
+  const serialized = tournament.serialize();
+  const fromSerialized = tournamentFactory.create(serialized);
+
+  // Verify registration status preserved
+  expect(fromSerialized.registeredCount).toBe(7);
+  expect(fromSerialized.players()[0].registered).toBe(false);
+  expect(fromSerialized.players()[1].registered).toBe(true);
+  expect(fromSerialized.players()[3].registered).toBe(false);
+  expect(fromSerialized.players()[7].registered).toBe(false);
+});
+
+test("should serialize and deserialize active status", ({ players }) => {
+  const tournament = runTournament(players);
+
+  // Deactivate some players
+  tournament.players()[0].activate(false);
+  tournament.players()[4].activate(false);
+
+  expect(tournament.activePlayerCount).toBe(8);
+
+  const serialized = tournament.serialize();
+  const fromSerialized = tournamentFactory.create(serialized);
+
+  // Verify active status preserved
+  expect(fromSerialized.activePlayerCount).toBe(8);
+  expect(fromSerialized.players()[0].active).toBe(false);
+  expect(fromSerialized.players()[1].active).toBe(true);
+  expect(fromSerialized.players()[4].active).toBe(false);
+});
+
+test("should serialize registered and active status together", ({ players }) => {
+  const tournament = runTournament(players);
+
+  // Create mixed states
+  // Note: unregister() also deactivates the player automatically
+  tournament.players()[0].unregister(); // not registered, inactive (auto-deactivated)
+  tournament.players()[1].activate(false); // registered, inactive
+  tournament.players()[2].unregister(); // not registered, inactive
+  // Players 3-9 remain: registered and active (default)
+
+  const serialized = tournament.serialize();
+  const fromSerialized = tournamentFactory.create(serialized);
+
+  // Player 0: unregistered (auto-deactivated)
+  expect(fromSerialized.players()[0].registered).toBe(false);
+  expect(fromSerialized.players()[0].active).toBe(false);
+
+  // Player 1: registered but manually deactivated
+  expect(fromSerialized.players()[1].registered).toBe(true);
+  expect(fromSerialized.players()[1].active).toBe(false);
+
+  // Player 2: unregistered (auto-deactivated)
+  expect(fromSerialized.players()[2].registered).toBe(false);
+  expect(fromSerialized.players()[2].active).toBe(false);
+
+  // Player 3: registered and active (default)
+  expect(fromSerialized.players()[3].registered).toBe(true);
+  expect(fromSerialized.players()[3].active).toBe(true);
 });
 
 test("should update performance through rounds", ({ players, scores }) => {
@@ -321,11 +456,11 @@ test("should prefer never-partnered players in Americano", ({ players }) => {
   players[3].partners = new Map([["2", [0]]]);
 
   const [matches, _paused] = matching(players.slice(0, 4), Americano, 1);
-  
+
   // Should pair players who have never partnered: 0-2 or 0-3 AND 1-2 or 1-3
   const teamIds = matches[0].flat().map(p => p.id).sort();
   expect(teamIds).toEqual(["0", "1", "2", "3"]);
-  
+
   // Check that no team has players who partnered before
   matches[0].forEach(team => {
     const p2Id = team[1].id;
@@ -347,7 +482,7 @@ test("should avoid recent partners more than older partners", ({ players }) => {
   players[2].partners = new Map([["0", [0]]]);
 
   const [matches, _paused] = matching(players.slice(0, 8), Americano, 2);
-  
+
   // Find which player is paired with player 0
   let player0Partner = null;
   for (const match of matches) {
@@ -362,7 +497,7 @@ test("should avoid recent partners more than older partners", ({ players }) => {
     }
     if (player0Partner) break;
   }
-  
+
   // Should prefer player 2 (old partner) over player 1 (recent partner)
   // or even better, a never-before partner (3-7)
   expect(player0Partner).not.toBe("1");
@@ -375,7 +510,7 @@ test("should honor variety for match up in Americano", ({ players }) => {
   for (let i = 0; i < 8; i++) {
     players[i].matchCount = 1;
   }
-  
+
   // Round 0: 0-1 vs 2-3 and 4-5 vs 6-7
   players[0].opponents = new Map([["2", [0]], ["3", [0]]]);
   players[1].opponents = new Map([["2", [0]], ["3", [0]]]);
@@ -385,7 +520,7 @@ test("should honor variety for match up in Americano", ({ players }) => {
   players[5].opponents = new Map([["6", [0]], ["7", [0]]]);
   players[6].opponents = new Map([["4", [0]], ["5", [0]]]);
   players[7].opponents = new Map([["4", [0]], ["5", [0]]]);
-  
+
   // Force specific team pairings by setting partners
   players[0].partners = new Map([["1", [0]]]);
   players[1].partners = new Map([["0", [0]]]);
@@ -397,22 +532,22 @@ test("should honor variety for match up in Americano", ({ players }) => {
   players[7].partners = new Map([["6", [0]]]);
 
   const [matches, _paused] = matching(players.slice(0, 8), Americano, 2);
-  
+
   // Check that teams don't repeat opponents
   matches.forEach(match => {
     const team1 = match[0];
     const team2 = match[1];
     const team1Ids = [team1[0].id, team1[1].id].sort();
     const team2Ids = [team2[0].id, team2[1].id].sort();
-    
+
     // Check if these exact teams faced before
-    const faced01vs23 = 
+    const faced01vs23 =
       (team1Ids.join("") === "01" && team2Ids.join("") === "23") ||
       (team1Ids.join("") === "23" && team2Ids.join("") === "01");
-    const faced45vs67 = 
+    const faced45vs67 =
       (team1Ids.join("") === "45" && team2Ids.join("") === "67") ||
       (team1Ids.join("") === "67" && team2Ids.join("") === "45");
-    
+
     // These matchups should be avoided if possible
     if (faced01vs23 || faced45vs67) {
       console.log(`Warning: Repeated matchup found: ${team1Ids} vs ${team2Ids}`);
@@ -446,7 +581,7 @@ test("should pair by performance in Mexicano mode", ({ players }) => {
   });
 
   const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 2, true);
-  
+
   // Actual ranking by winRatio (descending):
   // Rank 1: player 0 (1.0)
   // Rank 2: player 4 (0.8)
@@ -456,21 +591,21 @@ test("should pair by performance in Mexicano mode", ({ players }) => {
   // Rank 6: player 6 (0.4)
   // Rank 7: player 3 (0.25)
   // Rank 8: player 7 (0.1)
-  
+
   const teams = matches.flatMap(m => m);
   const teamPairs = teams.map(team => [team[0].id, team[1].id].sort().join("-"));
-  
+
   console.log("Mexicano pairings:", teamPairs);
-  
+
   // With Mexicano (rank diff = 2):
   // Rank 1 (player 0) should pair with Rank 3 (player 1)
   // Rank 2 (player 4) should pair with Rank 4 (player 5)
   // Rank 5 (player 2) should pair with Rank 7 (player 3)
   // Rank 6 (player 6) should pair with Rank 8 (player 7)
-  
+
   const has01Team = teamPairs.some(pair => pair === "0-1");
   const has45Team = teamPairs.some(pair => pair === "4-5");
-  
+
   expect(has01Team).toBe(true);
   expect(has45Team).toBe(true);
 });
@@ -487,20 +622,20 @@ test("should match teams by equal performance in Mexicano", ({ players }) => {
   players[3].plusMinus = -5;
 
   const [matches, _paused] = matching(players.slice(0, 4), Mexicano, 1);
-  
+
   // Calculate team performance
   const match = matches[0];
   const team1Perf = match[0][0].winRatio + match[0][1].winRatio;
   const team2Perf = match[1][0].winRatio + match[1][1].winRatio;
-  
+
   console.log(`Team 1 performance: ${team1Perf}, Team 2 performance: ${team2Perf}, diff: ${Math.abs(team1Perf - team2Perf)}`);
-  
+
   // With Mexicano pairing (rank 1+3 vs rank 2+4):
   // Team 1: 1.0 + 0.5 = 1.5 (players 0+2)
   // Team 2: 0.75 + 0.25 = 1.0 (players 1+3)
   // This is the EXPECTED behavior - Mexicano intentionally creates unbalanced teams
   // The match-up performance factor then tries to balance the matches
-  
+
   // Since there's only one match possible with 4 players, we just verify teams were created
   expect(matches).toHaveLength(1);
   expect(match[0]).toHaveLength(2);
@@ -517,7 +652,7 @@ test("should respect group constraints in AmericanoMixed", ({ players }) => {
   }
 
   const [matches, _paused] = matching(players.slice(0, 8), AmericanoMixed, 2);
-  
+
   // In AmericanoMixed with ADJACENT group mode, should prefer adjacent groups
   // groupFactor = 100 for teamUp, so teams should be from adjacent groups
   matches.forEach(match => {
@@ -528,7 +663,7 @@ test("should respect group constraints in AmericanoMixed", ({ players }) => {
       expect(groupDiff).toBeLessThanOrEqual(1);
     });
   });
-  
+
   // For matchUp, should balance groups (groupFactor = 100)
   matches.forEach(match => {
     const team1GroupSum = match[0][0].group + match[0][1].group;
@@ -555,15 +690,15 @@ test("debug Mexicano rank calculation", ({ players }) => {
   console.log("Player 2: winRatio=0.5, plusMinus=0 (expected rank 3)");
   console.log("Player 3: winRatio=0.25, plusMinus=-5 (expected rank 4)");
   console.log("\nExpected Mexicano pairing: 0-2 (rank 1-3) and 1-3 (rank 2-4)");
-  
+
   const [matches, _paused] = matching(players.slice(0, 4), Mexicano, 1, true);
-  
+
   const teams = matches.flatMap(m => m);
   console.log("\nActual pairing:");
   teams.forEach((team, i) => {
-    console.log(`  Team ${i+1}: ${team[0].id} (wr=${team[0].winRatio}) & ${team[1].id} (wr=${team[1].winRatio})`);
+    console.log(`  Team ${i + 1}: ${team[0].id} (wr=${team[0].winRatio}) & ${team[1].id} (wr=${team[1].winRatio})`);
   });
-  
+
   const teamPairs = teams.map(team => [team[0].id, team[1].id].sort().join("-"));
   console.log("\nTeam pairs:", teamPairs);
 });
@@ -577,18 +712,18 @@ test("should balance all factors in Tournicano", ({ players }) => {
     players[i].plusMinus = 8 - i;
     players[i].matchCount = 1;
   }
-  
+
   // Add some partner history
   players[0].partners = new Map([["1", [0]]]);
   players[1].partners = new Map([["0", [0]]]);
-  
+
   const [matches, _paused] = matching(players.slice(0, 8), Tournicano, 2);
-  
+
   // Tournicano should:
   // 1. Avoid repeated partners (variety)
   // 2. Use Mexicano-style pairing (1st with 3rd)
   // 3. Respect adjacent group pairing
-  
+
   console.log("Tournicano matches:");
   matches.forEach((match, i) => {
     console.log(`Match ${i}:`);
@@ -596,14 +731,14 @@ test("should balance all factors in Tournicano", ({ players }) => {
       console.log(`  Team: ${team[0].id} (g${team[0].group}, wr${team[0].winRatio}) & ${team[1].id} (g${team[1].group}, wr${team[1].winRatio})`);
     });
   });
-  
+
   // Check that players 0 and 1 are NOT paired again
   const teams = matches.flatMap(m => m);
-  const has01Team = teams.some(team => 
+  const has01Team = teams.some(team =>
     (team[0].id === "0" && team[1].id === "1") ||
     (team[0].id === "1" && team[1].id === "0")
   );
-  
+
   expect(has01Team).toBe(false);
 });
 
@@ -628,18 +763,18 @@ test("should sort matches by performance when performanceFactor > 0", ({ players
 
   // Test with Mexicano (has matchUp.performanceFactor = 100)
   const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 2);
-  
+
   expect(matches).toHaveLength(2);
-  
+
   // Calculate total performance (winRatio sum) for each match
-  const match0Perf = matches[0][0][0].winRatio + matches[0][0][1].winRatio + 
-                     matches[0][1][0].winRatio + matches[0][1][1].winRatio;
-  const match1Perf = matches[1][0][0].winRatio + matches[1][0][1].winRatio + 
-                     matches[1][1][0].winRatio + matches[1][1][1].winRatio;
-  
+  const match0Perf = matches[0][0][0].winRatio + matches[0][0][1].winRatio +
+    matches[0][1][0].winRatio + matches[0][1][1].winRatio;
+  const match1Perf = matches[1][0][0].winRatio + matches[1][0][1].winRatio +
+    matches[1][1][0].winRatio + matches[1][1][1].winRatio;
+
   console.log(`Match 0 performance: ${match0Perf}`);
   console.log(`Match 1 performance: ${match1Perf}`);
-  
+
   // First match should have higher total performance
   expect(match0Perf).toBeGreaterThanOrEqual(match1Perf);
 });
@@ -650,30 +785,30 @@ test("should penalize past opponents when forming teams", ({ players }) => {
   for (let i = 0; i < 4; i++) {
     players[i].matchCount = 1;
   }
-  
+
   // Players 0 and 1 faced each other in round 0
   players[0].opponents = new Map([["1", [0]]]);
   players[1].opponents = new Map([["0", [0]]]);
-  
+
   // Players 2 and 3 faced each other in round 0
   players[2].opponents = new Map([["3", [0]]]);
   players[3].opponents = new Map([["2", [0]]]);
-  
+
   const [matches, _paused] = matching(players.slice(0, 4), Americano, 1);
-  
+
   // Since all players have equal match counts and no partner history,
   // the opponent penalty should influence the pairing
   // Expected: prefer pairing 0-2, 0-3, 1-2, or 1-3 over 0-1 or 2-3
   const teamPairs = matches[0].map(team => [team[0].id, team[1].id].sort().join("-"));
-  
+
   console.log("Teams formed:", teamPairs);
-  
+
   // Check that we didn't pair past opponents if variety is considered
   // (Note: with only 4 players and 1 match, we can only form 2 teams)
   // The algorithm should avoid 0-1 AND 2-3 appearing together
   const has01 = teamPairs.includes("0-1");
   const has23 = teamPairs.includes("2-3");
-  
+
   // At least one of the past opponent pairs should be avoided
   expect(has01 && has23).toBe(false);
 });
@@ -683,21 +818,21 @@ test("should weight partner history more heavily than opponent history", ({ play
   // - been partners with player 1 (once, round 0)
   // - been opponents with player 2 (three times, rounds 0, 1, 2)
   // Expected: should still prefer pairing 0-2 over 0-1 (partner penalty > opponent penalty)
-  
+
   for (let i = 0; i < 8; i++) {
     players[i].matchCount = 3;
   }
-  
+
   // Player 0 partnered with 1 in round 0
   players[0].partners = new Map([["1", [0]]]);
   players[1].partners = new Map([["0", [0]]]);
-  
+
   // Player 0 opposed player 2 three times (rounds 0, 1, 2)
   players[0].opponents = new Map([["2", [0, 1, 2]]]);
   players[2].opponents = new Map([["0", [0, 1, 2]]]);
-  
+
   const [matches, _paused] = matching(players.slice(0, 8), Americano, 2);
-  
+
   // Find which player is paired with player 0
   let player0Partner = null;
   for (const match of matches) {
@@ -712,9 +847,9 @@ test("should weight partner history more heavily than opponent history", ({ play
     }
     if (player0Partner) break;
   }
-  
+
   console.log(`Player 0 paired with: ${player0Partner}`);
-  
+
   // Partner penalty should be stronger than opponent penalty
   // So player 0 should NOT be paired with player 1 (past partner)
   // Even though player 2 was a frequent opponent, that penalty is only 20%
@@ -724,7 +859,7 @@ test("should weight partner history more heavily than opponent history", ({ play
 // Tests for activePlayerCount property
 test("should return active player count - initial state", ({ players }) => {
   const tournament = runTournament(players);
-  
+
   // All players initially active
   expect(tournament.activePlayerCount).toBe(10);
   expect(tournament.activePlayerCount).toBe(tournament.players().length);
@@ -732,14 +867,14 @@ test("should return active player count - initial state", ({ players }) => {
 
 test("should return active player count - after individual deactivation", ({ players }) => {
   const tournament = runTournament(players);
-  
+
   // Deactivate 3 specific players
   tournament.players()[0].activate(false);
   tournament.players()[3].activate(false);
   tournament.players()[7].activate(false);
-  
+
   expect(tournament.activePlayerCount).toBe(7);
-  
+
   // Verify the correct players are counted as active
   const activePlayers = tournament.players().filter(p => p.active);
   expect(activePlayers).toHaveLength(7);
@@ -748,20 +883,20 @@ test("should return active player count - after individual deactivation", ({ pla
 
 test("should return active player count - bulk operations", ({ players }) => {
   const tournament = runTournament(players);
-  
+
   // Deactivate all players
   tournament.activateAll(false);
   expect(tournament.activePlayerCount).toBe(0);
-  
+
   // Reactivate some players
   tournament.players()[0].activate(true);
   tournament.players()[1].activate(true);
   tournament.players()[4].activate(true);
   tournament.players()[8].activate(true);
   tournament.players()[9].activate(true);
-  
+
   expect(tournament.activePlayerCount).toBe(5);
-  
+
   // Reactivate all players
   tournament.activateAll(true);
   expect(tournament.activePlayerCount).toBe(10);
@@ -769,22 +904,22 @@ test("should return active player count - bulk operations", ({ players }) => {
 
 test("should return active player count - with groups", () => {
   const tournament = tournamentFactory.create();
-  
-  // Register players in different groups
-  tournament.registerPlayers(["Alice", "Bob", "Charlie"], 0);
-  tournament.registerPlayers(["Dave", "Eve", "Frank"], 1);
-  
+
+  // Add players in different groups
+  tournament.addPlayers(["Alice", "Bob", "Charlie"], 0);
+  tournament.addPlayers(["Dave", "Eve", "Frank"], 1);
+
   // All players active initially
   expect(tournament.activePlayerCount).toBe(6);
-  
+
   // Deactivate all players in group 0
   tournament.activateGroup(0, false);
   expect(tournament.activePlayerCount).toBe(3);
-  
+
   // Deactivate all players in group 1
   tournament.activateGroup(1, false);
   expect(tournament.activePlayerCount).toBe(0);
-  
+
   // Reactivate group 0
   tournament.activateGroup(0, true);
   expect(tournament.activePlayerCount).toBe(3);
@@ -792,15 +927,146 @@ test("should return active player count - with groups", () => {
 
 test("should return active player count - empty tournament", () => {
   const tournament = tournamentFactory.create();
-  
+
   expect(tournament.activePlayerCount).toBe(0);
   expect(tournament.players()).toHaveLength(0);
+});
+
+// Tests for registeredCount property
+test("should return registered player count - initial state", ({ players }) => {
+  const tournament = runTournament(players);
+
+  // All players initially registered
+  expect(tournament.registeredCount).toBe(10);
+  expect(tournament.registeredCount).toBe(tournament.players().length);
+});
+
+test("should return registered player count - after individual unregistration", ({ players }) => {
+  const tournament = runTournament(players);
+
+  // Unregister 3 players
+  tournament.players()[0].unregister();
+  tournament.players()[3].unregister();
+  tournament.players()[7].unregister();
+
+  expect(tournament.registeredCount).toBe(7);
+});
+
+test("should return registered player count - bulk operations", ({ players }) => {
+  const tournament = runTournament(players);
+
+  expect(tournament.registeredCount).toBe(10);
+
+  // Unregister all players
+  tournament.unregisterAll();
+  expect(tournament.registeredCount).toBe(0);
+
+  // Register all back
+  tournament.registerAll();
+  expect(tournament.registeredCount).toBe(10);
+});
+
+test("should return registered player count - empty tournament", () => {
+  const tournament = tournamentFactory.create();
+
+  expect(tournament.registeredCount).toBe(0);
+  expect(tournament.players()).toHaveLength(0);
+});
+
+test("should return registered player count - with groups", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Charlie"], 0);
+  tournament.addPlayers(["Dave", "Eve", "Frank"], 1);
+
+  // All players registered initially
+  expect(tournament.registeredCount).toBe(6);
+
+  // Unregister some players
+  tournament.players(0)[0].unregister();
+  tournament.players(1)[1].unregister();
+
+  expect(tournament.registeredCount).toBe(4);
+});
+
+// Tests for bulk registration operations
+test("should register all players", ({ players }) => {
+  const tournament = runTournament(players);
+
+  // Unregister some players
+  tournament.players()[0].unregister();
+  tournament.players()[1].unregister();
+  tournament.players()[5].unregister();
+
+  expect(tournament.registeredCount).toBe(7);
+
+  // Register all players
+  tournament.registerAll();
+
+  expect(tournament.registeredCount).toBe(10);
+  tournament.players().forEach(player => {
+    expect(player.registered).toBe(true);
+    expect(player.active).toBe(true);
+  });
+});
+
+test("should unregister all players", ({ players }) => {
+  const tournament = runTournament(players);
+
+  expect(tournament.registeredCount).toBe(10);
+
+  tournament.unregisterAll();
+
+  expect(tournament.registeredCount).toBe(0);
+  tournament.players().forEach(player => {
+    expect(player.registered).toBe(false);
+    expect(player.active).toBe(false);
+  });
+});
+
+test("should not unregister players if they are in a round", ({ players, scores }) => {
+  const tournament = runTournament(players, scores);
+
+  // All players participated in rounds, so they're locked
+  expect(tournament.registeredCount).toBe(10);
+
+  tournament.unregisterAll();
+
+  // Players who played in rounds should still be registered
+  expect(tournament.registeredCount).toBe(10);
+  tournament.players().forEach(player => {
+    expect(player.registered).toBe(true);
+  });
+});
+
+test("should handle bulk operations on empty tournament", () => {
+  const tournament = tournamentFactory.create();
+
+  expect(tournament.registeredCount).toBe(0);
+
+  // Should not error on empty tournament
+  tournament.registerAll();
+  expect(tournament.registeredCount).toBe(0);
+
+  tournament.unregisterAll();
+  expect(tournament.registeredCount).toBe(0);
+});
+
+test("should handle bulk operations with groups", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Charlie", "Dave"], 1);
+
+  tournament.unregisterAll();
+  expect(tournament.registeredCount).toBe(0);
+
+  tournament.registerAll();
+  expect(tournament.registeredCount).toBe(4);
 });
 
 // Tests for hasAllScoresSubmitted property
 test("should return hasAllScoresSubmitted - empty tournament", () => {
   const tournament = tournamentFactory.create();
-  
+
   // Empty tournament (no rounds) should return true (vacuous truth)
   expect(tournament.hasAllScoresSubmitted).toBe(true);
   expect(tournament.rounds).toHaveLength(0);
@@ -808,36 +1074,36 @@ test("should return hasAllScoresSubmitted - empty tournament", () => {
 
 test("should return hasAllScoresSubmitted - progressive score entry", ({ players }) => {
   const tournament = runTournament(players);
-  
+
   // Create 3 rounds with 2 matches each
   const round1 = tournament.createRound(Americano, 2);
   const round2 = tournament.createRound(Americano, 2);
   const round3 = tournament.createRound(Americano, 2);
-  
+
   expect(tournament.rounds).toHaveLength(3);
-  
+
   // Initially, no scores submitted
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit scores for round 1 (2 out of 6 matches)
   round1.matches[0].submitScore([11, 5]);
   round1.matches[1].submitScore([8, 11]);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit scores for round 2 (4 out of 6 matches total)
   round2.matches[0].submitScore([11, 7]);
   round2.matches[1].submitScore([6, 11]);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit scores for round 3 (6 out of 6 matches total)
   round3.matches[0].submitScore([11, 3]);
   round3.matches[1].submitScore([9, 11]);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
-  
+
   // Clear one score
   round2.matches[0].submitScore(undefined);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Re-submit the score
   round2.matches[0].submitScore([11, 7]);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
@@ -845,14 +1111,14 @@ test("should return hasAllScoresSubmitted - progressive score entry", ({ players
 
 test("should return hasAllScoresSubmitted - single round", ({ players }) => {
   const tournament = runTournament(players);
-  
+
   const round = tournament.createRound(Americano, 2);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit first match score
   round.matches[0].submitScore([11, 5]);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit second match score
   round.matches[1].submitScore([8, 11]);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
@@ -860,32 +1126,32 @@ test("should return hasAllScoresSubmitted - single round", ({ players }) => {
 
 test("should return hasAllScoresSubmitted - after round deletion", ({ players, scores }) => {
   const tournament = runTournament(players);
-  
+
   // Create 2 rounds with all scores
   const round1 = tournament.createRound(Americano, 2);
   round1.matches[0].submitScore(scores[0][0]);
   round1.matches[1].submitScore(scores[0][1]);
-  
+
   const round2 = tournament.createRound(Americano, 2);
   round2.matches[0].submitScore(scores[1][0]);
   round2.matches[1].submitScore(scores[1][1]);
-  
+
   expect(tournament.rounds).toHaveLength(2);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
-  
+
   // Delete last round
   round2.delete();
   expect(tournament.rounds).toHaveLength(1);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
-  
+
   // Clear a score in the remaining round
   round1.matches[0].submitScore(undefined);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Re-submit the score
   round1.matches[0].submitScore(scores[0][0]);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
-  
+
   // Delete the last remaining round
   round1.delete();
   expect(tournament.rounds).toHaveLength(0);
@@ -894,14 +1160,14 @@ test("should return hasAllScoresSubmitted - after round deletion", ({ players, s
 
 test("should return hasAllScoresSubmitted - after tournament restart", ({ players, scores }) => {
   const tournament = runTournament(players, scores);
-  
+
   // All scores submitted from runTournament
   expect(tournament.hasAllScoresSubmitted).toBe(true);
   expect(tournament.rounds.length).toBeGreaterThan(0);
-  
+
   // Restart tournament (deletes all rounds but keeps players)
   tournament.restart();
-  
+
   expect(tournament.rounds).toHaveLength(0);
   expect(tournament.players()).toHaveLength(players.length);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
@@ -909,22 +1175,22 @@ test("should return hasAllScoresSubmitted - after tournament restart", ({ player
 
 test("should return hasAllScoresSubmitted - mixed score states", ({ players }) => {
   const tournament = runTournament(players);
-  
+
   const round = tournament.createRound(Americano, 2);
-  
+
   // No scores
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit and then clear a score
   round.matches[0].submitScore([11, 5]);
   round.matches[0].submitScore(undefined);
   expect(tournament.hasAllScoresSubmitted).toBe(false);
-  
+
   // Submit both scores with one being a draw
   round.matches[0].submitScore([10, 10]);
   round.matches[1].submitScore([11, 9]);
   expect(tournament.hasAllScoresSubmitted).toBe(true);
-  
+
   // Verify draw is still counted as a submitted score
   expect(round.matches[0].score).toEqual([10, 10]);
 });
@@ -932,10 +1198,10 @@ test("should return hasAllScoresSubmitted - mixed score states", ({ players }) =
 // Tests for export functionality
 test("should export empty tournament as JSON", () => {
   const tournament = tournamentFactory.create();
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   expect(data.version).toBe(1);
   expect(data.metadata.roundCount).toBe(0);
   expect(data.metadata.playerCount).toBe(0);
@@ -948,12 +1214,12 @@ test("should export empty tournament as JSON", () => {
 
 test("should export tournament with rounds as JSON", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   expect(data.version).toBe(1);
-  
+
   expect(data.metadata.roundCount).toBe(1);
   expect(data.metadata.playerCount).toBe(4);
   expect(data.rounds).toHaveLength(1);
@@ -965,19 +1231,19 @@ test("should export tournament with rounds as JSON", ({ players, scores }) => {
 
 test("should export tournament with groups as JSON", () => {
   const tournament = tournamentFactory.create();
-  tournament.registerPlayers(["Alice", "Bob"], 0);
-  tournament.registerPlayers(["Charlie", "Dave"], 1);
-  
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Charlie", "Dave"], 1);
+
   const round = tournament.createRound(Americano, 1);
   round.matches[0].submitScore([11, 5]);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   expect(data.metadata.groups).toEqual(["A", "B"]);
   expect(data.standings.byGroup).toHaveProperty("A");
   expect(data.standings.byGroup).toHaveProperty("B");
-  
+
   // Verify group labels are letters
   data.standings.overall.forEach((player: any) => {
     expect(player.group).toMatch(/^[A-Z]$/);
@@ -988,10 +1254,10 @@ test("should export player names without UUIDs in JSON", ({ players }) => {
   const tournament = runTournament(players.slice(0, 4));
   const round = tournament.createRound(Americano, 1);
   round.matches[0].submitScore([11, 5]);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   // Verify rounds use player names
   data.rounds[0].matches.forEach((match: any) => {
     expect(match.teamA.player1).toBe(match.teamA.player1.toString());
@@ -1001,7 +1267,7 @@ test("should export player names without UUIDs in JSON", ({ players }) => {
     // Verify they're actual player names, not UUIDs
     expect(match.teamA.player1).not.toMatch(/^[0-9a-f-]{36}$/i);
   });
-  
+
   // Verify standings use player names
   data.standings.overall.forEach((player: any) => {
     expect(player.name).toBe(player.name.toString());
@@ -1011,11 +1277,11 @@ test("should export player names without UUIDs in JSON", ({ players }) => {
 
 test("should export specific round index as JSON", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0], scores[1], scores[2]]);
-  
+
   // Export only up to round 2 (index 1)
   const json = tournament.exportJSON(1);
   const data = JSON.parse(json);
-  
+
   expect(data.metadata.roundCount).toBe(2);
   expect(data.rounds).toHaveLength(2);
   expect(data.rounds[0].roundNumber).toBe(1);
@@ -1024,10 +1290,10 @@ test("should export specific round index as JSON", ({ players, scores }) => {
 
 test("should include reliability in JSON export", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 8), [scores[0], scores[1]]);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   data.standings.overall.forEach((player: any) => {
     expect(player.reliability).toBeDefined();
     expect(player.reliability).toBeGreaterThanOrEqual(0);
@@ -1041,9 +1307,9 @@ test("should include reliability in JSON export", ({ players, scores }) => {
 
 test("should export empty tournament as text", () => {
   const tournament = tournamentFactory.create();
-  
+
   const text = tournament.exportText();
-  
+
   expect(text).toContain("TOURNAMENT EXPORT");
   expect(text).toContain("Rounds Completed: 0");
   expect(text).toContain("Players: 0");
@@ -1053,9 +1319,9 @@ test("should export empty tournament as text", () => {
 
 test("should export tournament with rounds as text", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const text = tournament.exportText();
-  
+
   expect(text).toContain("TOURNAMENT EXPORT");
   expect(text).toContain("Rounds Completed: 1");
   expect(text).toContain("Players: 4");
@@ -1068,9 +1334,9 @@ test("should export tournament with rounds as text", ({ players, scores }) => {
 
 test("should export matches with scores in text format", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const text = tournament.exportText();
-  
+
   // Should show scores in "X:Y" format
   expect(text).toMatch(/\d+:\d+/);
   // Should show team names with "&" (now with dynamic padding/spaces)
@@ -1079,9 +1345,9 @@ test("should export matches with scores in text format", ({ players, scores }) =
 
 test("should export paused players in text format", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 5), [scores[0]]);
-  
+
   const text = tournament.exportText();
-  
+
   // With 5 players and Americano, one player should be paused
   expect(text).toContain("Paused:");
   expect(text).toMatch(/Paused: \w+/);
@@ -1089,14 +1355,14 @@ test("should export paused players in text format", ({ players, scores }) => {
 
 test("should export group standings with letter labels in text", () => {
   const tournament = tournamentFactory.create();
-  tournament.registerPlayers(["Alice", "Bob"], 0);
-  tournament.registerPlayers(["Charlie", "Dave"], 1);
-  
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Charlie", "Dave"], 1);
+
   const round = tournament.createRound(Americano, 1);
   round.matches[0].submitScore([11, 5]);
-  
+
   const text = tournament.exportText();
-  
+
   expect(text).toContain("GROUP A STANDINGS");
   expect(text).toContain("GROUP B STANDINGS");
   expect(text).not.toContain("GROUP 0");
@@ -1105,9 +1371,9 @@ test("should export group standings with letter labels in text", () => {
 
 test("should export full player names in text format", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const text = tournament.exportText();
-  
+
   // Player names should not be truncated (unlike the old format function)
   players.slice(0, 4).forEach((player) => {
     expect(text).toContain(player.name);
@@ -1116,9 +1382,9 @@ test("should export full player names in text format", ({ players, scores }) => 
 
 test("should export standings with win ratio and plus/minus in text", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const text = tournament.exportText();
-  
+
   // Should show percentages
   expect(text).toMatch(/\d+%/);
   // Should show plus/minus (e.g., "+5" or "-3")
@@ -1129,9 +1395,9 @@ test("should export standings with win ratio and plus/minus in text", ({ players
 
 test("should export reliability percentage in text", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 8), [scores[0], scores[1]]);
-  
+
   const text = tournament.exportText();
-  
+
   // Reliability should be shown as percentage at the end of each line
   // Most players should have 100% reliability (participated in all rounds)
   expect(text).toContain("100%");
@@ -1139,13 +1405,13 @@ test("should export reliability percentage in text", ({ players, scores }) => {
 
 test("should use ISO 8601 date format in exports", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.sssZ
   expect(data.metadata.exportDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-  
+
   const text = tournament.exportText();
   // Text format should also contain ISO 8601 date
   expect(text).toMatch(/Export Date: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
@@ -1153,10 +1419,10 @@ test("should use ISO 8601 date format in exports", ({ players, scores }) => {
 
 test("should export correct standings data structure", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   // Verify overall standings structure
   expect(data.standings.overall.length).toBeGreaterThan(0);
   const player = data.standings.overall[0];
@@ -1177,17 +1443,17 @@ test("should export correct standings data structure", ({ players, scores }) => 
 
 test("should handle roundIndex bounds in export", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0], scores[1]]);
-  
+
   // Export with negative index (should default to 0)
   const json1 = tournament.exportJSON(-1);
   const data1 = JSON.parse(json1);
   expect(data1.metadata.roundCount).toBe(1);
-  
+
   // Export with index beyond rounds (should use last round)
   const json2 = tournament.exportJSON(999);
   const data2 = JSON.parse(json2);
   expect(data2.metadata.roundCount).toBe(2);
-  
+
   // Export without index (should use last round)
   const json3 = tournament.exportJSON();
   const data3 = JSON.parse(json3);
@@ -1196,13 +1462,13 @@ test("should handle roundIndex bounds in export", ({ players, scores }) => {
 
 test("should include players list in JSON export", ({ players }) => {
   const tournament = runTournament(players.slice(0, 4));
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   expect(data.players).toBeDefined();
   expect(data.players).toHaveLength(4);
-  
+
   // Verify each player has name and group
   data.players.forEach((player: any) => {
     expect(player).toHaveProperty("name");
@@ -1210,7 +1476,7 @@ test("should include players list in JSON export", ({ players }) => {
     expect(typeof player.name).toBe("string");
     expect(typeof player.group).toBe("string");
   });
-  
+
   // Verify all player names are present
   const exportedNames = data.players.map((p: any) => p.name);
   players.slice(0, 4).forEach((player) => {
@@ -1220,12 +1486,12 @@ test("should include players list in JSON export", ({ players }) => {
 
 test("should sort players by group then name in JSON export", () => {
   const tournament = tournamentFactory.create();
-  tournament.registerPlayers(["Charlie", "Alice"], 0);
-  tournament.registerPlayers(["Dave", "Bob"], 1);
-  
+  tournament.addPlayers(["Charlie", "Alice"], 0);
+  tournament.addPlayers(["Dave", "Bob"], 1);
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   // Verify sorting: first by group (A, B), then by name
   expect(data.players).toHaveLength(4);
   expect(data.players[0].name).toBe("Alice");
@@ -1240,13 +1506,13 @@ test("should sort players by group then name in JSON export", () => {
 
 test("should use group letters in players list", () => {
   const tournament = tournamentFactory.create();
-  tournament.registerPlayers(["Alice"], 0);
-  tournament.registerPlayers(["Bob"], 1);
-  tournament.registerPlayers(["Charlie"], 2);
-  
+  tournament.addPlayers(["Alice"], 0);
+  tournament.addPlayers(["Bob"], 1);
+  tournament.addPlayers(["Charlie"], 2);
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   expect(data.players[0].group).toBe("A");
   expect(data.players[1].group).toBe("B");
   expect(data.players[2].group).toBe("C");
@@ -1254,12 +1520,12 @@ test("should use group letters in players list", () => {
 
 test("should include players section in text export", ({ players }) => {
   const tournament = runTournament(players.slice(0, 4));
-  
+
   const text = tournament.exportText();
-  
+
   expect(text).toContain("PLAYERS");
   expect(text).toContain("-------");
-  
+
   // All player names should be present
   players.slice(0, 4).forEach((player) => {
     expect(text).toContain(player.name);
@@ -1268,11 +1534,11 @@ test("should include players section in text export", ({ players }) => {
 
 test("should format players by group in text export with multiple groups", () => {
   const tournament = tournamentFactory.create();
-  tournament.registerPlayers(["Alice", "Bob"], 0);
-  tournament.registerPlayers(["Charlie", "Dave"], 1);
-  
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Charlie", "Dave"], 1);
+
   const text = tournament.exportText();
-  
+
   expect(text).toContain("PLAYERS");
   expect(text).toContain("Group A:");
   expect(text).toContain("Group B:");
@@ -1284,13 +1550,13 @@ test("should format players by group in text export with multiple groups", () =>
 
 test("should format players without group labels in text export with single group", ({ players }) => {
   const tournament = runTournament(players.slice(0, 4));
-  
+
   const text = tournament.exportText();
-  
+
   expect(text).toContain("PLAYERS");
   // Should NOT contain "Group A:" when there's only one group
   expect(text).not.toContain("Group A:");
-  
+
   // But all player names should be present
   players.slice(0, 4).forEach((player) => {
     expect(text).toContain(player.name);
@@ -1299,20 +1565,20 @@ test("should format players without group labels in text export with single grou
 
 test("should not include active/inactive status in players list", ({ players }) => {
   const tournament = runTournament(players.slice(0, 4));
-  
+
   // Deactivate a player
   tournament.players()[0].activate(false);
-  
+
   const json = tournament.exportJSON();
   const data = JSON.parse(json);
-  
+
   // Verify players list doesn't have active/inactive fields
   data.players.forEach((player: any) => {
     expect(player).not.toHaveProperty("active");
     expect(player).not.toHaveProperty("inactive");
     expect(player).not.toHaveProperty("isActive");
   });
-  
+
   // But the player should still be in the list
   const exportedNames = data.players.map((p: any) => p.name);
   expect(exportedNames).toContain(players[0].name);

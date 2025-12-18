@@ -97,14 +97,13 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
 
     const accept = () => {
       const score = parseScore();
-      if (score) {
+      if (state.scoreInput.length === 0) {
+        // Empty input means clear the score
+        match.submitScore(undefined);
+      } else if (score) {
+        // Valid score
         match.submitScore(score);
-        onClose();
       }
-    };
-
-    const clear = () => {
-      match.submitScore(undefined);
       onClose();
     };
 
@@ -120,7 +119,8 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
       return state.scoreInput;
     };
 
-    const isValid = parseScore() !== null;
+    // Submit is valid only if there's a valid score OR empty input (to clear)
+    const isValid = parseScore() !== null || state.scoreInput.length === 0;
     const isColonDisabled = state.scoreInput.length === 0 || state.scoreInput.includes(":");
     const isBackspaceDisabled = state.scoreInput.length === 0;
     // Disable numbers if current input position is full (2 digits on either side)
@@ -147,24 +147,18 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
         ]),
 
         m("section.keyboard", [
-          // Row 0: Actions
-          m("button.secondary", { onclick: cancel }, "Cancel"),
-          m(
-            "button.clear",
-            {
-              disabled: !match.score,
-              onclick: clear,
-            },
-            "Clear",
-          ),
-          m(
-            "button.accept",
-            {
-              disabled: !isValid,
-              onclick: accept,
-            },
-            "Submit",
-          ),
+          // Row 0: Actions (Cancel and Submit at 50% each)
+          m("div.action-row", [
+            m("button.secondary", { onclick: cancel }, "Cancel"),
+            m(
+              "button.accept",
+              {
+                disabled: !isValid,
+                onclick: accept,
+              },
+              "Submit",
+            ),
+          ]),
           // Row 1: 1-3
           m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("1"); }, disabled: areNumbersDisabled }, "1"),
           m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("2"); }, disabled: areNumbersDisabled }, "2"),
@@ -183,7 +177,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             disabled: isColonDisabled,
           }, ":"),
           m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("0"); }, disabled: areNumbersDisabled }, "0"),
-          m("button.key-action.secondary", {
+          m("button.key-action.backspace", {
             onpointerdown: (e: PointerEvent) => { e.preventDefault(); backspace(); },
             disabled: isBackspaceDisabled,
           }, "⌫"),
