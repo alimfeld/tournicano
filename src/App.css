@@ -235,6 +235,14 @@ div.debug> :nth-child(2n) {
   justify-self: end;
 }
 
+/* External link indicator */
+
+a[target="_blank"]::after {
+  content: " ↗";
+  font-size: 0.85em;
+  display: inline-block;
+}
+
 main {
   flex: 1;
   /* Allow flex item to shrink */

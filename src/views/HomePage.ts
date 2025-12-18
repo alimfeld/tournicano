@@ -12,7 +12,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "👉 What is it?"),
         m(
           "p",
-          m("a", { href: "https://github.com/alimfeld/tournicano" }, "Tournicano"),
+          m("a", { href: "https://github.com/alimfeld/tournicano", target: "_blank", rel: "noopener noreferrer" }, "Tournicano"),
           " is a (web) app for running ad-hoc ",
           m("i", "-icano"),
           " (e.g., Americano, Mexicano, or similar) doubles tournaments.",
@@ -20,14 +20,14 @@ export const HomePage: m.Component<HomeAttrs> = {
         m("h2", "✨ Features"),
         m(
           "ul",
-          m("li", "🤖 Simple player management"),
-          m("li", "🚀 Easy round management"),
-          m("li", "🏆 Live standings"),
-          m("li", "🤝 Smart player matching"),
+          m("li", "🤖 Simple ", m("a", { href: "#player-management" }, "player management")),
+          m("li", "🚀 Easy ", m("a", { href: "#round-management" }, "round management")),
+          m("li", "🏆 Live ", m("a", { href: "#standings" }, "standings")),
+          m("li", "🤝 Smart player ", m("a", { href: "#matching" }, "matching")),
           m("li", "⚖️ Fair distribution of court time"),
           m("li", "👤 Player avatar display"),
-          m("li", "📲 Installable (add to home screen)"),
-          m("li", "🔄 Automatic updates"),
+          m("li", "📲 ", m("a", { href: "#installation" }, "Installable"), " (add to home screen)"),
+          m("li", "🔄 Automatic ", m("a", { href: "#updates" }, "updates")),
         ),
         m("h2", "⚡ Quick Start"),
         m(
@@ -77,7 +77,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("b", "💡 Tip"),
           ": If you're using a shared device (e.g., iPad) for everyone to view matches and submit results, use the ⏿ Keep Screen On feature (via the ⋮ button on the 🚀 Rounds page).",
         ),
-        m("h2", "🤖 Player Management"),
+        m("h2", { id: "player-management" }, "🤖 Player Management"),
         m("h3", "Adding Players"),
         m(
           "p",
@@ -169,7 +169,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("b", "💡 Tip"),
           ": To manage multiple rosters (e.g., different leagues, events, or club members), export the current player list using ⿻ Share / Export (via the ⋮ button) and save it to a file. To load a roster later, first delete all players using ␡ Delete All Players (via the ⋮ button), then press the ➕ button and paste the saved file content into the dialog.",
         ),
-        m("h2", "🚀 Round Management"),
+        m("h2", { id: "round-management" }, "🚀 Round Management"),
         m("h3", "Creating a Round"),
         m(
           "p",
@@ -218,7 +218,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("li", "⏿ Keep Screen On / Allow Screen to Turn Off – Prevent screen from dimming during play"),
           m("li", "? Show / Hide Debug Info – Display debug information"),
         ),
-        m("h2", "🏆 Standings"),
+        m("h2", { id: "standings" }, "🏆 Standings"),
         m(
           "p",
           "Live standings show the players ranked by win percentage, with plus/minus (point differential) as a tiebreaker.",
@@ -248,7 +248,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("li", "⿻ Share / Export – Create a text summary of players, rounds, and standings"),
           m("li", "↓ Download Tournament Data (JSON) – Save complete tournament data in JSON format"),
         ),
-        m("h2", "🤝 Matching"),
+        m("h2", { id: "matching" }, "🤝 Matching"),
         m(
           "p",
           "In each round, players form teams and teams are paired into matches using a smart algorithm that optimizes player combinations.",
@@ -328,7 +328,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           "p",
           "Each factor can be weighted from 0% (ignored) to 100% (maximum priority). Combine factors to create your ideal tournament format.",
         ),
-        m("h2", "📲 Installation"),
+        m("h2", { id: "installation" }, "📲 Installation"),
         m(
           "p",
           "Tournicano can be installed on your device to work like a native app. Once installed, it will be available from your home screen and can work offline.",
@@ -353,7 +353,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("b", "📝 Note"),
           ": Installation is optional. Tournicano works perfectly fine in your browser without installation.",
         ),
-        m("h2", "🔄 Updates"),
+        m("h2", { id: "updates" }, "🔄 Updates"),
         m(
           "p",
           "When a new version of Tournicano is available, a pop-up will appear giving you the option to update now or later.",
