@@ -1,3 +1,9 @@
 header.home {
   text-align: center;
 }
+
+/* Prevent headings from being hidden behind sticky header when using anchor links */
+main.home h2[id],
+main.home h3[id] {
+  scroll-margin-top: 4rem;
+}
