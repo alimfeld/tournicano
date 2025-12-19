@@ -25,8 +25,13 @@ export interface Player {
 }
 
 export enum TeamUpGroupMode {
-  ADJACENT,
+  PAIRED,
   SAME,
+}
+
+export enum MatchUpGroupMode {
+  SAME,  // Match teams with same group composition
+  CROSS, // Match teams from different groups (cross-group)
 }
 
 export enum TeamUpPerformanceMode {
@@ -47,6 +52,7 @@ interface MatchUpSpec {
   varietyFactor: number;
   performanceFactor: number;
   groupFactor: number;
+  groupMode: MatchUpGroupMode;
 }
 
 export const Americano: MatchingSpec = {
@@ -55,12 +61,13 @@ export const Americano: MatchingSpec = {
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 0,
-    groupMode: TeamUpGroupMode.ADJACENT, // not relevant
+    groupMode: TeamUpGroupMode.PAIRED, // not relevant
   },
   matchUp: {
     varietyFactor: 100,
     performanceFactor: 0,
     groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
   },
 };
 
@@ -70,12 +77,13 @@ export const AmericanoMixed: MatchingSpec = {
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 100,
-    groupMode: TeamUpGroupMode.ADJACENT,
+    groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
-    varietyFactor: 100,
+    varietyFactor: 50,
     performanceFactor: 0,
     groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
   },
 };
 
@@ -85,12 +93,13 @@ export const Mexicano: MatchingSpec = {
     performanceFactor: 100,
     performanceMode: TeamUpPerformanceMode.MEXICANO,
     groupFactor: 0,
-    groupMode: TeamUpGroupMode.ADJACENT, // not relevant
+    groupMode: TeamUpGroupMode.PAIRED, // not relevant
   },
   matchUp: {
     varietyFactor: 0,
     performanceFactor: 100,
     groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
   },
 };
 
@@ -100,12 +109,45 @@ export const Tournicano: MatchingSpec = {
     performanceFactor: 100,
     performanceMode: TeamUpPerformanceMode.MEXICANO,
     groupFactor: 100,
-    groupMode: TeamUpGroupMode.ADJACENT,
+    groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
     varietyFactor: 100,
     performanceFactor: 100,
     groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
+  },
+};
+
+export const GroupBattle: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.SAME,
+  },
+  matchUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.CROSS,
+  },
+};
+
+export const GroupBattleMixed: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.PAIRED,
+  },
+  matchUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.CROSS,
   },
 };
 
@@ -135,7 +177,7 @@ export const matching = (
       {
         factor: spec.teamUp.groupFactor,
         fn: curriedTeamUpGroupWeight(
-          spec.teamUp.groupMode || TeamUpGroupMode.ADJACENT,
+          spec.teamUp.groupMode || TeamUpGroupMode.PAIRED,
         ),
       },
       {
@@ -162,7 +204,9 @@ export const matching = (
     [
       {
         factor: spec.matchUp.groupFactor,
-        fn: matchUpGroupWeight,
+        fn: curriedMatchUpGroupWeight(
+          spec.matchUp.groupMode || MatchUpGroupMode.SAME,
+        ),
       },
       {
         factor: spec.matchUp.varietyFactor,
@@ -403,8 +447,24 @@ const curriedTeamUpGroupWeight = (mode: TeamUpGroupMode) => {
     switch (mode) {
       case TeamUpGroupMode.SAME:
         return -Math.abs(a.entity.group - b.entity.group);
-      case TeamUpGroupMode.ADJACENT:
-        return -Math.abs(Math.abs(a.entity.group - b.entity.group) - 1);
+      case TeamUpGroupMode.PAIRED:
+        // Favor pairs: (0,1) and (2,3) i.e. (A,B) and (C,D)
+        // Penalize wrong pairings like (1,2) i.e. (B,C)
+        const groupDiff = Math.abs(a.entity.group - b.entity.group);
+        const pairBlockA = Math.floor(a.entity.group / 2);
+        const pairBlockB = Math.floor(b.entity.group / 2);
+        const samePairBlock = pairBlockA === pairBlockB;
+        const pairOffset = Math.abs((a.entity.group % 2) - (b.entity.group % 2));
+        if (groupDiff === 1 && pairOffset === 1 && samePairBlock) {
+          // Perfect pair: 0-1 or 2-3 (A&B or C&D) within same pair block
+          return 0;
+        } else if (groupDiff === 0) {
+          // Same group: moderate penalty
+          return -1;
+        } else {
+          // Wrong pairing (e.g., 1-2 / B&C) or distant groups: heavy penalty
+          return -2;
+        }
     }
   };
 };
@@ -459,13 +519,20 @@ const curriedTeamUpPerformanceWeight = (
   };
 };
 
-const matchUpGroupWeight = (a: { entity: Team }, b: { entity: Team }) => {
-  const diff =
-    a.entity[0].group +
-    a.entity[1].group -
-    b.entity[0].group -
-    b.entity[1].group;
-  return -Math.abs(diff);
+const curriedMatchUpGroupWeight = (mode: MatchUpGroupMode) => {
+  return (a: { entity: Team }, b: { entity: Team }) => {
+    const diff =
+      a.entity[0].group +
+      a.entity[1].group -
+      b.entity[0].group -
+      b.entity[1].group;
+    switch (mode) {
+      case MatchUpGroupMode.SAME:
+        return -Math.abs(diff); // minimize difference (current behavior)
+      case MatchUpGroupMode.CROSS:
+        return Math.abs(diff); // maximize difference (cross-group matching)
+    }
+  };
 };
 
 const matchUpVarietyWeight = (

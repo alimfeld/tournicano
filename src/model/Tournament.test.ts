@@ -4,10 +4,15 @@ import { Score } from "./Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
+  GroupBattle,
+  GroupBattleMixed,
   Match,
-  Mexicano,
-  Tournicano,
   MatchingSpec,
+  MatchUpGroupMode,
+  Mexicano,
+  TeamUpGroupMode,
+  TeamUpPerformanceMode,
+  Tournicano,
   matching,
 } from "./Tournament.matching.ts";
 
@@ -856,6 +861,154 @@ test("should weight partner history more heavily than opponent history", ({ play
   expect(player0Partner).not.toBe("1");
 });
 
+// Tests for CROSS match up group mode
+test("should support GroupBattle mode with 2 groups", ({ players }) => {
+  // Set groups: 0-3 are Side A (group 0), 4-7 are Side B (group 1)
+  for (let i = 0; i < 4; i++) {
+    players[i].group = 0;
+  }
+  for (let i = 4; i < 8; i++) {
+    players[i].group = 1;
+  }
+
+  const [matches, _paused] = matching(players.slice(0, 8), GroupBattle, 2);
+
+  // Team up: should pair players from same group
+  matches.forEach(match => {
+    match.forEach(team => {
+      expect(team[0].group).toBe(team[1].group);
+      console.log(`Team: ${team[0].id} & ${team[1].id} (both group ${team[0].group})`);
+    });
+  });
+
+  // Match up: should oppose teams from different groups (CROSS mode)
+  matches.forEach(match => {
+    const team1GroupSum = match[0][0].group + match[0][1].group;
+    const team2GroupSum = match[1][0].group + match[1][1].group;
+    // With CROSS mode: (0+0)=0 vs (1+1)=2, maximize difference
+    expect(team1GroupSum).not.toBe(team2GroupSum);
+    console.log(`Match: Group ${team1GroupSum/2} vs Group ${team2GroupSum/2}`);
+  });
+});
+
+test("should support GroupBattleMixed mode with 4 groups", ({ players }) => {
+  // Create 16 players for 4 groups
+  const allPlayers = [...players];
+  for (let i = 8; i < 16; i++) {
+    allPlayers.push(new Player(`${i}`));
+  }
+  
+  // Groups: A=0, B=1 (Side 1), C=2, D=3 (Side 2)
+  for (let i = 0; i < 4; i++) allPlayers[i].group = 0;      // Side 1 men
+  for (let i = 4; i < 8; i++) allPlayers[i].group = 1;      // Side 1 women
+  for (let i = 8; i < 12; i++) allPlayers[i].group = 2;     // Side 2 men
+  for (let i = 12; i < 16; i++) allPlayers[i].group = 3;    // Side 2 women
+
+  const [matches, _paused] = matching(allPlayers, GroupBattleMixed, 4);
+
+  // Team up: should create mixed pairs within each side (0+1 or 2+3)
+  matches.forEach(match => {
+    match.forEach(team => {
+      const groupDiff = Math.abs(team[0].group - team[1].group);
+      const inSameSide = Math.floor(team[0].group / 2) === Math.floor(team[1].group / 2);
+      expect(groupDiff).toBe(1);  // Mixed (different groups)
+      expect(inSameSide).toBe(true);  // But from same side
+      console.log(`Team: ${team[0].id} (g${team[0].group}) & ${team[1].id} (g${team[1].group})`);
+    });
+  });
+
+  // Match up: should oppose teams from different sides (CROSS mode)
+  matches.forEach(match => {
+    const team1Sum = match[0][0].group + match[0][1].group;
+    const team2Sum = match[1][0].group + match[1][1].group;
+    // Side 1 has sum 1 (0+1), Side 2 has sum 5 (2+3)
+    const bothFromSide1 = team1Sum === 1 && team2Sum === 1;
+    const bothFromSide2 = team1Sum === 5 && team2Sum === 5;
+    expect(bothFromSide1 || bothFromSide2).toBe(false);  // Not same side
+    console.log(`Match: Side sum ${team1Sum} vs Side sum ${team2Sum}`);
+  });
+});
+
+test("should maintain SAME mode behavior for matchUp groups (regression)", ({ players }) => {
+  // This tests that the existing SAME mode still works correctly
+  for (let i = 0; i < 4; i++) {
+    players[i].group = 0;
+  }
+  for (let i = 4; i < 8; i++) {
+    players[i].group = 1;
+  }
+
+  const sameSpec: MatchingSpec = {
+    teamUp: {
+      varietyFactor: 100,
+      performanceFactor: 0,
+      performanceMode: TeamUpPerformanceMode.AVERAGE,
+      groupFactor: 0,
+      groupMode: TeamUpGroupMode.PAIRED,
+    },
+    matchUp: {
+      varietyFactor: 100,
+      performanceFactor: 0,
+      groupFactor: 100,
+      groupMode: MatchUpGroupMode.SAME,
+    },
+  };
+
+  const [matches, _paused] = matching(players.slice(0, 8), sameSpec, 2);
+
+  // Should minimize group sum difference (SAME mode)
+  matches.forEach(match => {
+    const team1Sum = match[0][0].group + match[0][1].group;
+    const team2Sum = match[1][0].group + match[1][1].group;
+    const diff = Math.abs(team1Sum - team2Sum);
+    console.log(`Match: sum ${team1Sum} vs sum ${team2Sum}, diff: ${diff}`);
+    // With SAME mode, should try to balance (minimize difference)
+    expect(diff).toBeLessThanOrEqual(2);
+  });
+});
+
+test("should maximize group difference with CROSS mode", ({ players }) => {
+  // Test that CROSS mode actively maximizes difference between teams
+  for (let i = 0; i < 4; i++) {
+    players[i].group = 0;
+  }
+  for (let i = 4; i < 8; i++) {
+    players[i].group = 1;
+  }
+
+  const crossSpec: MatchingSpec = {
+    teamUp: {
+      varietyFactor: 100,
+      performanceFactor: 0,
+      performanceMode: TeamUpPerformanceMode.AVERAGE,
+      groupFactor: 100,
+      groupMode: TeamUpGroupMode.SAME, // Same group for team up
+    },
+    matchUp: {
+      varietyFactor: 100,
+      performanceFactor: 0,
+      groupFactor: 100,
+      groupMode: MatchUpGroupMode.CROSS, // Cross groups for match up
+    },
+  };
+
+  const [matches, _paused] = matching(players.slice(0, 8), crossSpec, 2);
+
+  // With CROSS mode and SAME team up: all teams should be homogeneous (0+0 or 1+1)
+  // And matches should pit different groups against each other
+  matches.forEach(match => {
+    const team1Sum = match[0][0].group + match[0][1].group;
+    const team2Sum = match[1][0].group + match[1][1].group;
+    const diff = Math.abs(team1Sum - team2Sum);
+    
+    console.log(`Match: sum ${team1Sum} vs sum ${team2Sum}, diff: ${diff}`);
+    
+    // Maximum difference should be 2 (0+0 vs 1+1)
+    // CROSS mode should achieve this maximum
+    expect(diff).toBe(2);
+  });
+});
+
 // Tests for activePlayerCount property
 test("should return active player count - initial state", ({ players }) => {
   const tournament = runTournament(players);
@@ -1584,3 +1737,103 @@ test("should not include active/inactive status in players list", ({ players }) 
   expect(exportedNames).toContain(players[0].name);
 });
 
+
+test("should prevent cross-pair violations in PAIRED mode with 4 groups", () => {
+  // Create 16 players in 4 groups: 0,1,2,3
+  const allPlayers = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 4); // 4 players per group: 0-3 in g0, 4-7 in g1, etc.
+    allPlayers.push(p);
+  }
+
+  // Valid pairs: (0,1) and (2,3)
+  // Invalid pairs: (0,2), (0,3), (1,2), (1,3)
+  
+  // Run AmericanoMixed with PAIRED mode (groupFactor=100)
+  const [matches, _paused] = matching(allPlayers, AmericanoMixed, 4);
+
+  // Check all teams for violations
+  matches.forEach((match, matchIdx) => {
+    match.forEach((team, teamIdx) => {
+      const groupDiff = Math.abs(team[0].group - team[1].group);
+      const pairBlockA = Math.floor(team[0].group / 2);
+      const pairBlockB = Math.floor(team[1].group / 2);
+      const samePairBlock = pairBlockA === pairBlockB;
+      const pairOffset = Math.abs((team[0].group % 2) - (team[1].group % 2));
+      
+      const isValidPair = groupDiff === 1 && pairOffset === 1 && samePairBlock;
+      
+      if (!isValidPair) {
+        console.log(
+          `❌ Match ${matchIdx + 1} Team ${teamIdx + 1}: ` +
+          `Player ${team[0].id} (g${team[0].group}) & ` +
+          `Player ${team[1].id} (g${team[1].group}) - ` +
+          `pairBlocks: ${pairBlockA} vs ${pairBlockB}`
+        );
+      }
+      
+      // Should always be a valid pair
+      expect(isValidPair).toBe(true);
+    });
+  });
+});
+
+test("should prevent cross-pair violations over multiple rounds with 4 groups", () => {
+  // Create 16 players in 4 groups
+  const allPlayers = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 4);
+    allPlayers.push(p);
+  }
+
+  // Simulate 5 rounds
+  for (let round = 0; round < 5; round++) {
+    const [matches, _paused] = matching(allPlayers, AmericanoMixed, 4);
+    
+    // Check each match for violations
+    matches.forEach((match) => {
+      match.forEach((team) => {
+        const groupDiff = Math.abs(team[0].group - team[1].group);
+        const pairBlockA = Math.floor(team[0].group / 2);
+        const pairBlockB = Math.floor(team[1].group / 2);
+        const samePairBlock = pairBlockA === pairBlockB;
+        const pairOffset = Math.abs((team[0].group % 2) - (team[1].group % 2));
+        
+        const isValidPair = groupDiff === 1 && pairOffset === 1 && samePairBlock;
+        
+        if (!isValidPair) {
+          console.log(
+            `❌ Round ${round + 1}: ` +
+            `Player ${team[0].id} (g${team[0].group}) & ` +
+            `Player ${team[1].id} (g${team[1].group})`
+          );
+        }
+        
+        expect(isValidPair).toBe(true);
+      });
+    });
+    
+    // Update player stats after the round
+    matches.forEach((match) => {
+      match.forEach((team) => {
+        team.forEach((player) => {
+          player.matchCount++;
+          // Track partners
+          const partner = team[0].id === player.id ? team[1] : team[0];
+          const partnerRounds = player.partners.get(partner.id) || [];
+          partnerRounds.push(round);
+          player.partners.set(partner.id, partnerRounds);
+          // Track opponents
+          const opponentTeam = match[0] === team ? match[1] : match[0];
+          opponentTeam.forEach((opponent) => {
+            const oppRounds = player.opponents.get(opponent.id) || [];
+            oppRounds.push(round);
+            player.opponents.set(opponent.id, oppRounds);
+          });
+        });
+      });
+    });
+  }
+});

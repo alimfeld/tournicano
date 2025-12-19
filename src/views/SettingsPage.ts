@@ -5,6 +5,8 @@ import { Tournament } from "../model/Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
+  GroupBattle,
+  GroupBattleMixed,
   Mexicano,
   Tournicano,
 } from "../model/Tournament.matching.ts";
@@ -29,6 +31,10 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Mexicano);
     const isTournicano =
       JSON.stringify(settings.matchingSpec) === JSON.stringify(Tournicano);
+    const isGroupBattle =
+      JSON.stringify(settings.matchingSpec) === JSON.stringify(GroupBattle);
+    const isGroupBattleMixed =
+      JSON.stringify(settings.matchingSpec) === JSON.stringify(GroupBattleMixed);
 
     const handleMatchingSpecChange = (matchingSpec: typeof Americano) => {
       settings.setMatchingSpec(matchingSpec);
@@ -113,12 +119,36 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             m("input", {
               type: "radio",
               name: "matching-spec",
+              id: "group-battle",
+              checked: isGroupBattle,
+              onchange: () => handleMatchingSpecChange(GroupBattle),
+            }),
+            "Group Battle",
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "group-battle-mixed",
+              checked: isGroupBattleMixed,
+              onchange: () => handleMatchingSpecChange(GroupBattleMixed),
+            }),
+            "Group Battle Mixed",
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
               id: "custom",
               checked:
                 !isAmericano &&
                 !isAmericanoMixed &&
                 !isMexicano &&
-                !isTournicano,
+                !isTournicano &&
+                !isGroupBattle &&
+                !isGroupBattleMixed,
               disabled: true,
             }),
             "Custom",

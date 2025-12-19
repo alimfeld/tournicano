@@ -21,7 +21,14 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
-    const groups = tournament.groups;
+    // Get groups that have registered players
+    const allGroups = tournament.groups;
+    const populatedGroups = [...new Set(
+      tournament.players()
+        .filter(p => p.registered)
+        .map(p => p.group)
+    )].sort((a, b) => a - b);
+    const groups = populatedGroups.length > 0 ? populatedGroups : allGroups;
     const showGroupSwitcher = groups.length > 1 && groups.length <= 4;
     const standingsGroup =
       showGroupSwitcher && (group === undefined || groups.indexOf(group) >= 0)

@@ -1,6 +1,7 @@
 import m from "mithril";
 import {
   MatchingSpec,
+  MatchUpGroupMode,
   TeamUpGroupMode,
   TeamUpPerformanceMode,
 } from "../model/Tournament.matching";
@@ -22,6 +23,7 @@ const state = {
   matchUpVarietyFactor: 0,
   matchUpPerformanceFactor: 0,
   matchUpGroupFactor: 0,
+  matchUpGroupMode: 0,
 };
 
 // Helper to close dropdown after selection
@@ -51,6 +53,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
             state.matchUpVarietyFactor = matchingSpec.matchUp.varietyFactor;
             state.matchUpPerformanceFactor = matchingSpec.matchUp.performanceFactor;
             state.matchUpGroupFactor = matchingSpec.matchUp.groupFactor;
+            state.matchUpGroupMode = matchingSpec.matchUp.groupMode;
             (document.getElementById(ID) as HTMLDialogElement).showModal();
           },
         },
@@ -175,8 +178,8 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                   "How: ",
                   state.teamUpGroupFactor === 0
                     ? "N/A"
-                    : state.teamUpGroupMode === TeamUpGroupMode.ADJACENT
-                      ? "Mix adjacent groups"
+                    : state.teamUpGroupMode === TeamUpGroupMode.PAIRED
+                      ? "Pair groups (A&B, C&D)"
                       : "Same group only",
                 ),
                 m(
@@ -187,11 +190,11 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                       "a",
                       {
                         onclick: (e: Event) => {
-                          state.teamUpGroupMode = TeamUpGroupMode.ADJACENT;
+                          state.teamUpGroupMode = TeamUpGroupMode.PAIRED;
                           closeDropdown(e);
                         },
                       },
-                      "Mix adjacent groups",
+                      "Pair groups (A&B, C&D)",
                     ),
                   ),
                   m(
@@ -240,7 +243,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
               ),
               m(
                 "label",
-                "Similar group mix:",
+                "Consider group mix:",
                 m("input", {
                   type: "range",
                   name: "match-up-group-factor",
@@ -250,6 +253,51 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                     state.matchUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
                   },
                 }),
+              ),
+              m(
+                "details.dropdown",
+                {
+                  disabled: state.matchUpGroupFactor === 0,
+                  style: state.matchUpGroupFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
+                },
+                m(
+                  "summary",
+                  "How: ",
+                  state.matchUpGroupFactor === 0
+                    ? "N/A"
+                    : state.matchUpGroupMode === MatchUpGroupMode.CROSS
+                      ? "Cross groups"
+                      : "Same group mix",
+                ),
+                m(
+                  "ul",
+                  m(
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.matchUpGroupMode = MatchUpGroupMode.SAME;
+                          closeDropdown(e);
+                        },
+                      },
+                      "Same group mix",
+                    ),
+                  ),
+                  m(
+                    "li",
+                    m(
+                      "a",
+                      {
+                        onclick: (e: Event) => {
+                          state.matchUpGroupMode = MatchUpGroupMode.CROSS;
+                          closeDropdown(e);
+                        },
+                      },
+                      "Cross groups",
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -281,6 +329,7 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
                       varietyFactor: state.matchUpVarietyFactor,
                       performanceFactor: state.matchUpPerformanceFactor,
                       groupFactor: state.matchUpGroupFactor,
+                      groupMode: state.matchUpGroupMode,
                     },
                   } as MatchingSpec;
 

@@ -261,31 +261,47 @@ export const HomePage: m.Component<HomeAttrs> = {
           m(
             "li",
             m("b", "Groups"),
-            " – Accommodating formats like mixed doubles by considering player group assignments",
+            " – Accommodating formats like mixed doubles and inter-group competitions by considering player group assignments",
           ),
         ),
+        m("p", m("b", "⚠️ Important: "), "All matching factors are soft constraints, not absolute rules. The algorithm finds the best possible matches given available players. Unbalanced group sizes may cause repeated partners/opponents or intra-group pairings—keep groups equal for best results."),
         m("h3", "Tournament Modes"),
         m(
           "p",
-          "Choose from predefined modes or create your own custom matching strategy:",
+          "Choose from predefined modes or create your own custom matching strategy. Each mode has different requirements for optimal performance:",
         ),
-        m(
-          "ul",
-          m("li", m("b", "Americano"), " – Focuses entirely on variety. Every round, players get new partners and face new opponents, ensuring maximum rotation and social interaction."),
-          m("li", m("b", "Americano Mixed"), " – Designed for mixed doubles. Pairs players from adjacent groups (e.g., Group A + Group B) while maximizing opponent variety. Ideal when you have two distinct player pools (like men and women)."),
-          m("li", m("b", "Mexicano"), " – Emphasizes competitive balance. Forms teams based on player rankings (1st with 3rd, 2nd with 4th) and creates matches between similarly skilled teams. Best for competitive tournaments where scores matter."),
-          m("li", m("b", "Tournicano"), " – Combines all factors equally. Balances variety, performance, and group considerations for a well-rounded tournament experience."),
-        ),
+        
+        m("h4", "🎯 Americano"),
+        m("p", "Focuses entirely on variety. Every round, players get new partners and face new opponents, ensuring maximum rotation and social interaction."),
+        m("p", m("b", "Groups: "), "None required • ", m("b", "Players: "), "4+ minimum, 8+ recommended for better rotation • ", m("b", "Best for: "), "Casual play, social mixing"),
+        
+        m("h4", "🎯 Americano Mixed"),
+        m("p", "Designed for mixed doubles. Pairs players from adjacent groups (A&B or C&D) while maximizing opponent variety. Ideal when you have distinct player pools (like men and women)."),
+        m("p", m("b", "Groups: "), m("span.text-danger", "Requires exactly 2 groups"), " (A, B) • ", m("b", "Players: "), "2+ per group minimum (4+ total), 8+ per group recommended for better variety • ", m("b", "Best for: "), "Mixed doubles (e.g., 8 men + 8 women)"),
+        
+        m("h4", "🎯 Mexicano"),
+        m("p", "Emphasizes competitive balance. Forms teams based on player rankings (1st with 3rd, 2nd with 4th) and creates matches between similarly skilled teams. Best for competitive tournaments where scores matter."),
+        m("p", m("b", "Groups: "), "None required • ", m("b", "Players: "), "4+ minimum, 8+ recommended for proper Mexicano pairing (1+3, 2+4), optimal with multiples of 4 • ", m("b", "Best for: "), "Competitive tournaments with score tracking"),
+        m("p", m("b", "📝 Note: "), "Requires score entry to function properly. Pairing quality improves as the tournament progresses and more performance data is available."),
+        
+        m("h4", "🎯 Tournicano"),
+        m("p", "Combines all factors equally. Balances variety, performance, and group considerations for a well-rounded tournament experience."),
+        m("p", m("b", "Groups: "), "Supports 1 or 2 groups (1=all together, 2=mixed A&B) • ", m("b", "Players: "), "4+ minimum, 8+ recommended for better balance • ", m("b", "Best for: "), "Mixed tournaments with score tracking and balanced competition"),
+        
+        m("h4", "🎯 Group Battle"),
+        m("p", "Designed for competitions between two groups. Players pair with others from their own group, then matches pit groups against each other. Perfect for inter-group competitions."),
+        m("p", m("b", "Groups: "), m("span.text-danger", "Requires exactly 2 groups"), " (Side A, Side B) • ", m("b", "Players: "), "8+ (4+ per side), best with equal group sizes • ", m("b", "Best for: "), "Inter-group competitions (e.g., 8v8 or 10v10)"),
+        
+        m("h4", "🎯 Group Battle Mixed"),
+        m("p", "Group Battle for mixed doubles. Each side has two groups (e.g., men and women) that pair together, then sides compete against each other."),
+        m("p", m("b", "Groups: "), m("span.text-danger", "Requires exactly 4 groups"), " (A&B = Side 1, C&D = Side 2) • ", m("b", "Players: "), "1+ per group minimum (4+ total), 4+ per group recommended (16+ total) • ", m("b", "Best for: "), "Inter-group mixed doubles (e.g., 4+4 vs 4+4)"),
+        
         m(
           "p",
           m("b", "💡 Tip"),
-          ": You can change the tournament mode in ⚙️ Settings at any time during the tournament. The new mode will be used when creating the next round.",
+          ": You can change the tournament mode in ⚙️ Settings at any time during the tournament. The new mode will be used when creating the next round. Check group requirements above before switching modes.",
         ),
-        m(
-          "p",
-          m("b", "📝 Note"),
-          ": For performance-based matching to be effective, scores must be entered. For group-based matching to be effective, multiple player groups must be created.",
-        ),
+        
         m("h3", "Customization"),
         m(
           "p",
@@ -309,7 +325,7 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("li", m("b", "Consider player groups"), " – Uses group assignments (A, B, C, D) with two options:"),
           m(
             "ul",
-            m("li", "Mix adjacent groups – Creates teams from neighboring groups (e.g., A+B or B+C)"),
+            m("li", "Pair groups (A&B, C&D) – Creates teams from paired groups only (e.g., A+B or C+D, but not B+C)"),
             m("li", "Same group only – Only pairs players within the same group"),
           ),
         ),
@@ -318,12 +334,17 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("b", "Match Pairing"),
           " controls how teams are matched against each other:",
         ),
-        m(
-          "ul",
-          m("li", m("b", "Rotate opponents"), " – Ensures teams face different opponents each round"),
-          m("li", m("b", "Match similar skill"), " – Pairs teams with comparable combined skill levels"),
-          m("li", m("b", "Similar group mix"), " – Matches teams with similar group compositions"),
-        ),
+          m(
+            "ul",
+            m("li", m("b", "Rotate opponents"), " – Ensures teams face different opponents each round"),
+            m("li", m("b", "Match similar skill"), " – Pairs teams with comparable combined skill levels"),
+            m("li", m("b", "Consider group mix"), " – Uses group compositions with two options:"),
+            m(
+              "ul",
+              m("li", "Same group mix – Matches teams with similar group compositions (e.g., both A+B or both having mixed groups)"),
+              m("li", "Cross groups – Matches teams from different groups (e.g., A+A faces B+B, or A+B faces C+D). Ideal for inter-group competitions."),
+            ),
+          ),
         m(
           "p",
           "Each factor can be weighted from 0% (ignored) to 100% (maximum priority). Combine factors to create your ideal tournament format.",
