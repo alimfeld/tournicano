@@ -5,6 +5,7 @@ import {
   TeamUpGroupMode,
   TeamUpPerformanceMode,
 } from "../model/Tournament.matching";
+import "./MatchingSpecDialog.css";
 
 export interface MatchingSpecAttr {
   action: string;
@@ -26,13 +27,7 @@ const state = {
   matchUpGroupMode: 0,
 };
 
-// Helper to close dropdown after selection
-function closeDropdown(e: Event) {
-  const details = (e.target as HTMLElement).closest("details");
-  if (details) {
-    details.removeAttribute("open");
-  }
-}
+
 
 export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
   view: ({ attrs: { action, disabled, matchingSpec, onconfirm } }) => {
@@ -67,237 +62,157 @@ export const MatchingSpecDialog: m.Component<MatchingSpecAttr> = {
           m(
             "form#matching-spec",
             m("fieldset",
-              m("h3", "Team up factors"),
+              m("h6.matching-spec-heading", "Team up factors"),
+              m(
+                "label.slider-label",
+                { for: "team-up-variety-factor" },
+                m("small", "Rotate partners:"),
+                m("small.slider-label-text", state.teamUpVarietyFactor + "%"),
+              ),
+              m("input.slider-input", {
+                type: "range",
+                id: "team-up-variety-factor",
+                name: "team-up-variety-factor",
+                step: 10,
+                value: state.teamUpVarietyFactor,
+                oninput: (e: Event) => {
+                  state.teamUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
+              m(
+                "label.slider-label",
+                { for: "team-up-performance-factor" },
+                m("small", "Match by skill:"),
+                m("small.slider-label-text", state.teamUpPerformanceFactor + "%"),
+              ),
+              m("input.slider-input-tight", {
+                type: "range",
+                id: "team-up-performance-factor",
+                name: "team-up-performance-factor",
+                step: 10,
+                value: state.teamUpPerformanceFactor,
+                oninput: (e: Event) => {
+                  state.teamUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
               m(
                 "label",
-                "Rotate partners:",
-                m("input", {
-                  type: "range",
-                  name: "team-up-variety-factor",
-                  step: 25,
-                  value: state.teamUpVarietyFactor,
-                  oninput: (e: Event) => {
-                    state.teamUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
-                  },
-                }),
-              ),
-              m(
-                "label",
-                "Match by skill level:",
-                m("input", {
-                  type: "range",
-                  name: "team-up-performance-factor",
-                  step: 25,
-                  value: state.teamUpPerformanceFactor,
-                  oninput: (e: Event) => {
-                    state.teamUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
-                  },
-                }),
-              ),
-              m(
-                "details.dropdown",
-                {
+                { for: "team-up-performance-mode" },
+                m("small", "How:"),
+                m("select", {
+                  id: "team-up-performance-mode",
+                  name: "team-up-performance-mode",
                   disabled: state.teamUpPerformanceFactor === 0,
-                  style: state.teamUpPerformanceFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
-                },
-                m(
-                  "summary",
-                  "How: ",
-                  state.teamUpPerformanceFactor === 0
-                    ? "N/A"
-                    : state.teamUpPerformanceMode === TeamUpPerformanceMode.AVERAGE
-                      ? "Balanced teams"
-                      : state.teamUpPerformanceMode === TeamUpPerformanceMode.EQUAL
-                        ? "Equal skill"
-                        : "Mexicano (1+3, 2+4)",
-                ),
-                m(
-                  "ul",
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.teamUpPerformanceMode = TeamUpPerformanceMode.AVERAGE;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Balanced teams",
-                    ),
-                  ),
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.teamUpPerformanceMode = TeamUpPerformanceMode.EQUAL;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Equal skill",
-                    ),
-                  ),
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.teamUpPerformanceMode = TeamUpPerformanceMode.MEXICANO;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Mexicano (1+3, 2+4)",
-                    ),
-                  ),
-                ),
+                  value: state.teamUpPerformanceMode,
+                  onchange: (e: Event) => {
+                    state.teamUpPerformanceMode = parseInt((e.target as HTMLSelectElement).value);
+                  },
+                }, [
+                  m("option", { value: TeamUpPerformanceMode.AVERAGE }, "Balanced teams"),
+                  m("option", { value: TeamUpPerformanceMode.EQUAL }, "Equal skill"),
+                  m("option", { value: TeamUpPerformanceMode.MEXICANO }, "Mexicano (1+3, 2+4)"),
+                ]),
               ),
+              m(
+                "label.slider-label",
+                { for: "team-up-group-factor" },
+                m("small", "Group factor:"),
+                m("small.slider-label-text", state.teamUpGroupFactor + "%"),
+              ),
+              m("input.slider-input-tight", {
+                type: "range",
+                id: "team-up-group-factor",
+                name: "team-up-group-factor",
+                step: 10,
+                value: state.teamUpGroupFactor,
+                oninput: (e: Event) => {
+                  state.teamUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
               m(
                 "label",
-                "Consider player groups:",
-                m("input", {
-                  type: "range",
-                  name: "team-up-group-factor",
-                  step: 25,
-                  value: state.teamUpGroupFactor,
-                  oninput: (e: Event) => {
-                    state.teamUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
-                  },
-                }),
-              ),
-              m(
-                "details.dropdown",
-                {
+                { for: "team-up-group-mode" },
+                m("small", "How:"),
+                m("select", {
+                  id: "team-up-group-mode",
+                  name: "team-up-group-mode",
                   disabled: state.teamUpGroupFactor === 0,
-                  style: state.teamUpGroupFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
-                },
-                m(
-                  "summary",
-                  "How: ",
-                  state.teamUpGroupFactor === 0
-                    ? "N/A"
-                    : state.teamUpGroupMode === TeamUpGroupMode.PAIRED
-                      ? "Pair groups (A&B, C&D)"
-                      : "Same group only",
-                ),
-                m(
-                  "ul",
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.teamUpGroupMode = TeamUpGroupMode.PAIRED;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Pair groups (A&B, C&D)",
-                    ),
-                  ),
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.teamUpGroupMode = TeamUpGroupMode.SAME;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Same group only",
-                    ),
-                  ),
-                ),
+                  value: state.teamUpGroupMode,
+                  onchange: (e: Event) => {
+                    state.teamUpGroupMode = parseInt((e.target as HTMLSelectElement).value);
+                  },
+                }, [
+                  m("option", { value: TeamUpGroupMode.PAIRED }, "Pair groups (A&B, C&D)"),
+                  m("option", { value: TeamUpGroupMode.SAME }, "Same group only"),
+                ]),
               ),
             ),
             m("fieldset",
-              m("h3", "Match up factors"),
+              m("h6.matching-spec-heading", "Match up factors"),
               m(
-                "label",
-                "Rotate opponents:",
-                m("input", {
-                  type: "range",
-                  name: "match-up-variety-factor",
-                  step: 25,
-                  value: state.matchUpVarietyFactor,
-                  oninput: (e: Event) => {
-                    state.matchUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
-                  },
-                }),
+                "label.slider-label",
+                { for: "match-up-variety-factor" },
+                m("small", "Rotate opponents:"),
+                m("small.slider-label-text", state.matchUpVarietyFactor + "%"),
               ),
-              m(
-                "label",
-                "Match similar skill:",
-                m("input", {
-                  type: "range",
-                  name: "match-up-performance-factor",
-                  step: 25,
-                  value: state.matchUpPerformanceFactor,
-                  oninput: (e: Event) => {
-                    state.matchUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
-                  },
-                }),
-              ),
-              m(
-                "label",
-                "Consider group mix:",
-                m("input", {
-                  type: "range",
-                  name: "match-up-group-factor",
-                  step: 25,
-                  value: state.matchUpGroupFactor,
-                  oninput: (e: Event) => {
-                    state.matchUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
-                  },
-                }),
-              ),
-              m(
-                "details.dropdown",
-                {
-                  disabled: state.matchUpGroupFactor === 0,
-                  style: state.matchUpGroupFactor === 0 ? "opacity: 0.5; pointer-events: none;" : "",
+              m("input.slider-input", {
+                type: "range",
+                id: "match-up-variety-factor",
+                name: "match-up-variety-factor",
+                step: 10,
+                value: state.matchUpVarietyFactor,
+                oninput: (e: Event) => {
+                  state.matchUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
                 },
-                m(
-                  "summary",
-                  "How: ",
-                  state.matchUpGroupFactor === 0
-                    ? "N/A"
-                    : state.matchUpGroupMode === MatchUpGroupMode.CROSS
-                      ? "Cross groups"
-                      : "Same group mix",
-                ),
-                m(
-                  "ul",
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.matchUpGroupMode = MatchUpGroupMode.SAME;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Same group mix",
-                    ),
-                  ),
-                  m(
-                    "li",
-                    m(
-                      "a",
-                      {
-                        onclick: (e: Event) => {
-                          state.matchUpGroupMode = MatchUpGroupMode.CROSS;
-                          closeDropdown(e);
-                        },
-                      },
-                      "Cross groups",
-                    ),
-                  ),
-                ),
+              }),
+              m(
+                "label.slider-label",
+                { for: "match-up-performance-factor" },
+                m("small", "Match similar skill:"),
+                m("small.slider-label-text", state.matchUpPerformanceFactor + "%"),
+              ),
+              m("input.slider-input", {
+                type: "range",
+                id: "match-up-performance-factor",
+                name: "match-up-performance-factor",
+                step: 10,
+                value: state.matchUpPerformanceFactor,
+                oninput: (e: Event) => {
+                  state.matchUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
+              m(
+                "label.slider-label",
+                { for: "match-up-group-factor" },
+                m("small", "Group factor:"),
+                m("small.slider-label-text", state.matchUpGroupFactor + "%"),
+              ),
+              m("input.slider-input-tight", {
+                type: "range",
+                id: "match-up-group-factor",
+                name: "match-up-group-factor",
+                step: 10,
+                value: state.matchUpGroupFactor,
+                oninput: (e: Event) => {
+                  state.matchUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
+              m(
+                "label",
+                { for: "match-up-group-mode" },
+                m("small", "How:"),
+                m("select", {
+                  id: "match-up-group-mode",
+                  name: "match-up-group-mode",
+                  disabled: state.matchUpGroupFactor === 0,
+                  value: state.matchUpGroupMode,
+                  onchange: (e: Event) => {
+                    state.matchUpGroupMode = parseInt((e.target as HTMLSelectElement).value);
+                  },
+                }, [
+                  m("option", { value: MatchUpGroupMode.SAME }, "Same group mix"),
+                  m("option", { value: MatchUpGroupMode.CROSS }, "Cross groups"),
+                ]),
               ),
             ),
           ),

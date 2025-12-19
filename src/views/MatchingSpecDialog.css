@@ -1,0 +1,45 @@
+/* Compact headings */
+.matching-spec-heading {
+  margin-bottom: 0.5rem;
+}
+
+/* Slider label layout - inline value display */
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.slider-label-text {
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+/* Slider spacing */
+.slider-input {
+  margin-bottom: 0.75rem;
+}
+
+.slider-input-tight {
+  margin-bottom: 0.25rem;
+}
+
+/* Select dropdown for mode options */
+fieldset label[for*="-mode"] {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+fieldset label[for*="-mode"] small {
+  flex-shrink: 0;
+}
+
+fieldset label[for*="-mode"] select {
+  flex: 1;
+  padding: 0.25rem 2rem 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 0;
+}

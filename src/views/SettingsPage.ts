@@ -202,9 +202,12 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           "fieldset",
           m(
             "label",
+            { for: "version" },
             "Version:",
             m("input", {
               type: "text",
+              id: "version",
+              name: "version",
               value: BUILD_VERSION,
               readonly: true,
               disabled: true,
