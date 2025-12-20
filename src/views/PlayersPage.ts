@@ -102,8 +102,27 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
         [0, 0, 0],
       );
     const tournamentStarted = tournament.rounds.length > 0;
+    
+    // Build collapsed player count display
+    let playerCount = "";
+    if (total > 0) {
+      if (active === registered && registered === total) {
+        // All players are registered and active
+        playerCount = `(${total})`;
+      } else if (registered === total) {
+        // All players are registered, but not all are active
+        playerCount = `(${active}/${total})`;
+      } else if (active === registered) {
+        // All registered players are active, but not all players are registered
+        playerCount = `(${registered}/${total})`;
+      } else {
+        // Some registered players are inactive
+        playerCount = `(${active}/${registered}/${total})`;
+      }
+    }
+    
     return [
-      m("header.players.container-fluid", m("h1", "Players")),
+      m("header.players.container-fluid", m("h1", `Players ${playerCount}`)),
       m(
         "main.players.container-fluid.actions",
         // Filter buttons - shown only when there is at least one player
