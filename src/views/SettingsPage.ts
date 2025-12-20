@@ -9,6 +9,7 @@ import {
   GroupBattleMixed,
   Mexicano,
   Tournicano,
+  isMatchingSpecMode,
 } from "../model/Tournament.matching.ts";
 import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
 import { BUILD_VERSION } from "../version.ts";
@@ -23,18 +24,12 @@ export interface SettingsAttrs {
 
 export const SettingsPage: m.Component<SettingsAttrs> = {
   view: ({ attrs: { settings, tournament, showToast, checkForUpdates, checkingForUpdates } }) => {
-    const isAmericano =
-      JSON.stringify(settings.matchingSpec) === JSON.stringify(Americano);
-    const isAmericanoMixed =
-      JSON.stringify(settings.matchingSpec) === JSON.stringify(AmericanoMixed);
-    const isMexicano =
-      JSON.stringify(settings.matchingSpec) === JSON.stringify(Mexicano);
-    const isTournicano =
-      JSON.stringify(settings.matchingSpec) === JSON.stringify(Tournicano);
-    const isGroupBattle =
-      JSON.stringify(settings.matchingSpec) === JSON.stringify(GroupBattle);
-    const isGroupBattleMixed =
-      JSON.stringify(settings.matchingSpec) === JSON.stringify(GroupBattleMixed);
+    const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
+    const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
+    const isMexicano = isMatchingSpecMode(settings.matchingSpec, Mexicano);
+    const isTournicano = isMatchingSpecMode(settings.matchingSpec, Tournicano);
+    const isGroupBattle = isMatchingSpecMode(settings.matchingSpec, GroupBattle);
+    const isGroupBattleMixed = isMatchingSpecMode(settings.matchingSpec, GroupBattleMixed);
 
     const handleMatchingSpecChange = (matchingSpec: typeof Americano) => {
       settings.setMatchingSpec(matchingSpec);

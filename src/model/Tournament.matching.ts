@@ -151,6 +151,36 @@ export const GroupBattleMixed: MatchingSpec = {
   },
 };
 
+// Registry of predefined modes with their names
+const PREDEFINED_MODES = [
+  { name: "Americano", spec: Americano },
+  { name: "Americano Mixed", spec: AmericanoMixed },
+  { name: "Mexicano", spec: Mexicano },
+  { name: "Tournicano", spec: Tournicano },
+  { name: "Group Battle", spec: GroupBattle },
+  { name: "Group Battle Mixed", spec: GroupBattleMixed },
+] as const;
+
+// Deep equality check for MatchingSpec
+function matchingSpecEquals(a: MatchingSpec, b: MatchingSpec): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+// Get mode name from spec configuration
+export function getMatchingSpecName(spec: MatchingSpec): string {
+  for (const mode of PREDEFINED_MODES) {
+    if (matchingSpecEquals(spec, mode.spec)) {
+      return mode.name;
+    }
+  }
+  return "Custom";
+}
+
+// Check if spec matches a specific predefined mode
+export function isMatchingSpecMode(spec: MatchingSpec, mode: MatchingSpec): boolean {
+  return matchingSpecEquals(spec, mode);
+}
+
 export interface MatchingSpec {
   teamUp: TeamUpSpec;
   matchUp: MatchUpSpec;

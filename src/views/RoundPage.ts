@@ -6,6 +6,7 @@ import { Settings } from "../model/Settings.ts";
 import { MatchView } from "./MatchView.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
+import { getMatchingSpecName } from "../model/Tournament.matching.ts";
 
 export interface RoundAttrs {
   settings: Settings;
@@ -102,10 +103,15 @@ export const RoundPage: m.Component<RoundAttrs> = {
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
         onclick: () => {
           const newRoundNumber = roundCount + 1;
+          const isFirstRound = tournament.rounds.length === 0;
           if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0 && showToast) {
             showToast(`Round ${newRoundNumber} created with incomplete scores from previous rounds`, "error");
           }
           tournament.createRound(settings.matchingSpec, matchesPerRound);
+          if (isFirstRound && showToast) {
+            const modeName = getMatchingSpecName(settings.matchingSpec);
+            showToast(`Tournament started in ${modeName} mode`, "success");
+          }
           changeRound(roundCount);
         },
         disabled: matchesPerRound < 1,
