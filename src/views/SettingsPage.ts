@@ -79,7 +79,11 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               checked: isAmericano,
               onchange: () => handleMatchingSpecChange(Americano),
             }),
-            "Americano",
+            "Americano ",
+            m("span.info-icon", {
+              "data-tooltip": "Max variety",
+              onclick: (e: Event) => e.preventDefault(),
+            }, "ⓘ"),
           ),
           m(
             "label",
@@ -90,7 +94,11 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               checked: isAmericanoMixed,
               onchange: () => handleMatchingSpecChange(AmericanoMixed),
             }),
-            "Americano Mixed",
+            "Americano Mixed ",
+            m("span.info-icon", {
+              "data-tooltip": "Teams from groups A/B, C/D",
+              onclick: (e: Event) => e.preventDefault(),
+            }, "ⓘ"),
           ),
           m(
             "label",
@@ -101,7 +109,11 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               checked: isMexicano,
               onchange: () => handleMatchingSpecChange(Mexicano),
             }),
-            "Mexicano",
+            "Mexicano ",
+            m("span.info-icon", {
+              "data-tooltip": "1st+3rd, 2nd+4th pairing",
+              onclick: (e: Event) => e.preventDefault(),
+            }, "ⓘ"),
           ),
           m(
             "label",
@@ -112,7 +124,11 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               checked: isTournicano,
               onchange: () => handleMatchingSpecChange(Tournicano),
             }),
-            "Tournicano",
+            "Tournicano ",
+            m("span.info-icon", {
+              "data-tooltip": "Variety + performance + mixed",
+              onclick: (e: Event) => e.preventDefault(),
+            }, "ⓘ"),
           ),
           m(
             "label",
@@ -123,7 +139,11 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               checked: isGroupBattle,
               onchange: () => handleMatchingSpecChange(GroupBattle),
             }),
-            "Group Battle",
+            "Group Battle ",
+            m("span.info-icon", {
+              "data-tooltip": "Groups compete vs each other",
+              onclick: (e: Event) => e.preventDefault(),
+            }, "ⓘ"),
           ),
           m(
             "label",
@@ -134,7 +154,11 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               checked: isGroupBattleMixed,
               onchange: () => handleMatchingSpecChange(GroupBattleMixed),
             }),
-            "Group Battle Mixed",
+            "Group Battle Mixed ",
+            m("span.info-icon", {
+              "data-tooltip": "Group battle with A/B, C/D teams",
+              onclick: (e: Event) => e.preventDefault(),
+            }, "ⓘ"),
           ),
           m(
             "label",

@@ -10,3 +10,8 @@ main.settings button.danger {
   border-color: var(--pico-form-element-invalid-focus-color);
   background: var(--pico-form-element-invalid-focus-color);
 }
+
+main.settings .info-icon {
+  cursor: help;
+  border-bottom: none;
+}
