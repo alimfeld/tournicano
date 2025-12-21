@@ -14,6 +14,7 @@ export const Toast: m.Component<ToastAttrs> = {
     }
 
     const classes = type !== "info" ? `toast ${type}` : "toast";
+
     return m(`div.${classes}`, {
       onclick: onDismiss,
     }, message);
