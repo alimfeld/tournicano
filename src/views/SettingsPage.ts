@@ -66,107 +66,77 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           "fieldset",
           m("legend", "Matching:"),
           m(
-            "div.radio-with-info",
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "americano",
-                checked: isAmericano,
-                onchange: () => handleMatchingSpecChange(Americano),
-              }),
-              "Americano",
-            ),
-            m("span.info-icon", {
-              "data-tooltip": "Play with and against\ndifferent players each round",
-            }, "ⓘ"),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "americano",
+              checked: isAmericano,
+              onchange: () => handleMatchingSpecChange(Americano),
+            }),
+            "Americano",
           ),
+          m("small", "Single group: Play with and against different players each round"),
           m(
-            "div.radio-with-info",
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "americano-mixed",
-                checked: isAmericanoMixed,
-                onchange: () => handleMatchingSpecChange(AmericanoMixed),
-              }),
-              "Americano Mixed",
-            ),
-            m("span.info-icon", {
-              "data-tooltip": "Pairs players from groups A/B\nwith players from groups C/D",
-            }, "ⓘ"),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "americano-mixed",
+              checked: isAmericanoMixed,
+              onchange: () => handleMatchingSpecChange(AmericanoMixed),
+            }),
+            "Americano Mixed",
           ),
+          m("small", "Two groups: Like Americano, but teams with players from different groups"),
           m(
-            "div.radio-with-info",
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "mexicano",
-                checked: isMexicano,
-                onchange: () => handleMatchingSpecChange(Mexicano),
-              }),
-              "Mexicano",
-            ),
-            m("span.info-icon", {
-              "data-tooltip": "Pairs 1st with 3rd ranked\nand 2nd with 4th ranked",
-            }, "ⓘ"),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "mexicano",
+              checked: isMexicano,
+              onchange: () => handleMatchingSpecChange(Mexicano),
+            }),
+            "Mexicano",
           ),
+          m("small", "Single group: Pairs 1st with 3rd, 2nd with 4th, then matches by performance"),
           m(
-            "div.radio-with-info",
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "tournicano",
-                checked: isTournicano,
-                onchange: () => handleMatchingSpecChange(Tournicano),
-              }),
-              "Tournicano",
-            ),
-            m("span.info-icon", {
-              "data-tooltip": "Combines variety, performance\nand group pairing (A/B, C/D)",
-            }, "ⓘ"),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "tournicano",
+              checked: isTournicano,
+              onchange: () => handleMatchingSpecChange(Tournicano),
+            }),
+            "Tournicano",
           ),
+          m("small", "One or two groups: Balances performance, variety and group mix"),
           m(
-            "div.radio-with-info",
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "group-battle",
-                checked: isGroupBattle,
-                onchange: () => handleMatchingSpecChange(GroupBattle),
-              }),
-              "Group Battle",
-            ),
-            m("span.info-icon", {
-              "data-tooltip": "Team up within groups\nto compete against other groups",
-            }, "ⓘ"),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "group-battle",
+              checked: isGroupBattle,
+              onchange: () => handleMatchingSpecChange(GroupBattle),
+            }),
+            "Group Battle",
           ),
+          m("small", "Two groups: Team up within groups to compete against other groups"),
           m(
-            "div.radio-with-info",
-            m(
-              "label",
-              m("input", {
-                type: "radio",
-                name: "matching-spec",
-                id: "group-battle-mixed",
-                checked: isGroupBattleMixed,
-                onchange: () => handleMatchingSpecChange(GroupBattleMixed),
-              }),
-              "Group Battle Mixed",
-            ),
-            m("span.info-icon", {
-              "data-tooltip": "Group battle with teams\nfrom groups A/B and C/D",
-            }, "ⓘ"),
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "group-battle-mixed",
+              checked: isGroupBattleMixed,
+              onchange: () => handleMatchingSpecChange(GroupBattleMixed),
+            }),
+            "Group Battle Mixed",
           ),
+          m("small", "Four groups: Pairs from different sides, then sides compete against each other"),
           m(
             "label",
             m("input", {
@@ -184,6 +154,7 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
             }),
             "Custom",
           ),
+          m("small", "Custom matching configuration (use Customize button below)"),
         ),
         m(MatchingSpecDialog, {
           action: "Customize...",

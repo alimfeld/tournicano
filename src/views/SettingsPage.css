@@ -11,25 +11,15 @@ main.settings button.danger {
   background: var(--pico-form-element-invalid-focus-color);
 }
 
-main.settings .radio-with-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-main.settings .radio-with-info label {
+/* Group radio options with their descriptions */
+main.settings fieldset label:has(input[type="radio"]) {
   margin-bottom: 0;
-  flex: 0 0 auto;
 }
 
-main.settings .info-icon {
-  cursor: help;
-  border-bottom: none;
-  flex: 0 0 auto;
-}
-
-/* Enable multi-line tooltips */
-main.settings .info-icon[data-tooltip]::before,
-main.settings .info-icon[data-tooltip]::after {
-  white-space: pre;
+main.settings fieldset label:has(input[type="radio"])+small {
+  display: block;
+  margin-bottom: var(--pico-spacing);
+  padding-left: calc(1rem + var(--pico-spacing));
+  color: var(--pico-muted-color);
+  line-height: 1.25;
 }
