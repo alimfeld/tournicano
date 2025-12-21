@@ -13,12 +13,12 @@ main.settings button.danger {
 
 /* Group radio options with their descriptions */
 main.settings fieldset label:has(input[type="radio"]) {
-  margin-bottom: 0;
+  margin-bottom: var(--pico-spacing);
 }
 
-main.settings fieldset label:has(input[type="radio"])+small {
+main.settings fieldset label:has(input[type="radio"])>small {
   display: block;
-  margin-bottom: var(--pico-spacing);
+  margin-top: calc(var(--pico-spacing) / 8);
   padding-left: calc(1rem + var(--pico-spacing));
   color: var(--pico-muted-color);
   line-height: 1.25;

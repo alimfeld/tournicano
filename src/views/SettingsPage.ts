@@ -75,8 +75,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(Americano),
             }),
             "Americano",
+            m("small", "Single group: Play with and against different players each round"),
           ),
-          m("small", "Single group: Play with and against different players each round"),
           m(
             "label",
             m("input", {
@@ -87,8 +87,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(AmericanoMixed),
             }),
             "Americano Mixed",
+            m("small", "Two groups: Like Americano, but teams with players from different groups"),
           ),
-          m("small", "Two groups: Like Americano, but teams with players from different groups"),
           m(
             "label",
             m("input", {
@@ -99,8 +99,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(Mexicano),
             }),
             "Mexicano",
+            m("small", "Single group: Pairs 1st with 3rd, 2nd with 4th, then matches by performance"),
           ),
-          m("small", "Single group: Pairs 1st with 3rd, 2nd with 4th, then matches by performance"),
           m(
             "label",
             m("input", {
@@ -111,8 +111,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(Tournicano),
             }),
             "Tournicano",
+            m("small", "One or two groups: Balances performance, variety and group mix"),
           ),
-          m("small", "One or two groups: Balances performance, variety and group mix"),
           m(
             "label",
             m("input", {
@@ -123,8 +123,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(GroupBattle),
             }),
             "Group Battle",
+            m("small", "Two groups: Team up within groups to compete against other groups"),
           ),
-          m("small", "Two groups: Team up within groups to compete against other groups"),
           m(
             "label",
             m("input", {
@@ -135,8 +135,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(GroupBattleMixed),
             }),
             "Group Battle Mixed",
+            m("small", "Four groups: Pairs from different sides, then sides compete against each other"),
           ),
-          m("small", "Four groups: Pairs from different sides, then sides compete against each other"),
           m(
             "label",
             m("input", {
@@ -153,8 +153,8 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               disabled: true,
             }),
             "Custom",
+            m("small", "Custom matching configuration (use Customize button below)"),
           ),
-          m("small", "Custom matching configuration (use Customize button below)"),
         ),
         m(MatchingSpecDialog, {
           action: "Customize...",
