@@ -376,15 +376,16 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                               return `${nextRoundInfo.activePlayerCount} active player${nextRoundInfo.activePlayerCount !== 1 ? 's' : ''}${groupText} • ${settings.courts} court${settings.courts !== 1 ? 's' : ''} • ${matchText}`;
                             })())
                           ]),
-                          groupMismatchWarning ? m("mark", groupMismatchWarning) : null
+                          groupMismatchWarning ? m("small", m("mark", groupMismatchWarning)) : null
                         ]
                       }
           )],
       ),
-      nextRoundInfo.matchCount >= 1 ? m(FAB, {
+      nextRoundInfo.matchCount >= 1 || tournament.rounds.length > 0 ? m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
+        disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
           const newRoundNumber = roundCount + 1;
           const isFirstRound = tournament.rounds.length === 0;
