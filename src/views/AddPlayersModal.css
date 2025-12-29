@@ -3,4 +3,8 @@
 dialog.add-players-modal article {
   margin: 0;
   max-height: 100vh;
+  /* Better support for mobile browsers */
+  max-height: 100dvh;
+  /* Respect iOS safe area */
+  padding-bottom: env(safe-area-inset-bottom);
 }
