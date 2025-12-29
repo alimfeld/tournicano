@@ -1,0 +1,64 @@
+/* PlayerModal component */
+
+/* Full-screen dialog */
+dialog.player-modal article {
+  margin: 0;
+  max-height: 100vh;
+}
+
+/* Player info section - centered identity display */
+dialog.player-modal .player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--pico-spacing);
+  text-align: center;
+  padding-bottom: var(--pico-spacing);
+}
+
+dialog.player-modal .player-info h2 {
+  margin: 0;
+}
+
+/* Avatar */
+dialog.player-modal .avatar-large {
+  width: var(--player-modal-avatar-size);
+  height: var(--player-modal-avatar-size);
+}
+
+/* Participation status */
+dialog.player-modal .participation-status {
+  color: var(--pico-muted-color);
+}
+
+dialog.player-modal .participating-icon {
+  opacity: 0.7;
+}
+
+/* Error message styling */
+dialog.player-modal .error-message {
+  color: var(--pico-form-element-invalid-border-color);
+}
+
+/* Footer with two-row layout */
+dialog.player-modal footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pico-spacing);
+}
+
+dialog.player-modal footer .primary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--pico-spacing);
+}
+
+/* Delete button styling */
+dialog.player-modal footer .delete-player {
+  background-color: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+dialog.player-modal footer .delete-player:hover:not(:disabled) {
+  background-color: var(--pico-form-element-invalid-active-border-color);
+}

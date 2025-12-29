@@ -1,39 +1,47 @@
 import m from "mithril";
 import "./StandingsPage.css";
-import { PlayerView } from "./PlayerView.ts";
+import { PlayerCard } from "./PlayerCard.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { Swipeable } from "./Swipeable.ts";
-import { FAB } from "./FAB.ts";
+import { HelpCard } from "./HelpCard.ts";
+import { Header, HeaderAction } from "./Header.ts";
+import { GroupSymbol } from "./GroupSymbol.ts";
+import { GroupFilter } from "./GroupFilter.ts";
+import { StandingsFilters } from "../App.ts";
+import { Nav } from "./Nav.ts";
+import { Page } from "../App.ts";
 
 export interface StandingsAttrs {
   tournament: Tournament;
   roundIndex: number;
-  group: number | undefined;
+  standingsFilters: StandingsFilters;
   changeRound: (index: number) => void;
-  changeGroup: (group: number | undefined) => void;
+  changeStandingsFilters: (filters: StandingsFilters) => void;
   showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
+  nav: (page: Page) => void;
+  currentPage: Page;
 }
 
 export const StandingsPage: m.Component<StandingsAttrs> = {
   view: ({
-    attrs: { tournament, roundIndex, group, changeRound, changeGroup, showToast },
+    attrs: { tournament, roundIndex, standingsFilters, changeRound, changeStandingsFilters, showToast, nav, currentPage },
   }) => {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
-    // Get groups that have registered players
     const allGroups = tournament.groups;
     const populatedGroups = [...new Set(
       tournament.players()
-        .filter(p => p.registered)
         .map(p => p.group)
     )].sort((a, b) => a - b);
     const groups = populatedGroups.length > 0 ? populatedGroups : allGroups;
-    const showGroupSwitcher = groups.length > 1 && groups.length <= 4;
-    const standingsGroup =
-      showGroupSwitcher && (group === undefined || groups.indexOf(group) >= 0)
-        ? group
-        : undefined;
+    const showGroupFilter = groups.length > 1 && groups.length <= 4;
+
+    // Convert filters to standings call format
+    const selectedGroups = standingsFilters.groups.length > 0
+      ? standingsFilters.groups
+      : undefined;
+
     const award: (rank: number) => string | undefined = (rank) => {
       if (rank === 1) {
         return "🥇";
@@ -46,8 +54,10 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
       }
       return undefined;
     };
-    const standings = round ? round.standings(standingsGroup) : [];
-    const allStandings = standingsGroup === undefined ? standings : (round ? round.standings(undefined) : []);
+    const standings = round ? round.standings(selectedGroups) : [];
+    const allStandings = selectedGroups && selectedGroups.length > 0
+      ? (round ? round.standings(undefined) : [])
+      : standings;
     const totalRounds = roundIndex + 1; // rounds are 0-indexed
     const [
       groupWins,
@@ -66,217 +76,187 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
     const matchCount = groupWins + groupLosses + groupDraws;
     const groupWinRatio = matchCount === 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
     const groupPlusMinus = groupPointsFor - groupPointsAgainst;
-    return [
-      m(
-        "header.standings.container-fluid",
 
-        m(
-          "button.secondary",
-          {
-            disabled: roundIndex <= 0 || roundCount === 0,
-            onclick: () => changeRound(roundIndex - 1),
-          },
-          "←",
-        ),
-        m(
-          "h1#title",
-          roundIndex + 1 < roundCount
-            ? `Standings (${roundIndex + 1}/${roundCount})`
-            : `Standings`,
-        ),
-        m(
-          "button.secondary",
-          {
-            disabled: roundIndex + 1 >= roundCount,
-            onclick: () => changeRound(roundIndex + 1),
-          },
-          "→",
-        ),
-      ),
+    // Build actions for header overflow menu
+    const actions: HeaderAction[] = tournament.rounds.length > 0 ? [
+      {
+        label: "⤴ Share Standings",
+        onclick: async () => {
+          const text = tournament.exportText(roundIndex);
+
+          try {
+            await navigator.share({ text });
+            showToast("Tournament data shared successfully", "success");
+          } catch (err) {
+            // If share fails or is cancelled, try clipboard as fallback
+            if (err instanceof Error && err.name !== 'AbortError') {
+              try {
+                await navigator.clipboard.writeText(text);
+                showToast("Tournament data copied to clipboard", "success");
+              } catch (clipboardErr) {
+                showToast("Failed to share or copy tournament data", "error");
+              }
+            }
+            // If user cancelled, don't show any message
+          }
+        },
+      },
+      {
+        label: "↓ Download JSON",
+        onclick: () => {
+          const json = tournament.exportJSON(roundIndex);
+          const blob = new Blob([json], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          const date = new Date().toISOString().slice(0, 10);
+          const rounds = roundIndex + 1 < roundCount ? `-round${roundIndex + 1}` : "";
+          a.download = `tournament-${date}${rounds}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast("Tournament data downloaded", "success");
+        },
+      },
+    ] : [];
+
+    return [
+      m(Header, {
+        title: roundIndex + 1 < roundCount
+          ? `Standings (${roundIndex + 1}/${roundCount})`
+          : `Standings`,
+        actions: actions
+      }),
       m(
         Swipeable,
         {
-          element: "main.standings.container-fluid.actions",
+          element: "main.standings.container-fluid",
+          showNavHints: true,
           onswipeleft:
-            roundIndex > 0
+            roundIndex > 0 && roundCount > 0
               ? () => {
                 changeRound(roundIndex - 1);
               }
               : undefined,
           onswiperight:
-            roundIndex + 1 < roundCount
+            roundIndex + 1 < roundCount && roundCount > 0
               ? () => {
                 changeRound(roundIndex + 1);
               }
               : undefined,
         },
-        showGroupSwitcher && allStandings.length > 0
-          ? m(
-            "div.group-switcher",
-            { role: "group" },
-            m(
-              "button",
-              {
-                "aria-current": standingsGroup === undefined ? "page" : undefined,
-                class: standingsGroup === undefined ? "" : "outline",
-                onclick: () => {
-                  changeGroup(undefined);
-                },
-              },
-              "All",
-            ),
-            groups.map((g) =>
-              m(
-                "button",
-                {
-                  "aria-current": standingsGroup === g ? "page" : undefined,
-                  class: standingsGroup === g ? "" : "outline",
-                  onclick: () => {
-                    changeGroup(g);
-                  },
-                },
-                `${String.fromCharCode(65 + g)}`,
-              ),
-            ),
+        showGroupFilter && allStandings.length > 0
+          ? m("section.filter-section",
+            m(GroupFilter, {
+              groups: groups,
+              selectedGroups: standingsFilters.groups,
+              onGroupsChange: (groups) => changeStandingsFilters({ groups }),
+              getGroupCount: (group) => {
+                if (!round) return 0;
+                return round.standings([group]).length;
+              }
+            })
           )
           : null,
         standings.length > 0
-          ? [
-            showGroupSwitcher && standingsGroup !== undefined ? [
-              m("section.group-stats",
-                m("div.total-players",
-                  m("p", "Group"),
-                  m(
-                    "small",
-                    `(${standings.length})`,
-                  ),
+          ? m("div.standings-grid", [
+            // Group total row (if filtered)
+            showGroupFilter && standingsFilters.groups.length > 0
+              ? m("div.standings-row.group-total",
+                // Cell 1: Empty rank cell (keeps grid alignment)
+                m("div.standings-cell.rank-cell", ""),
+                // Cell 2: Group symbols (centered)
+                m("div.standings-cell.group-cell",
+                  standingsFilters.groups.length === 1
+                    ? m(GroupSymbol, { group: standingsFilters.groups[0] })
+                    : m("div.group-symbols",
+                      standingsFilters.groups.map(g => m(GroupSymbol, { group: g }))
+                    ),
+                  m("small", `${standings.length} player${standings.length === 1 ? '' : 's'}`)
                 ),
-                m("div.win-percentage-column",
-                  m(
-                    "p.win-percentage",
-                    `${(groupWinRatio * 100).toFixed(0)}%`,
-                    m("div.progressbar", {
-                      style: `width: ${groupWinRatio * 100}%`,
-                    }),
+                // Cell 3: All stats combined (left-aligned, 2 lines)
+                m("div.standings-cell.stats-cell",
+                  // Line 1: Win% PRIMARY (bold) + secondary details (small)
+                  m("p",
+                    m("span.stat-value",
+                      m("strong", `${(groupWinRatio * 100).toFixed(0)}%`)
+                    ),
+                    " ",
+                    m("small", `(${groupWins}-${groupDraws}-${groupLosses})`)
                   ),
-                  m(
-                    "small",
-                    `(${groupWins}-${groupDraws}-${groupLosses})`,
-                  ),
-                ),
-                m(
-                  "div.points-column",
-                  m(
-                    "p.plus-minus",
-                    (groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus
-                  ),
-                  m(
-                    "small",
-                    `(+${groupPointsFor}/-${groupPointsAgainst})`,
-                  ),
+                  // Line 2: Plus/minus PRIMARY (bold) + secondary details (small)
+                  m("p",
+                    m("span.stat-value",
+                      m("strong", `${(groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus}`)
+                    ),
+                    " ",
+                    m("small", `(+${groupPointsFor}/-${groupPointsAgainst})`)
+                  )
                 )
-              )] : [],
+              )
+              : null,
+            // Player rows
             ...standings.map((ranked) => {
               const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
-              const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
-              return m(
-                "section.entry",
-                m(PlayerView, {
-                  player: ranked.player,
-                  badge: award(ranked.rank),
-                  rank: ranked.rank.toString()
-                }),
-                m(
-                  "div.win-percentage-column",
-                  m(
-                    "p.win-percentage",
-                    `${(ranked.player.winRatio * 100).toFixed(0)}%`,
-                    m("div.progressbar", {
-                      style: `width: ${ranked.player.winRatio * 100}%`,
-                    }),
-                  ),
-                  m(
-                    "div.reliability-and-record",
-                    m(
-                      "small.wins-draws-losses",
-                      `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`,
-                    ),
-                    m("div.reliability-pie-chart",
-                      m("div.pie", {
-                        style: `--reliability: ${reliability};`,
-                      })
-                    ),
-                  ),
+              return m("div.standings-row",
+                // Cell 1: Rank (right-aligned)
+                m("div.standings-cell.rank-cell",
+                  ranked.rank
                 ),
-                m(
-                  "div.points-column",
-                  m(
-                    "p.plus-minus",
-                    (ranked.player.plusMinus >= 0 ? "+" : "") +
-                    ranked.player.plusMinus,
-                  ),
-                  m(
-                    "small.points-detail",
-                    `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`,
-                  ),
+                // Cell 2: PlayerCard (centered)
+                m("div.standings-cell.player-cell",
+                  m(PlayerCard, {
+                    player: ranked.player,
+                    badge: award(ranked.rank)
+                  })
                 ),
+                // Cell 3: All stats combined (left-aligned, 2 lines)
+                m("div.standings-cell.stats-cell",
+                  // Line 1: Win% PRIMARY (bold) + secondary details (small)
+                  m("p", 
+                    m("span.stat-value",
+                      m("strong", `${(ranked.player.winRatio * 100).toFixed(0)}%`)
+                    ),
+                    " ",
+                    m("small", 
+                      `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})` +
+                      (participationCount < totalRounds ? ` • ${participationCount}/${totalRounds}` : '')
+                    )
+                  ),
+                  // Line 2: Plus/minus PRIMARY (bold) + secondary details (small)
+                  m("p",
+                    m("span.stat-value",
+                      m("strong", `${(ranked.player.plusMinus >= 0 ? "+" : "") + ranked.player.plusMinus}`)
+                    ),
+                    " ",
+                    m("small", `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`)
+                  )
+                )
               );
-            }),
-          ]
-          : m("p", ["No scores yet.", m("br"), "💡 Go to the Rounds page and enter match scores to see standings!"]),
+            })
+          ])
+          : m(HelpCard, {
+            message: tournament.rounds.length === 0
+              ? "🏆 Standings appear after matches"
+              : "📊 No scores entered yet",
+            hint: tournament.rounds.length === 0
+              ? [
+                  "Create rounds and enter match scores to see player rankings.",
+                  m("ul.tip-list", [
+                    m("li", "Players are ranked by win % with point differential as tiebreaker"),
+                    m("li", "Performance badges show achievement: 🔥 for ≥75% win rate, 💯 for 100%")
+                  ])
+                ]
+              : "Enter scores in the Rounds tab to see standings and rankings!",
+            action: { 
+              label: tournament.rounds.length === 0 ? "Go to Rounds" : "Enter Scores",
+              onclick: () => nav(Page.ROUNDS)
+            }
+          }),
       ),
-       m(FAB, {
-        icon: "⋮",
-        iconOpen: "✕",
-        position: "left",
-        variant: "secondary",
-        disabled: tournament.rounds.length === 0,
-        actions: [
-          {
-            icon: "⿻",
-            label: "Share / Export",
-            onclick: async () => {
-              const text = tournament.exportText(roundIndex);
-              
-              try {
-                await navigator.share({ text });
-                showToast("Tournament data shared successfully", "success");
-              } catch (err) {
-                // If share fails or is cancelled, try clipboard as fallback
-                if (err instanceof Error && err.name !== 'AbortError') {
-                  try {
-                    await navigator.clipboard.writeText(text);
-                    showToast("Tournament data copied to clipboard", "success");
-                  } catch (clipboardErr) {
-                    showToast("Failed to share or copy tournament data", "error");
-                  }
-                }
-                // If user cancelled, don't show any message
-              }
-            },
-          },
-          {
-            icon: "↓",
-            label: "Download JSON",
-            onclick: () => {
-              const json = tournament.exportJSON(roundIndex);
-              const blob = new Blob([json], { type: "application/json" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.style.display = "none";
-              a.href = url;
-              const date = new Date().toISOString().slice(0, 10);
-              const rounds = roundIndex + 1 < roundCount ? `-round${roundIndex + 1}` : "";
-              a.download = `tournament-${date}${rounds}.json`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-              showToast("Tournament data downloaded", "success");
-            },
-          },
-        ],
-      }),
+      m(Nav, { nav, currentPage }),
     ];
   },
 };

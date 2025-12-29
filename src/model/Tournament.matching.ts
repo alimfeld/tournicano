@@ -162,8 +162,18 @@ const PREDEFINED_MODES = [
 ] as const;
 
 // Deep equality check for MatchingSpec
-function matchingSpecEquals(a: MatchingSpec, b: MatchingSpec): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
+export function matchingSpecEquals(a: MatchingSpec, b: MatchingSpec): boolean {
+  return (
+    a.teamUp.varietyFactor === b.teamUp.varietyFactor &&
+    a.teamUp.performanceFactor === b.teamUp.performanceFactor &&
+    a.teamUp.performanceMode === b.teamUp.performanceMode &&
+    a.teamUp.groupFactor === b.teamUp.groupFactor &&
+    a.teamUp.groupMode === b.teamUp.groupMode &&
+    a.matchUp.varietyFactor === b.matchUp.varietyFactor &&
+    a.matchUp.performanceFactor === b.matchUp.performanceFactor &&
+    a.matchUp.groupFactor === b.matchUp.groupFactor &&
+    a.matchUp.groupMode === b.matchUp.groupMode
+  );
 }
 
 // Get mode name from spec configuration

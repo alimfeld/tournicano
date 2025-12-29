@@ -1,0 +1,79 @@
+/* MatchSection component - shared layout for match display */
+
+h2.match {
+  text-align: center;
+}
+
+section.match {
+  width: 100%;
+  display: grid;
+  column-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+section.match {
+  border-bottom: var(--pico-border-width) solid;
+  border-color: var(--pico-muted-border-color);
+}
+
+section.team {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+section.team article.player {
+  margin: 0;
+}
+
+section.vs {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+section.vs button.score {
+  text-align: center;
+  width: 100%;
+}
+
+section.vs button.score.invalid {
+  border-color: var(--pico-form-element-invalid-border-color);
+  color: var(--pico-form-element-color);
+}
+
+section.vs button.score.valid {
+  border-color: var(--pico-form-element-valid-border-color);
+  color: var(--pico-form-element-color);
+}
+
+/* Score display in display mode */
+section.vs div.score-text {
+  border: var(--pico-border-width) solid;
+  border-color: var(--pico-muted-border-color);
+  width: 100%;
+  text-align: center;
+  padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
+  border-radius: var(--pico-border-radius);
+}
+
+section.team {
+  row-gap: calc(var(--pico-spacing) / 2);
+}
+
+@media (min-width: 768px) {
+
+  section.team {
+    row-gap: 0;
+    column-gap: calc(var(--pico-spacing) / 2);
+  }
+
+  section.match {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  section.team {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+  }
+}

@@ -10,18 +10,13 @@ import { Settings, SettingsListener, Theme } from "./model/Settings.ts";
 import { tournamentFactory } from "./model/Tournament.impl.ts";
 import { settingsFactory } from "./model/Settings.impl.ts";
 import { HomePage } from "./views/HomePage.ts";
-import { ScoreEntryPage } from "./views/ScoreEntryPage.ts";
-import { Match } from "./model/Tournament.ts";
-import { NavView } from "./views/NavView.ts";
-import { Toast } from "./views/Toast.ts";
+import { ToastCard } from "./views/ToastCard.ts";
 import { debounce } from "./model/Util.ts";
 import { registerSW } from "virtual:pwa-register";
 
 const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
 const ROUND_KEY = "round";
-const GROUP_KEY = "group";
-const PLAYER_FILTER_KEY = "playerFilter";
 const TOURNAMENT_KEY = "tournament";
 
 export enum Page {
@@ -30,28 +25,47 @@ export enum Page {
   PLAYERS,
   ROUNDS,
   STANDINGS,
-  SCORE_ENTRY,
+}
+
+export interface PlayerFilters {
+  search: string;
+  participatingOnly: boolean;
+  groups: number[]; // empty array means all groups
+}
+
+export interface StandingsFilters {
+  groups: number[]; // empty array means all groups
+}
+
+interface ToastState {
+  message: string | null;
+  type: "success" | "error" | "info";
+  timeout: number | null;
+}
+
+interface PWAState {
+  checkingForUpdates: boolean;
+  serviceWorkerRegistered: boolean;
 }
 
 interface State {
+  // === Core State (persisted to localStorage) ===
   readonly tournament: Tournament;
   readonly settings: Settings;
   page: Page;
   roundIndex: number;
-  group: number | undefined;
-  playerFilter: string;
-  fullscreen: boolean;
-  toastMessage: string | null;
-  toastType: "success" | "error" | "info";
-  toastTimeout: number | null;
-  checkingForUpdates: boolean;
-  serviceWorkerRegistered: boolean;
-  scoreEntryMatch?: {
-    roundIndex: number;
-    matchIndex: number;
-    match: Match;
-    scrollPosition: number;
+
+  // === Session Filters (in-memory, resets on app restart) ===
+  filters: {
+    standings: StandingsFilters;
+    players: PlayerFilters;
   };
+
+  // === UI State (ephemeral) ===
+  toast: ToastState;
+
+  // === PWA State (runtime flags) ===
+  pwa: PWAState;
 }
 
 const syncTheme = (theme: Theme) => {
@@ -74,7 +88,6 @@ const syncTheme = (theme: Theme) => {
 };
 
 const createState: () => State = () => {
-  const storedGroup = localStorage.getItem(GROUP_KEY);
   const state = {
     tournament: tournamentFactory.create(
       localStorage.getItem(TOURNAMENT_KEY) || undefined,
@@ -84,14 +97,23 @@ const createState: () => State = () => {
     ),
     page: parseInt(localStorage.getItem(PAGE_KEY) || `${Page.HOME}`),
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
-    group: storedGroup !== null ? parseInt(storedGroup) : undefined,
-    playerFilter: localStorage.getItem(PLAYER_FILTER_KEY) || "all",
-    fullscreen: false,
-    toastMessage: null,
-    toastType: "info" as "success" | "error" | "info",
-    toastTimeout: null,
-    checkingForUpdates: false,
-    serviceWorkerRegistered: false
+    filters: {
+      standings: { groups: [] },
+      players: {
+        search: "",
+        participatingOnly: false,
+        groups: []
+      }
+    },
+    toast: {
+      message: null,
+      type: "info" as "success" | "error" | "info",
+      timeout: null
+    },
+    pwa: {
+      checkingForUpdates: false,
+      serviceWorkerRegistered: false
+    }
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -119,22 +141,21 @@ export const App = () => {
   const state = createState();
   state.settings.addListener(settingsListener);
   state.tournament.addListener(tournamentListener);
-  let wakeLock: WakeLockSentinel | null = null;
 
   // Toast management
-  const showToast = (message: string, type: "success" | "error" | "info" = "info", duration: number = 4000) => {
+  const showToast = (message: string, type: "success" | "error" | "info" = "info", duration: number = 3000) => {
     // Clear any existing timeout
-    if (state.toastTimeout !== null) {
-      clearTimeout(state.toastTimeout);
+    if (state.toast.timeout !== null) {
+      clearTimeout(state.toast.timeout);
     }
 
-    state.toastMessage = message;
-    state.toastType = type;
+    state.toast.message = message;
+    state.toast.type = type;
 
     // Auto-hide after duration
-    state.toastTimeout = window.setTimeout(() => {
-      state.toastMessage = null;
-      state.toastTimeout = null;
+    state.toast.timeout = window.setTimeout(() => {
+      state.toast.message = null;
+      state.toast.timeout = null;
       m.redraw();
     }, duration);
 
@@ -142,11 +163,11 @@ export const App = () => {
   };
 
   const dismissToast = () => {
-    if (state.toastTimeout !== null) {
-      clearTimeout(state.toastTimeout);
-      state.toastTimeout = null;
+    if (state.toast.timeout !== null) {
+      clearTimeout(state.toast.timeout);
+      state.toast.timeout = null;
     }
-    state.toastMessage = null;
+    state.toast.message = null;
     m.redraw();
   };
 
@@ -164,7 +185,7 @@ export const App = () => {
     },
     onRegistered(registration) {
       console.log('SW Registered:', registration);
-      state.serviceWorkerRegistered = true;
+      state.pwa.serviceWorkerRegistered = true;
       m.redraw();
     },
     onRegisterError(error) {
@@ -185,16 +206,16 @@ export const App = () => {
   };
 
   const checkForUpdates = async () => {
-    if (state.checkingForUpdates) return;
+    if (state.pwa.checkingForUpdates) return;
 
-    state.checkingForUpdates = true;
+    state.pwa.checkingForUpdates = true;
     m.redraw();
 
     try {
       const registration = await navigator.serviceWorker.getRegistration();
       if (!registration) {
         // Should never happen since button only shows when registered
-        state.checkingForUpdates = false;
+        state.pwa.checkingForUpdates = false;
         m.redraw();
         return;
       }
@@ -202,7 +223,7 @@ export const App = () => {
       // Check if there's already a waiting service worker
       if (registration.waiting) {
         needRefresh = true;
-        state.checkingForUpdates = false;
+        state.pwa.checkingForUpdates = false;
         m.redraw();
         return;
       }
@@ -211,56 +232,23 @@ export const App = () => {
 
       // Wait a bit to see if an update was found
       setTimeout(() => {
-        state.checkingForUpdates = false;
+        state.pwa.checkingForUpdates = false;
         if (!needRefresh) {
-          showToast("You're already running the latest version", "info");
+          showToast("You're already running the latest version", "success");
         }
         m.redraw();
       }, 1000);
     } catch (error) {
       console.error("Error checking for updates:", error);
-      state.checkingForUpdates = false;
+      state.pwa.checkingForUpdates = false;
       showToast("Error checking for updates", "error");
       m.redraw();
     }
   };
 
-  // Request or release wake lock based on settings and current page
-  const updateWakeLock = async () => {
-    if (state.settings.wakeLock && state.page === Page.ROUNDS) {
-      if (wakeLock === null) {
-        try {
-          wakeLock = await navigator.wakeLock.request("screen");
-        } catch (err) {
-          console.log(err);
-        }
-      }
-    } else {
-      if (wakeLock !== null) {
-        await wakeLock.release();
-        wakeLock = null;
-      }
-    }
-    m.redraw();
-  };
-
-  // Listen to settings changes to update wake lock
-  const wakeLockSettingsListener: SettingsListener = {
-    onchange: async () => {
-      await updateWakeLock();
-    },
-  };
-  state.settings.addListener(wakeLockSettingsListener);
-
-  // Request wake lock on init if settings indicate and we're on rounds page
-  if (state.settings.wakeLock && state.page === Page.ROUNDS) {
-    updateWakeLock();
-  }
-
   const nav = (page: Page) => {
     state.page = page;
     localStorage.setItem(PAGE_KEY, `${page}`);
-    updateWakeLock();
     window.scrollTo(0, 0);
   };
   const changeRound = (index: number) => {
@@ -268,41 +256,22 @@ export const App = () => {
     localStorage.setItem(ROUND_KEY, `${index}`);
     window.scrollTo(0, 0);
   };
-  const changeGroup = (group: number | undefined) => {
-    state.group = group;
-    if (group === undefined) {
-      localStorage.removeItem(GROUP_KEY);
-    } else {
-      localStorage.setItem(GROUP_KEY, `${group}`);
-    }
-    window.scrollTo(0, 0);
+  const changeStandingsFilters = (filters: StandingsFilters) => {
+    state.filters.standings = filters;
   };
-  const changePlayerFilter = (playerFilter: string) => {
-    state.playerFilter = playerFilter;
-    localStorage.setItem(PLAYER_FILTER_KEY, playerFilter);
-    window.scrollTo(0, 0);
+  const changePlayerFilters = (filters: PlayerFilters) => {
+    state.filters.players = filters;
   };
-  const toggleFullscreen = () => {
-    state.fullscreen = !state.fullscreen;
-  }
-  const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
-    state.scoreEntryMatch = {
-      roundIndex,
-      matchIndex,
-      match,
-      scrollPosition: window.scrollY
-    };
-    nav(Page.SCORE_ENTRY);
-  }
 
   return {
     view: () => {
-      const showNav = state.page !== Page.SCORE_ENTRY && !state.fullscreen;
-
       let pageContent;
       switch (state.page) {
         case Page.HOME: {
-          pageContent = m(HomePage);
+          pageContent = m(HomePage, {
+            nav,
+            currentPage: state.page,
+          });
           break;
         }
         case Page.SETTINGS: {
@@ -310,17 +279,21 @@ export const App = () => {
             settings: state.settings,
             tournament: state.tournament,
             showToast,
-            checkForUpdates: state.serviceWorkerRegistered ? checkForUpdates : undefined,
-            checkingForUpdates: state.checkingForUpdates
+            checkForUpdates: state.pwa.serviceWorkerRegistered ? checkForUpdates : undefined,
+            checkingForUpdates: state.pwa.checkingForUpdates,
+            nav,
+            currentPage: state.page,
           });
           break;
         }
         case Page.PLAYERS: {
           pageContent = m(PlayersPage, {
             tournament: state.tournament,
-            playerFilter: state.playerFilter,
-            changePlayerFilter,
             showToast,
+            playerFilters: state.filters.players,
+            changePlayerFilters,
+            nav,
+            currentPage: state.page,
           });
           break;
         }
@@ -330,11 +303,9 @@ export const App = () => {
             tournament: state.tournament,
             roundIndex: state.roundIndex,
             changeRound,
-            wakeLock: state.settings.wakeLock && "wakeLock" in navigator,
-            fullscreen: state.fullscreen,
-            toggleFullscreen,
-            openScoreEntry,
             showToast,
+            nav,
+            currentPage: state.page,
           });
           break;
         }
@@ -342,34 +313,13 @@ export const App = () => {
           pageContent = m(StandingsPage, {
             tournament: state.tournament,
             roundIndex: state.roundIndex,
-            group: state.group,
+            standingsFilters: state.filters.standings,
             changeRound,
-            changeGroup,
+            changeStandingsFilters,
             showToast,
+            nav,
+            currentPage: state.page,
           });
-          break;
-        }
-        case Page.SCORE_ENTRY: {
-          if (!state.scoreEntryMatch) {
-            // Fallback if scoreEntryMatch is not set
-            nav(Page.ROUNDS);
-            pageContent = null;
-          } else {
-            pageContent = m(ScoreEntryPage, {
-              matchIndex: state.scoreEntryMatch.matchIndex,
-              match: state.scoreEntryMatch.match,
-              onClose: () => {
-                const savedScroll = state.scoreEntryMatch?.scrollPosition;
-                nav(Page.ROUNDS);
-                // Restore scroll position after navigation completes
-                if (savedScroll !== undefined) {
-                  requestAnimationFrame(() => {
-                    window.scrollTo(0, savedScroll);
-                  });
-                }
-              },
-            });
-          }
           break;
         }
       }
@@ -378,7 +328,12 @@ export const App = () => {
         // PWA update dialog
         needRefresh ? m("dialog[open]", [
           m("article", [
-            m("h3", "🔄 Update Available"),
+            m("header",
+              m("button[aria-label=Close][rel=prev]", {
+                onclick: dismissUpdate,
+              }),
+              m("p", m("strong", "🔄 Update Available")),
+            ),
             m("p", "A new version of Tournicano is ready. Update now to get the latest features and improvements."),
             m("p", m("a", {
               href: "https://github.com/alimfeld/tournicano/commits/main/",
@@ -393,14 +348,13 @@ export const App = () => {
               m("button", {
                 onclick: applyUpdate,
                 disabled: isUpdating,
-                "aria-busy": isUpdating
+                "aria-busy": isUpdating ? "true" : "false",
               }, isUpdating ? "Updating..." : "Update Now")
             ])
           ])
         ]) : null,
         pageContent,
-        showNav ? m(NavView, { nav, currentPage: state.page }) : null,
-        m(Toast, { message: state.toastMessage, type: state.toastType, onDismiss: dismissToast }),
+        m(ToastCard, { message: state.toast.message, type: state.toast.type, onDismiss: dismissToast }),
       ];
     },
   };

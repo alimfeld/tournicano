@@ -1,0 +1,6 @@
+/* AddPlayersModal component */
+
+dialog.add-players-modal article {
+  margin: 0;
+  max-height: 100vh;
+}

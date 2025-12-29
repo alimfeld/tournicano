@@ -1,0 +1,9 @@
+/* Group filter button group - overrides for Pico CSS [role="group"] */
+div.group-filter {
+  width: auto;
+  margin-bottom: 0;
+}
+
+div.group-filter button {
+  --pico-form-element-spacing-horizontal: var(--pico-spacing);
+}

@@ -1,0 +1,30 @@
+/* Help card - horizontally centered with right-aligned footer actions */
+article.help-card {
+  max-width: var(--help-card-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+article.help-card footer {
+  text-align: right;
+}
+
+/* Tip list styling for help card hints */
+article.help-card ul.tip-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: var(--pico-spacing);
+  font-size: smaller;
+}
+
+article.help-card ul.tip-list li {
+  list-style: none;
+  padding-left: 2ch;
+  position: relative;
+}
+
+article.help-card ul.tip-list li::before {
+  content: '💡';
+  position: absolute;
+  left: 0;
+}

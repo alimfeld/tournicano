@@ -22,6 +22,7 @@ export interface Settings extends SettingsData {
   showDebug(debug: boolean): void;
   setMatchingSpec(matchingSpec: MatchingSpec): void;
   addListener(listener: SettingsListener): void;
+  removeListener(listener: SettingsListener): void;
 }
 
 export interface SettingsFactory {

@@ -1,5 +1,4 @@
 import m from "mithril";
-import "./SettingsPage.css";
 import { Settings } from "../model/Settings.ts";
 import { Tournament } from "../model/Tournament.ts";
 import {
@@ -7,12 +6,16 @@ import {
   AmericanoMixed,
   GroupBattle,
   GroupBattleMixed,
+  matchingSpecEquals,
   Mexicano,
   Tournicano,
   isMatchingSpecMode,
 } from "../model/Tournament.matching.ts";
-import { MatchingSpecDialog } from "./MatchingSpecDialog.ts";
+import { MatchingSpecModal } from "./MatchingSpecModal.ts";
 import { BUILD_VERSION } from "../version.ts";
+import { Header } from "./Header.ts";
+import { Nav } from "./Nav.ts";
+import { Page } from "../App.ts";
 
 export interface SettingsAttrs {
   settings: Settings;
@@ -20,10 +23,20 @@ export interface SettingsAttrs {
   showToast?: (message: string, type?: "success" | "error" | "info") => void;
   checkForUpdates?: () => void;
   checkingForUpdates?: boolean;
+  nav: (page: Page) => void;
+  currentPage: Page;
 }
 
-export const SettingsPage: m.Component<SettingsAttrs> = {
-  view: ({ attrs: { settings, tournament, showToast, checkForUpdates, checkingForUpdates } }) => {
+interface SettingsPageState {
+  showMatchingSpecModal: boolean;
+}
+
+export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
+  oninit: ({ state }) => {
+    state.showMatchingSpecModal = false;
+  },
+
+  view: ({ attrs: { settings, tournament, showToast, checkForUpdates, checkingForUpdates, nav, currentPage }, state }) => {
     const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
     const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
     const isMexicano = isMatchingSpecMode(settings.matchingSpec, Mexicano);
@@ -37,34 +50,29 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
         showToast("Tournament mode changed during ongoing tournament. This will affect all newly created rounds.", "error");
       }
     };
+
     return [
-      m("header.settings.container-fluid", m("h1", "Settings")),
+      m(Header, { title: "Settings" }),
       m(
-        "main.settings.container-fluid",
-        m("h2", "Tournament"),
+        "main.settings.container",
+        m("h2", "Courts"),
+        m("input.courts", {
+          type: "number",
+          name: "courts",
+          inputmode: "numeric",
+          value: settings.courts,
+          min: 0,
+          step: 1,
+          onblur: (event: InputEvent) =>
+            settings.setCourts(
+              (event.target as HTMLInputElement).valueAsNumber,
+            ),
+        }),
+        m("small", "How many matches can be played at the same time"),
+        m("hr"),
+        m("h2", "Matching"),
         m(
-          "fieldset",
-          m(
-            "label",
-            "Courts:",
-            m("input.courts", {
-              type: "number",
-              name: "courts",
-              inputmode: "numeric",
-              value: settings.courts,
-              min: 0,
-              step: 1,
-              onblur: (event: InputEvent) =>
-                settings.setCourts(
-                  (event.target as HTMLInputElement).valueAsNumber,
-                ),
-            }),
-            m("small", "How many matches can be played at the same time"),
-          ),
-        ),
-        m(
-          "fieldset",
-          m("legend", "Matching:"),
+          "fieldset.matching",
           m(
             "label",
             m("input", {
@@ -75,7 +83,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(Americano),
             }),
             "Americano",
-            m("small", "Single group: Play with and against different players each round"),
           ),
           m(
             "label",
@@ -87,7 +94,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(AmericanoMixed),
             }),
             "Americano Mixed",
-            m("small", "Two groups: Like Americano, but teams with players from different groups"),
           ),
           m(
             "label",
@@ -99,7 +105,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(Mexicano),
             }),
             "Mexicano",
-            m("small", "Single group: Pairs 1st with 3rd, 2nd with 4th, then matches by performance"),
           ),
           m(
             "label",
@@ -111,7 +116,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(Tournicano),
             }),
             "Tournicano",
-            m("small", "One or two groups: Balances performance, variety and group mix"),
           ),
           m(
             "label",
@@ -123,7 +127,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(GroupBattle),
             }),
             "Group Battle",
-            m("small", "Two groups: Team up within groups to compete against other groups"),
           ),
           m(
             "label",
@@ -135,7 +138,6 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               onchange: () => handleMatchingSpecChange(GroupBattleMixed),
             }),
             "Group Battle Mixed",
-            m("small", "Four groups: Pairs from different sides, then sides compete against each other"),
           ),
           m(
             "label",
@@ -153,20 +155,17 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
               disabled: true,
             }),
             "Custom",
-            m("small", "Custom matching configuration (use Customize button below)"),
           ),
         ),
-        m(MatchingSpecDialog, {
-          action: "Customize...",
-          disabled: false,
-          matchingSpec: settings.matchingSpec,
-          onconfirm: handleMatchingSpecChange,
-        }),
+        m("button", {
+          onclick: () => {
+            state.showMatchingSpecModal = true;
+          }
+        }, "Customize..."),
         m("hr"),
-        m("h2", "UI"),
+        m("h2", "Theme"),
         m(
           "fieldset",
-          m("legend", "Theme:"),
           m("input", {
             type: "radio",
             name: "theme",
@@ -199,44 +198,54 @@ export const SettingsPage: m.Component<SettingsAttrs> = {
           m("label", { htmlFor: "light" }, "Light"),
         ),
         m("hr"),
-        m("h2", "App"),
+        m("h2", "Version"),
+        m("input", {
+          type: "text",
+          id: "version",
+          name: "version",
+          value: BUILD_VERSION,
+          readonly: true,
+          disabled: true,
+        }),
         m(
-          "fieldset",
-          m(
-            "label",
-            { for: "version" },
-            "Version:",
-            m("input", {
-              type: "text",
-              id: "version",
-              name: "version",
-              value: BUILD_VERSION,
-              readonly: true,
-              disabled: true,
-            }),
-          ),
-          m(
-            "p",
-            m("a", {
-              href: "https://github.com/alimfeld/tournicano/commits/main/",
-              target: "_blank",
-              rel: "noopener noreferrer"
-            }, "View changes")
-          ),
-          checkForUpdates
-            ? m(
-                "button.outline",
-                {
-                  type: "button",
-                  onclick: checkForUpdates,
-                  disabled: checkingForUpdates,
-                  "aria-busy": checkingForUpdates,
-                },
-                checkingForUpdates ? "Checking for updates..." : "Check for Updates",
-              )
-            : null,
+          "p",
+          m("a", {
+            href: "https://github.com/alimfeld/tournicano/commits/main/",
+            target: "_blank",
+            rel: "noopener noreferrer"
+          }, "View changes")
         ),
+        checkForUpdates
+          ? m(
+            "button",
+            {
+              type: "button",
+              onclick: checkForUpdates,
+              disabled: checkingForUpdates,
+              "aria-busy": checkingForUpdates ? "true" : "false",
+            },
+            checkingForUpdates ? "Checking for updates..." : "Check for Updates",
+          )
+          : null,
       ),
+      m(Nav, { nav, currentPage }),
+
+      // Render modal conditionally alongside the page
+      state.showMatchingSpecModal ? m(MatchingSpecModal, {
+        matchingSpec: settings.matchingSpec,
+        onconfirm: (matchingSpec) => {
+          // Only update if the spec actually changed
+          if (!matchingSpecEquals(settings.matchingSpec, matchingSpec)) {
+            settings.setMatchingSpec(matchingSpec);
+            if (tournament.rounds.length > 0 && showToast) {
+              showToast("Tournament mode changed during ongoing tournament. This will affect all newly created rounds.", "error");
+            }
+          }
+        },
+        onClose: () => {
+          state.showMatchingSpecModal = false;
+        }
+      }) : null,
     ];
   },
 };

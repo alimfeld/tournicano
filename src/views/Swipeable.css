@@ -1,0 +1,40 @@
+/* Swipeable navigation hints - clickable chevrons */
+
+/* Navigation hint buttons */
+.swipeable-nav-hint {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+
+  /* Button styling - taller, narrower, less round */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--chevron-width);
+  height: var(--chevron-height);
+  padding: 0;
+  background: var(--pico-muted-color);
+  border-color: var(--pico-muted-border-color);
+  color: var(--pico-color);
+  font-size: var(--chevron-font-size);
+  cursor: pointer;
+  user-select: none;
+
+  /* Subtle appearance */
+  opacity: var(--overlay-button-opacity);
+}
+
+.swipeable-nav-hint.left {
+  left: 0;
+}
+
+.swipeable-nav-hint.right {
+  right: 0;
+}
+
+/* Hidden state - during swiping */
+.swipeable-nav-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+}

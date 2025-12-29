@@ -1,18 +1,27 @@
 import m from "mithril";
+import "./MatchSection.css";
 import { Match, PlayerStats, Team } from "../model/Tournament.ts";
-import { PlayerView } from "./PlayerView.ts";
+import { PlayerCard } from "./PlayerCard.ts";
 
-export interface MatchAttrs {
+export interface MatchSectionAttrs {
   roundIndex: number;
   match: Match;
   matchIndex: number;
   debug: boolean;
-  fullscreen: boolean;
-  openScoreEntry: (roundIndex: number, matchIndex: number, match: Match) => void;
+  
+  // Mode toggle
+  mode?: "interactive" | "display";  // Default: "interactive"
+  showRoundIndex?: boolean;  // Control title format (replaces fullscreen)
+  
+  // Interactive mode only
+  openScoreEntry?: (roundIndex: number, matchIndex: number, match: Match) => void;
+  
+  // Display mode only
+  displayScore?: string;  // Override score text in display mode
 }
 
-export const MatchView: m.Component<MatchAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, debug, fullscreen, openScoreEntry } }) => {
+export const MatchSection: m.Component<MatchSectionAttrs> = {
+  view: ({ attrs: { roundIndex, match, matchIndex, debug, mode, showRoundIndex, openScoreEntry, displayScore } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : "";
@@ -27,12 +36,10 @@ export const MatchView: m.Component<MatchAttrs> = {
       return Math.abs(team.player1.group - team.player2.group);
     };
     const renderPlayer = (player: PlayerStats) => {
-      const badge = player.winRatio >= 0.75 ? "🔥" : undefined;
-      return m(PlayerView, { 
+      return m(PlayerCard, { 
         key: `player-${player.id}`,
         player, 
-        debug, 
-        badge: badge 
+        debug
       });
     }
     const renderMatchDebug = (match: Match) => {
@@ -99,13 +106,15 @@ export const MatchView: m.Component<MatchAttrs> = {
           renderTeam(match.teamA),
           m(
             "section.vs",
-            fullscreen ?
+            showRoundIndex ?
               m("h2.match", `${roundIndex + 1} - ${matchIndex + 1}`) :
               m("h2.match", matchIndex + 1),
-            m("button.outline.score", {
-              class: isValid ? "valid" : "invalid",
-              onclick: () => openScoreEntry(roundIndex, matchIndex, match),
-            }, scoreString || "--:--"),
+            mode === "display" ?
+              m("div.score-text", displayScore ?? scoreString ?? "--:--") :
+              m("button.outline.score", {
+                class: isValid ? "valid" : "invalid",
+                onclick: () => openScoreEntry!(roundIndex, matchIndex, match),
+              }, scoreString || "--:--"),
           ),
           renderTeam(match.teamB),
         ),

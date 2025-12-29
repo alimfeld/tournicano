@@ -1,0 +1,65 @@
+/* Header component - reusable header for all pages */
+
+/* Sticky positioning and visual styling */
+body>header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--pico-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  box-shadow: var(--pico-box-shadow);
+}
+
+/* Default: center-aligned title w/o margin */
+body>header h1 {
+  text-align: center;
+  margin: 0;
+}
+
+/* When header has dropdown, use simple grid to overlay it on the right */
+body>header:has(details.dropdown) {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+
+body>header:has(details.dropdown) h1 {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+body>header details.dropdown {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  margin: 0;
+}
+
+/* Minimal summary button - just show the dots */
+body>header details.dropdown>summary {
+  padding: 0 var(--pico-spacing);
+  border: none;
+  font-weight: bold;
+}
+
+/* Hide Pico's default chevron on summary */
+body>header details.dropdown>summary::after {
+  display: none;
+}
+
+/* Remove focus outline on mouse click only */
+body>header details.dropdown>summary:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Position dropdown menu to the right (prevents cutoff) */
+body>header details.dropdown>ul {
+  right: 0;
+  left: auto;
+}
+
+body>header details.dropdown>summary+ul li {
+  margin: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
+}

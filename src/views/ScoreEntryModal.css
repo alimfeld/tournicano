@@ -1,0 +1,48 @@
+/* ScoreEntryModal component - score entry keyboard in bottom-aligned dialog */
+
+/* Dialog positioning - bottom-aligned, full-width */
+dialog.score-entry-modal {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Article styling - full-screen, no margins */
+dialog.score-entry-modal>article {
+  margin: 0;
+  max-height: 100vh;
+  max-width: 100vw;
+}
+
+/* Keyboard grid layout */
+dialog.score-entry-modal section.keyboard {
+  width: var(--score-entry-keyboard-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--pico-spacing);
+}
+
+/* Action row at top of keyboard */
+dialog.score-entry-modal div.action-row {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pico-spacing);
+}
+
+dialog.score-entry-modal section.keyboard button.clear {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}
+
+dialog.score-entry-modal section.keyboard button.accept {
+  background: var(--pico-form-element-valid-focus-color);
+  border-color: var(--pico-form-element-valid-border-color);
+}
+
+dialog.score-entry-modal section.keyboard button.backspace {
+  background: var(--pico-form-element-invalid-focus-color);
+  border-color: var(--pico-form-element-invalid-border-color);
+}

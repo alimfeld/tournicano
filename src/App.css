@@ -1,276 +1,139 @@
 :root {
-  --pico-font-size: 120%;
+  /* Base font size multiplier - scales all Pico CSS responsive breakpoints */
+  --font-size-multiplier: 1.2;
+
+  /* Pico variables */
+  --pico-font-size: calc(100% * var(--font-size-multiplier));
   --pico-font-weight: 500;
   --pico-spacing: 0.8rem;
-  --pico-nav-element-spacing-horizontal: 0.4rem;
-  --pico-nav-element-spacing-vertical: 0.5rem;
-  --pico-block-spacing-vertical: 0.7rem;
-  --nav-offset: 3.2rem;
-  --inc-font-weight: 550;
+  --pico-form-element-spacing-vertical: 0.6rem;
+  --pico-form-element-spacing-horizontal: 0.8rem;
+
+  /* Layout dimensions */
+  --nav-height: 4rem;
+
+  /* FAB (Floating Action Button) */
+  --fab-width: 3rem;
+  --fab-height: 3rem;
+  --fab-font-size: 1.5rem;
+
+  /* Navigation */
+  --nav-active-border-width: 3px;
+  --nav-icon-font-size: 1.5rem;
+
+  /* Overlay buttons (chevrons, exit fullscreen) - simplified, no animations */
+  --overlay-button-opacity: 0.35;
+  --chevron-width: 1.5rem;
+  --chevron-height: 3rem;
+  --chevron-font-size: 1.2rem;
+
+  /* Exit fullscreen button */
+  --exit-fullscreen-width: 2.5rem;
+  --exit-fullscreen-height: 2.5rem;
+  --exit-fullscreen-font-size: 1.2rem;
+
+  /* Player cards */
+  --player-card-avatar-size: 3rem;
+
+  /* Player list table */
+  --player-list-avatar-size: 2rem;
+
+  /* Player modal */
+  --player-modal-avatar-size: 5rem;
+
+  /* Help cards */
+  --help-card-max-width: 30rem;
+
+  /* Score entry modal - no animations */
+  --score-entry-keyboard-max-width: 100%;
 }
 
 [data-theme=dark] {
-  --pico-form-element-border-color: var(--pico-muted-color);
-  --pico-muted-border-color: var(--pico-muted-color);
   --pico-box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.1),
     0.2ex 0.2ex 0.5ex rgba(255, 255, 255, 0.08),
     0.5ex 0.5ex 1ex rgba(0, 0, 0, 0.9);
 }
 
-@media (min-width: 512px) {
+/* Apply multiplier to all Pico CSS responsive breakpoints */
+@media (min-width: 576px) {
 
-  :root,
-  :host {
-    --pico-font-size: 130%;
-  }
-}
-
-@media (min-width: 640px) {
-
-  :root,
-  :host {
-    --pico-font-size: 140%;
+  :root {
+    --pico-font-size: calc(106.25% * var(--font-size-multiplier));
   }
 }
 
 @media (min-width: 768px) {
 
-  :root,
-  :host {
-    --pico-font-size: 150%;
+  :root {
+    --pico-font-size: calc(112.5% * var(--font-size-multiplier));
+    --player-card-avatar-size: 3.2rem;
+    --score-entry-keyboard-max-width: 60%;
   }
 }
 
 @media (min-width: 1024px) {
 
-  :root,
-  :host {
-    --pico-font-size: 160%;
+  :root {
+    --pico-font-size: calc(118.75% * var(--font-size-multiplier));
+    --player-card-avatar-size: 3.4rem;
+    --score-entry-keyboard-max-width: 50%;
   }
 }
 
 @media (min-width: 1280px) {
 
-  :root,
-  :host {
-    --pico-font-size: 170%;
+  :root {
+    --pico-font-size: calc(125% * var(--font-size-multiplier));
   }
 }
 
+@media (min-width: 1536px) {
+
+  :root {
+    --pico-font-size: calc(131.25% * var(--font-size-multiplier));
+  }
+}
+
+/* Heading size overrides - conservative scaling */
+h1 {
+  --pico-font-size: 1.25rem;
+}
+
+h2 {
+  --pico-font-size: 1.125rem;
+}
+
+h3 {
+  --pico-font-size: 1rem;
+}
+
+/* Full-height flexbox layout for Swipeable */
 body {
   min-height: 100vh;
-  /* Use dynamic viewport height for mobile */
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--pico-background-color);
-  border-bottom: 1px solid;
-  border-color: var(--pico-muted-border-color);
-  box-shadow: var(--pico-box-shadow);
-}
-
-header>button {
-  padding: 0 var(--pico-form-element-spacing-horizontal);
-  border-radius: 2rem;
-}
-
-/* Global heading styles */
-
-h1 {
-  margin: 0;
-  font-size: 1.4rem;
-}
-
-h2 {
-  font-size: 1.2rem;
-}
-
-h3 {
-  font-size: 1.1rem;
-}
-
-h4 {
-  font-size: 1rem;
-}
-
-/* Navigation */
-
-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  border-top: 1px solid;
-  border-color: var(--pico-muted-border-color);
-  background: var(--pico-background-color);
-  z-index: 1;
-  box-shadow: var(--pico-box-shadow);
-  /* iOS safe area support */
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-nav ul:first-of-type,
-nav ul:last-of-type {
-  margin: 0;
-}
-
-nav ul {
-  width: 100%;
-  justify-content: space-evenly;
-  position: relative;
-}
-
-nav li {
-  width: 100%;
-  text-align: center;
-  cursor: pointer;
-  font-size: 1.5rem;
-  position: relative;
-  z-index: 1;
-}
-
-/* Sliding pill highlight */
-nav .nav-highlight {
-  position: absolute;
-  bottom: var(--pico-nav-element-spacing-vertical);
-  left: 2.5%;
-  /* Narrower than 20% (100% / 5) to add padding */
-  width: 15%;
-  height: 2.2rem;
-  background: var(--pico-muted-color);
-  opacity: 0.3;
-  border-radius: 1.1rem;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-  /* Initial position */
-  transform: translateX(0%);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Global touch behavior */
-
-* {
-  /* disable double-tap zoom */
-  touch-action: manipulation;
-}
-
-/* Global player styles */
-
-article.player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
-  padding: 0.5ex 0.2ex;
-  min-width: 0;
-  position: relative;
-}
-
-article.player img {
-  width: 3rem;
-  height: 3rem;
-}
-
-@media (min-width: 768px) {
-  article.player img {
-    width: 3.2rem;
-    height: 3.2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  article.player img {
-    width: 3.4rem;
-    height: 3.4rem;
-  }
-}
-
-article.player p {
-  color: var(--pico-form-element-color);
-  font-weight: var(--inc-font-weight);
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  text-align: center;
-  margin: 0;
-}
-
-article.player .player-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0 0.4ex;
-}
-
-article.player .player-rank {
-  position: absolute;
-  top: 0;
-  left: 0;
-  font-size: 0.8rem;
-  min-width: calc(2ch + 0.5ex);
-  text-align: center;
-  border: 1px solid;
-  border-radius: var(--pico-border-radius);
-  border-color: var(--pico-muted-border-color);
-}
-
-/* Global debug styles */
-
-div.debug {
-  font-size: 60%;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  color: var(--pico-muted-color);
-  padding: 0.5ex;
-  border: 1px solid;
-  border-color: var(--pico-muted-border-color);
-}
-
-div.debug> :nth-child(2n) {
-  justify-self: end;
-}
-
-/* External link indicator */
-
-a[target="_blank"]::after {
-  content: " ↗";
-  font-size: 0.85em;
-  display: inline-block;
-}
-
+/* Expand main to fill available space */
 main {
   flex: 1;
-  /* Allow flex item to shrink */
   min-height: 0;
 }
 
-main:not(.fullscreen):not(.actions) {
-  /* leave room for the fixed nav */
-  padding-bottom: calc(var(--nav-offset) + env(safe-area-inset-bottom));
+/* Reserve space for bottom navigation (4rem) + iOS safe area */
+body>main {
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
 }
 
-main.fullscreen {
-  /* no nav in fullscreen, but still need safe area for FAB buttons */
-  padding-bottom: env(safe-area-inset-bottom);
+/* Disable double-tap zoom */
+* {
+  touch-action: manipulation;
 }
 
-/* Global floating / fixed actions styles */
-
-main.actions {
-  /* leave room for action buttons + nav + safe area */
-  padding-bottom: calc(3.8rem + var(--nav-offset) + env(safe-area-inset-bottom));
-}
-
-main.actions.fullscreen {
-  /* leave room for action buttons + safe area (no nav in fullscreen) */
-  padding-bottom: calc(3.8rem + env(safe-area-inset-bottom));
+/* External link indicator */
+a[target="_blank"]::after {
+  content: " ↗";
+  display: inline-block;
 }

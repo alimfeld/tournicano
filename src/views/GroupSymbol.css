@@ -1,0 +1,50 @@
+/* Group badge wrapper - letter inherits parent container color */
+.group-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--pico-spacing) / 5);
+}
+
+/* Group symbols - muted 4-color deck */
+.group-symbol {
+  font-weight: bold;
+}
+
+/* Neutral variant - inherits color from parent */
+.group-symbol:not(.spades):not(.hearts):not(.diamonds):not(.clubs) {
+  color: inherit;
+}
+
+.group-symbol.spades {
+  color: #2C2C2C; /* Dark charcoal */
+}
+
+.group-symbol.hearts {
+  color: #C62828; /* Muted red */
+}
+
+.group-symbol.diamonds {
+  color: #1565C0; /* Muted blue */
+}
+
+.group-symbol.clubs {
+  color: #2E7D32; /* Muted green */
+}
+
+/* Dark mode adjustments for better visibility */
+[data-theme=dark] .group-symbol.spades {
+  color: #D0D0D0; /* Light gray */
+}
+
+[data-theme=dark] .group-symbol.hearts {
+  color: #EF5350; /* Bright red */
+}
+
+[data-theme=dark] .group-symbol.diamonds {
+  color: #42A5F5; /* Bright blue */
+}
+
+[data-theme=dark] .group-symbol.clubs {
+  color: #66BB6A; /* Bright green */
+}

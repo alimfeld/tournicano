@@ -72,6 +72,10 @@ class SettingsImpl implements Mutable<Settings> {
     this.listeners.push(listener);
   }
 
+  removeListener(listener: SettingsListener) {
+    this.listeners = this.listeners.filter(l => l !== listener);
+  }
+
   notifyChange() {
     this.listeners.forEach((listener) => listener.onchange(this));
   }

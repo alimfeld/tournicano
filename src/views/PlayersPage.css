@@ -1,186 +1,118 @@
-header.players {
-  text-align: center;
-}
-
-div.player-filter button {
-  padding: 0.5ex 0;
-  flex: 1;
-}
-
-/* Active filter styling */
-div.player-filter button[aria-current="page"] {
-  font-weight: var(--inc-font-weight);
-  pointer-events: none;
-  cursor: default;
-}
-
-/* Registration section */
-main.players div.registration-section form {
-  margin-bottom: calc(var(--pico-spacing) * 2);
-}
-
-/* Group header */
-main.players div.group-header {
-  margin-bottom: var(--pico-spacing);
-}
-
-main.players div.group-header h2 {
-  margin: 0;
-}
-
-/* Table-like layout for players */
-main.players section.group {
+/* Filter section */
+section.filter-section {
   display: flex;
-  flex-direction: column;
-  border: 1px solid var(--pico-muted-border-color);
-  border-radius: var(--pico-border-radius);
-  margin-bottom: var(--pico-spacing);
-}
-
-main.players div.player-row {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--pico-muted-border-color);
-  gap: 0.75rem;
-  /* Ensure adequate touch target size */
-  min-height: 3rem;
-}
-
-main.players div.player-row:last-child {
-  border-bottom: none;
-}
-
-main.players div.player-row.inactive .player-compact {
-  opacity: 0.5;
-}
-
-/* Hamburger menu */
-main.players details.dropdown.player-menu {
-  width: auto;
-  margin: 0;
-  /* Prevent menu from shrinking */
-  flex-shrink: 0;
-}
-
-main.players details.dropdown.player-menu summary {
-  /* Larger touch target */
-  padding: 0.5rem;
-  margin: 0;
-  min-width: 2.5rem;
-  /* Adequate touch target height */
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pico-spacing);
   justify-content: center;
-  text-align: center;
-  font-size: 1.2rem;
-  line-height: 1;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  cursor: pointer;
-  /* Remove tap highlight on iOS */
-  -webkit-tap-highlight-color: transparent;
 }
 
-main.players details.dropdown.player-menu summary:focus,
-main.players details.dropdown.player-menu[open] summary {
-  background: transparent;
-  color: inherit;
-  border: none;
-  box-shadow: none;
+/* Grid container */
+.players-grid {
+  width: 100%;
 }
 
-main.players details.dropdown.player-menu summary::after {
-  display: none;
-}
-
-main.players details.dropdown.player-menu ul {
-  min-width: max-content;
-  width: max-content;
-  white-space: nowrap;
-}
-
-main.players details.dropdown.player-menu li {
-  margin: 0;
-}
-
-main.players details.dropdown.player-menu a {
-  display: block;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-main.players details.dropdown.player-menu a.delete {
-  color: var(--pico-form-element-invalid-focus-color);
-}
-
-main.players details.dropdown.player-menu a.delete:hover {
-  background: var(--pico-form-element-invalid-focus-color);
-  color: white;
-}
-
-/* Player info (avatar + name) */
-main.players div.player-info {
-  flex: 1;
-  display: flex;
+/* Each row is a grid - default 3 columns */
+.header-row,
+.player-row {
+  display: grid;
+  gap: 0;
   align-items: center;
-  cursor: pointer;
-  min-width: 0;
-  padding: 0.25rem 0;
-  /* Increase touch target area */
-  margin: -0.25rem 0;
-  /* Compensate for padding */
-  -webkit-tap-highlight-color: transparent;
-  /* Remove tap highlight on iOS */
-  user-select: none;
-  /* Prevent text selection on double-tap */
-  -webkit-user-select: none;
+  border-bottom: var(--pico-border-width) solid var(--pico-table-border-color);
+  grid-template-columns: 3rem minmax(10rem, 30rem) auto;
 }
 
-main.players div.player-compact {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-width: 0;
+/* 4 columns when groups present */
+.has-groups .header-row,
+.has-groups .player-row {
+  grid-template-columns: 3rem minmax(10rem, 30rem) minmax(3rem, 9rem) auto;
 }
 
-main.players img.avatar-small {
-  width: 2rem;
-  height: 2rem;
+/* Cell padding */
+.header-cell,
+.player-cell {
+  padding: calc(var(--pico-spacing) / 2) calc(var(--pico-spacing) / 2);
+}
+
+/* Header row */
+.header-row {
+  font-weight: bold;
+  border-bottom-width: calc(var(--pico-border-width) * 3);
+}
+
+/* Player header - spans avatar + name columns by default */
+.header-cell.player-header {
+  grid-column: span 2;
+}
+
+/* When groups exist, span avatar + name + group */
+.has-groups .header-cell.player-header {
+  grid-column: span 3;
+}
+
+/* Avatar cell */
+.avatar-cell img {
+  width: var(--player-list-avatar-size);
+  height: var(--player-list-avatar-size);
   border-radius: 50%;
+  display: block;
+}
+
+/* Name cell - inline icon + text with ellipsis */
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pico-spacing) / 2);
+  min-width: 0;
+}
+
+.name-cell .participating-icon {
   flex-shrink: 0;
 }
 
-main.players span.player-name {
-  font-weight: var(--inc-font-weight);
-  white-space: nowrap;
+.name-cell .name-text {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
-main.players span.player-lock {
-  font-size: 0.9rem;
-  opacity: 0.7;
-  margin-left: 0.25rem;
-  flex-shrink: 0;
+/* Active header */
+.header-cell.active-header {
+  text-align: right;
 }
 
-/* Player toggle */
-main.players div.player-toggle {
-  /* Prevent toggle from shrinking */
-  flex-shrink: 0;
-}
-
-main.players div.player-toggle input.active {
+.header-cell.active-header input[type="checkbox"] {
   margin: 0;
+}
+
+/* Active cell (for player rows) */
+.active-cell {
+  text-align: right;
+}
+
+.active-cell input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Clickable rows */
+.player-row {
   cursor: pointer;
 }
 
-/* Add player form */
-input.add {
-  border-color: var(--pico-form-element-valid-border-color);
-  background: var(--pico-form-element-valid-focus-color);
+.player-row:hover {
+  background-color: var(--pico-table-row-stripped-background-color);
+}
+
+/* Mobile: smaller name column */
+@media (max-width: 640px) {
+
+  .header-row,
+  .player-row {
+    grid-template-columns: 3rem minmax(8rem, 12rem) auto;
+  }
+
+  .has-groups .header-row,
+  .has-groups .player-row {
+    grid-template-columns: 3rem minmax(8rem, 12rem) auto auto;
+  }
 }

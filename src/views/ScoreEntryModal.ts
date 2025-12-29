@@ -1,19 +1,21 @@
 import m from "mithril";
-import "./RoundPage.css";
-import { PlayerView } from "./PlayerView.ts";
+import "./ScoreEntryModal.css";
+import "./MatchSection.css";
+import { MatchSection } from "./MatchSection.ts";
 import { Match, Score } from "../model/Tournament.ts";
 
-export interface ScoreEntryAttrs {
+export interface ScoreEntryModalAttrs {
+  roundIndex: number;
   matchIndex: number;
   match: Match;
   onClose: () => void;
 }
 
-interface ScoreEntryState {
+interface ScoreEntryModalState {
   scoreInput: string;
 }
 
-export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
+export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalState> = {
   oninit: ({ state, attrs }) => {
     // Initialize with existing score if available
     if (attrs.match.score) {
@@ -24,7 +26,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
     }
   },
 
-  view: ({ attrs: { matchIndex, match, onClose }, state }) => {
+  view: ({ attrs: { roundIndex, matchIndex, match, onClose }, state }) => {
     const addDigit = (digit: string) => {
       const parts = state.scoreInput.split(":");
 
@@ -129,22 +131,25 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
       ? parts[0].length >= 2  // Before colon: disable if 2+ digits
       : parts[1].length >= 2; // After colon: disable if 2+ digits on right side
 
-    return m.fragment({}, [
-      m("main.score-entry.container-fluid.fullscreen", [
-        m("section.match", [
-          m("section.team", [
-            m(PlayerView, { player: match.teamA.player1, debug: false }),
-            m(PlayerView, { player: match.teamA.player2, debug: false }),
-          ]),
-          m("section.vs", [
-            m("h2.match", `Match ${matchIndex + 1}`),
-            m("div.score-text", formatScore()),
-          ]),
-          m("section.team", [
-            m(PlayerView, { player: match.teamB.player1, debug: false }),
-            m(PlayerView, { player: match.teamB.player2, debug: false }),
-          ]),
-        ]),
+    return m("dialog.score-entry-modal", {
+      oncreate: (vnode) => {
+        (vnode.dom as HTMLDialogElement).showModal();
+        document.documentElement.classList.add('modal-is-open');
+      },
+      onremove: () => {
+        document.documentElement.classList.remove('modal-is-open');
+      }
+    },
+      m("article",
+        m(MatchSection, {
+          roundIndex,
+          match,
+          matchIndex,
+          debug: false,
+          mode: "display",
+          showRoundIndex: true,
+          displayScore: formatScore()
+        }),
 
         m("section.keyboard", [
           // Row 0: Actions (Cancel and Submit at 50% each)
@@ -182,7 +187,7 @@ export const ScoreEntryPage: m.Component<ScoreEntryAttrs, ScoreEntryState> = {
             disabled: isBackspaceDisabled,
           }, "⌫"),
         ]),
-      ]),
-    ]);
+      )
+    );
   },
 };

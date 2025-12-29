@@ -9,14 +9,11 @@ export interface Player {
 }
 
 export interface TournamentPlayer extends Player {
-  readonly registered: boolean;
   readonly active: boolean;
-  register(notify?: boolean): boolean;
-  unregister(notify?: boolean): boolean;
   inAnyRound(): boolean;
   rename(name: string): boolean;
-  setGroup(group: number): void;
-  activate(active: boolean): void;
+  setGroup(group: number, notify?: boolean): void;
+  activate(active: boolean, notify?: boolean): void;
   delete(): boolean;
 }
 
@@ -73,7 +70,8 @@ export interface Match {
 export interface Round {
   readonly matches: Match[];
   readonly paused: PlayerStats[];
-  standings(group?: number): RankedPlayer[];
+  readonly inactive: PlayerStats[];
+  standings(groups?: number[]): RankedPlayer[];
   isLast(): boolean;
   delete(): boolean;
 }
@@ -86,14 +84,14 @@ export interface Tournament {
   readonly rounds: Round[];
   readonly groups: number[];
   readonly activePlayerCount: number;
-  readonly registeredCount: number;
   readonly hasAllScoresSubmitted: boolean;
   players(group?: number): TournamentPlayer[];
   addPlayers(names: string[], group?: number): { added: string[], duplicates: string[] };
-  registerAll(): void;
-  unregisterAll(): void;
   activateAll(active: boolean): void;
   activateGroup(group: number, active: boolean): void;
+  activatePlayers(players: TournamentPlayer[], active: boolean): number;
+  movePlayers(players: TournamentPlayer[], group: number): number;
+  deletePlayers(players: TournamentPlayer[]): number;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
   restart(): void;
   reset(): void;

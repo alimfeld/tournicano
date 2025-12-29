@@ -19,3 +19,10 @@
 - **Error handling**: Return success booleans for operations that can fail
 - **State management**: Use listener pattern for change notifications (`addListener`, `onchange`)
 - **Testing**: Use Vitest with fixtures via `baseTest.extend<Fixture>()` for test setup
+
+## UI/Styling Philosophy
+- **Pico CSS First**: Rely on the Pico CSS design system wherever possible
+  - Use Pico's semantic HTML components (buttons, forms, tables, etc.)
+  - Leverage Pico CSS variables for theming (`--pico-primary`, `--pico-muted-color`, `--pico-spacing`, etc.)
+  - Keep custom CSS minimal - only add when Pico doesn't provide the pattern
+  - Let Pico handle responsive design and dark mode automatically

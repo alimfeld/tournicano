@@ -1,164 +1,31 @@
-header.round {
-  display: flex;
-  justify-content: space-between;
+/* RoundPage component - main tournament rounds view */
+
+/* RoundPage-specific main padding for FAB button */
+
+main.round {
+  /* leave room for FAB action button + nav + safe area */
+  padding-bottom: calc(var(--nav-height) + var(--fab-height) + var(--pico-spacing) + env(safe-area-inset-bottom));
 }
 
-header.score-entry {
-  text-align: center;
+main.round.fullscreen {
+  /* leave room for FAB action button + safe area (no nav in fullscreen) */
+  padding-bottom: calc(var(--fab-height) + var(--pico-spacing) + env(safe-area-inset-bottom));
 }
 
-h2.match {
-  text-align: center;
-}
+/* Benched players section (paused + inactive) */
 
-section.match {
-  width: 100%;
+section.benched {
   display: grid;
   column-gap: var(--pico-spacing);
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-section.match {
-  border-bottom: 1px solid;
-  border-color: var(--pico-muted-border-color);
-}
-
-section.team {
-  display: grid;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-}
-
-section.team article.player {
-  margin: 0;
-}
-
-section.vs {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-}
-
-section.vs button.score {
-  text-align: center;
-  font-weight: var(--inc-font-weight);
-  width: 100%;
-}
-
-section.vs button.score.invalid {
-  border-color: var(--pico-form-element-invalid-border-color);
-  color: var(--pico-form-element-color);
-}
-
-section.vs button.score.valid {
-  border-color: var(--pico-form-element-valid-border-color);
-  color: var(--pico-form-element-color);
-}
-
-section.paused {
-  display: grid;
-  column-gap: var(--pico-spacing);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-section.paused article {
+section.benched article {
   opacity: 0.6;
 }
 
-main.score-entry {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-section.keyboard {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--pico-spacing);
-}
-
-div.action-row {
-  grid-column: span 3;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--pico-spacing);
-}
-
-/* Touch-optimized visual feedback on button press */
-section.keyboard button {
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-section.keyboard button:active:not(:disabled) {
-  transform: scale(0.95);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-section.keyboard button.key-number:active:not(:disabled) {
-  background: var(--pico-primary-hover-background);
-}
-
-section.keyboard button.key-action:active:not(:disabled) {
-  background: var(--pico-secondary-hover-background);
-}
-
-section.keyboard button.clear {
-  background: var(--pico-form-element-invalid-focus-color);
-  border-color: var(--pico-form-element-invalid-border-color);
-}
-
-section.keyboard button.clear:active:not(:disabled) {
-  background: var(--pico-form-element-invalid-active-border-color);
-}
-
-section.keyboard button.accept {
-  background: var(--pico-form-element-valid-focus-color);
-  border-color: var(--pico-form-element-valid-border-color);
-}
-
-section.keyboard button.accept:active:not(:disabled) {
-  background: var(--pico-form-element-valid-active-border-color);
-}
-
-section.keyboard button.backspace {
-  background: var(--pico-form-element-invalid-focus-color);
-  border-color: var(--pico-form-element-invalid-border-color);
-}
-
-section.keyboard button.backspace:active:not(:disabled) {
-  background: var(--pico-form-element-invalid-active-border-color);
-}
-
-div.score-text {
-  border: 1px solid;
-  border-color: var(--pico-muted-border-color);
-  width: 100%;
-  text-align: center;
-  font-weight: var(--inc-font-weight);
-  padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
-  border-radius: var(--pico-border-radius);
-}
-
 @media (min-width: 768px) {
-
-  section.match {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);
-  }
-
-  section.team {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: minmax(0, 1fr);
-  }
-
-  section.paused {
+  section.benched {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
-  section.keyboard {
-    width: 60%;
   }
 }

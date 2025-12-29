@@ -1,0 +1,37 @@
+/* Exit Fullscreen Button - Positioned to the left of FAB button, styled like navigation chevrons */
+
+.exit-fullscreen-button {
+  position: fixed;
+  /* Position at same bottom level as FAB in fullscreen mode */
+  bottom: calc(var(--pico-spacing) + env(safe-area-inset-bottom));
+  /* Position to the left of FAB: spacing + FAB width + spacing */
+  right: calc(var(--pico-spacing) + var(--fab-width) + var(--pico-spacing));
+  width: var(--exit-fullscreen-width);
+  height: var(--exit-fullscreen-height);
+
+  /* Use Pico CSS variables for theme-aware styling (like chevrons) */
+  background: var(--pico-muted-color);
+  border-color: var(--pico-muted-border-color);
+  color: var(--pico-color);
+
+  /* Typography */
+  font-size: var(--exit-fullscreen-font-size);
+  line-height: 1;
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  /* Interaction - subtle like chevrons */
+  cursor: pointer;
+  user-select: none;
+  opacity: var(--overlay-button-opacity);
+
+  /* Z-index: Same as FAB, appears together */
+  z-index: 100;
+
+  /* Prevent tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+}

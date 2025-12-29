@@ -1,0 +1,57 @@
+/* PlayerCard component styles */
+
+article.player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: calc(var(--pico-form-element-spacing-vertical) / 2) calc(var(--pico-form-element-spacing-horizontal) / 2);
+  min-width: 0;
+  position: relative;
+}
+
+article.player img {
+  width: var(--player-card-avatar-size);
+  height: var(--player-card-avatar-size);
+}
+
+article.player p {
+  color: var(--pico-form-element-color);
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  margin: 0;
+}
+
+article.player .player-badge-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0 calc(var(--pico-form-element-spacing-horizontal) / 4);
+}
+
+article.player .player-badge-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 calc(var(--pico-form-element-spacing-horizontal) / 4);
+}
+
+/* Debug info displayed below player card */
+
+div.debug {
+  font-size: 60%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  color: var(--pico-muted-color);
+  padding: calc(var(--pico-spacing) / 2);
+  border: var(--pico-border-width) solid;
+  border-color: var(--pico-muted-border-color);
+}
+
+div.debug> :nth-child(2n) {
+  justify-self: end;
+}

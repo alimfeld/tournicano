@@ -1,0 +1,17 @@
+/* MatchingSpecModal component */
+
+dialog.matching-spec article {
+  margin: 0;
+  max-height: 100vh;
+}
+
+/* Slider label layout - inline value display */
+dialog.matching-spec .slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+dialog.matching-spec .slider-label-text {
+  text-align: right;
+}

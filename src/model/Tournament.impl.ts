@@ -71,33 +71,8 @@ class TournamentPlayerImpl implements Mutable<TournamentPlayer> {
     readonly id: string,
     public name: string,
     public group: number = 0,
-    public registered = false,
     public active = false,
   ) { };
-
-  register(notify = true): boolean {
-    if (this.registered) {
-      return false;
-    }
-    this.registered = true;
-    this.active = true;
-    if (notify) {
-      this.tournament.notifyChange();
-    }
-    return true;
-  }
-
-  unregister(notify = true): boolean {
-    if (this.inAnyRound()) {
-      return false;
-    }
-    this.registered = false;
-    this.active = false;
-    if (notify) {
-      this.tournament.notifyChange();
-    }
-    return true;
-  }
 
   inAnyRound(): boolean {
     const lastRound = this.tournament.rounds[this.tournament.rounds.length - 1];
@@ -119,18 +94,18 @@ class TournamentPlayerImpl implements Mutable<TournamentPlayer> {
     return false;
   }
 
-  setGroup(group: number) {
+  setGroup(group: number, notify = true) {
     this.group = group;
-    this.tournament.notifyChange();
+    if (notify) {
+      this.tournament.notifyChange();
+    }
   }
 
-  activate(active: boolean) {
-    // Can only activate if registered
-    if (active && !this.registered) {
-      return;
-    }
+  activate(active: boolean, notify = true) {
     this.active = active;
-    this.tournament.notifyChange();
+    if (notify) {
+      this.tournament.notifyChange();
+    }
   }
 
   delete() {
@@ -371,9 +346,9 @@ class RoundImpl implements Round {
     return success;
   }
 
-  standings(group?: number) {
+  standings(groups?: number[]) {
     const players = Array.from(this.playerMap.values())
-      .filter((player) => group === undefined || player.group === group)
+      .filter((player) => !groups || groups.length === 0 || groups.includes(player.group))
       .filter((player) => player.wins + player.draws + player.losses > 0)
       .toSorted((p, q) => {
         const result = p.compare(q);
@@ -402,7 +377,7 @@ class RoundImpl implements Round {
   }
 }
 
-type CompactPlayer = [PlayerId, string, number, boolean, boolean]; // id, name, group, registered, active
+type CompactPlayer = [PlayerId, string, number, boolean]; // id, name, group, active
 
 type CompactTeam = [PlayerId, PlayerId];
 
@@ -430,8 +405,7 @@ class TournamentImpl implements Mutable<Tournament> {
           cp[0],
           cp[1],
           cp[2],
-          cp[3] ?? false,  // registered - maps from old active value during migration
-          cp[4] ?? true,   // active - default true for migration (old active at index 3 becomes registered)
+          cp[3],
         );
         this.playerMap.set(player.id, player);
       });
@@ -472,11 +446,7 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   get activePlayerCount() {
-    return this.players().filter((p) => p.registered && p.active).length;
-  }
-
-  get registeredCount() {
-    return this.players().filter((p) => p.registered).length;
+    return this.players().filter((p) => p.active).length;
   }
 
   get hasAllScoresSubmitted() {
@@ -493,7 +463,7 @@ class TournamentImpl implements Mutable<Tournament> {
       const existingNames = new Set(this.players().map((p) => p.name));
       if (!existingNames.has(name)) {
         const id = crypto.randomUUID();
-        const player = new TournamentPlayerImpl(this, id, name, group, true, true);
+        const player = new TournamentPlayerImpl(this, id, name, group, true);
         this.playerMap.set(player.id, player);
         added.push(name);
       } else {
@@ -502,20 +472,6 @@ class TournamentImpl implements Mutable<Tournament> {
     });
     this.notifyChange();
     return { added, duplicates };
-  }
-
-  registerAll() {
-    this.players().forEach((player) => {
-      player.register(false); // Skip individual notifications
-    });
-    this.notifyChange(); // Single notification for bulk operation
-  }
-
-  unregisterAll() {
-    this.players().forEach((player) => {
-      player.unregister(false); // Skip individual notifications
-    });
-    this.notifyChange(); // Single notification for bulk operation
   }
 
   activateAll(active: boolean) {
@@ -532,6 +488,53 @@ class TournamentImpl implements Mutable<Tournament> {
     this.notifyChange();
   }
 
+  activatePlayers(players: TournamentPlayer[], active: boolean): number {
+    let count = 0;
+    players.forEach((player) => {
+      // Only count players that can be activated/deactivated
+      if (active) {
+        if (!player.active) {
+          (player as TournamentPlayerImpl).activate(active, false);
+          count++;
+        }
+      } else {
+        if (player.active) {
+          (player as TournamentPlayerImpl).activate(active, false);
+          count++;
+        }
+      }
+    });
+    if (count > 0) {
+      this.notifyChange();
+    }
+    return count;
+  }
+
+  movePlayers(players: TournamentPlayer[], group: number): number {
+    players.forEach((player) => {
+      (player as TournamentPlayerImpl).setGroup(group, false);
+    });
+    if (players.length > 0) {
+      this.notifyChange();
+    }
+    return players.length;
+  }
+
+  deletePlayers(players: TournamentPlayer[]): number {
+    let count = 0;
+    players.forEach((player) => {
+      if (!player.inAnyRound()) {
+        if (this.playerMap.delete(player.id)) {
+          count++;
+        }
+      }
+    });
+    if (count > 0) {
+      this.notifyChange();
+    }
+    return count;
+  }
+
   createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
     // Determine participating players for this round:
     // Any players participating in the previous round (along with their stats) plus
@@ -544,14 +547,14 @@ class TournamentImpl implements Mutable<Tournament> {
     participating.push(
       ...shuffle(this.players() // shuffle in players to break patterns
         .filter((p) => {
-          return p.registered && p.active && !p.inAnyRound();
+          return p.active && !p.inAnyRound();
         })
         .map((p) => new PlayerStatsImpl(this, p.id))),
     );
     const [active, inactive] = participating.reduce(
       (acc: [PlayerStatsImpl[], PlayerId[]], player) => {
         const tournamentPlayer = this.playerMap.get(player.id)!;
-        if (tournamentPlayer.registered && tournamentPlayer.active) {
+        if (tournamentPlayer.active) {
           acc[0].push(player);
         } else {
           acc[1].push(player.id);
@@ -591,7 +594,7 @@ class TournamentImpl implements Mutable<Tournament> {
   serialize() {
     const compact: CompactTournament = [
       this.players()
-        .map((p) => [p.id, p.name, p.group, p.registered, p.active]),
+        .map((p) => [p.id, p.name, p.group, p.active]),
       this.rounds.map((round) => [
         round.matches.map((match) => [
           [match.teamA.player1.id, match.teamA.player2.id],
@@ -710,36 +713,49 @@ class TournamentImpl implements Mutable<Tournament> {
       };
     });
 
-    // Build per-group standings
+    // Get unique groups from participating players only
+    const participatingGroups = [...new Set(Array.from(targetRound.playerMap.values()).map(p => p.group))].sort();
+
+    // Build per-group standings (only if multiple participating groups exist)
     const byGroup: { [groupLabel: string]: RankedPlayerExportData[] } = {};
-    this.groups.forEach((groupNumber) => {
-      const groupLabel = this.groupToLabel(groupNumber);
-      const groupStandings = targetRound.standings(groupNumber).map((ranked) => {
-        const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
-        const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
-        return {
-          rank: ranked.rank,
-          name: ranked.player.name,
-          group: groupLabel,
-          wins: ranked.player.wins,
-          draws: ranked.player.draws,
-          losses: ranked.player.losses,
-          winRatio: ranked.player.winRatio,
-          plusMinus: ranked.player.plusMinus,
-          pointsFor: ranked.player.pointsFor,
-          pointsAgainst: ranked.player.pointsAgainst,
-          matchCount: ranked.player.matchCount,
-          pauseCount: ranked.player.pauseCount,
-          reliability,
-        };
-      });
+
+    // Collect all group standings first (avoid calling standings() twice)
+    const groupStandingsMap = new Map<number, any[]>();
+    participatingGroups.forEach((groupNumber) => {
+      const groupStandings = targetRound.standings([groupNumber]);
       if (groupStandings.length > 0) {
-        byGroup[groupLabel] = groupStandings;
+        groupStandingsMap.set(groupNumber, groupStandings);
       }
     });
 
-    // Get unique groups from participating players only
-    const participatingGroups = [...new Set(Array.from(targetRound.playerMap.values()).map(p => p.group))].sort();
+    // Only populate byGroup if there are multiple participating groups
+    const hasMultipleGroups = groupStandingsMap.size > 1;
+
+    if (hasMultipleGroups) {
+      groupStandingsMap.forEach((standings, groupNumber) => {
+        const groupLabel = this.groupToLabel(groupNumber);
+        const groupStandings = standings.map((ranked) => {
+          const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
+          const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
+          return {
+            rank: ranked.rank,
+            name: ranked.player.name,
+            group: groupLabel,
+            wins: ranked.player.wins,
+            draws: ranked.player.draws,
+            losses: ranked.player.losses,
+            winRatio: ranked.player.winRatio,
+            plusMinus: ranked.player.plusMinus,
+            pointsFor: ranked.player.pointsFor,
+            pointsAgainst: ranked.player.pointsAgainst,
+            matchCount: ranked.player.matchCount,
+            pauseCount: ranked.player.pauseCount,
+            reliability,
+          };
+        });
+        byGroup[groupLabel] = groupStandings;
+      });
+    }
 
     return {
       version: 1,

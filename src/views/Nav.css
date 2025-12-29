@@ -1,0 +1,39 @@
+/* Navigation */
+
+nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  border-top: var(--pico-border-width) solid;
+  border-color: var(--pico-muted-border-color);
+  background: var(--pico-background-color);
+  z-index: 1;
+  box-shadow: var(--pico-box-shadow);
+  /* iOS safe area support */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+nav ul:first-of-type,
+nav ul:last-of-type {
+  margin: 0;
+}
+
+nav ul {
+  width: 100%;
+  justify-content: space-evenly;
+  position: relative;
+}
+
+nav li {
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  font-size: var(--nav-icon-font-size);
+  padding: calc(var(--pico-form-element-spacing-vertical) / 2) 0;
+  border-top: var(--nav-active-border-width) solid transparent;
+}
+
+/* Highlight active nav item with top border (no layout shift) */
+nav li.active {
+  border-top-color: var(--pico-primary);
+}
