@@ -326,7 +326,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
                 "Add players to get started. Each player gets a unique avatar for easy recognition.",
                 m("ul.tip-list", [
                   m("li", "Players can be added anytime, even during an ongoing tournament"),
-                  m("li", "Once added, use toggle switches to activate/deactivate players as they join or take breaks")
+                  m("li", "Once added, use toggle switches to deactivate players when taking a break and activate players when re-joining")
                 ])
               ],
               action: { label: "Add Your First Players", onclick: openAddPlayersModal }
