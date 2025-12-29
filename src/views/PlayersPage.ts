@@ -159,6 +159,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     // Delete all players action
     const deleteAllPlayersAction = () => {
       tournament.reset();
+      changePlayerFilters({ search: "", participatingOnly: false, groups: [] });
       showToast("All players deleted", "success");
     };
 
