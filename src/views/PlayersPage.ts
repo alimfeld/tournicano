@@ -79,6 +79,10 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     const totalPlayers = allPlayers.length;
     const participatingPlayers = allPlayers.filter(p => p.inAnyRound());
     const participatingCount = participatingPlayers.length;
+    const activePlayerCount = tournament.activePlayerCount;
+    const headerTitle = activePlayerCount === totalPlayers 
+      ? `Players (${totalPlayers})`
+      : `Players (${activePlayerCount}/${totalPlayers})`;
 
     // Count active filters
     const activeFilterCount =
@@ -166,7 +170,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     return [
       // Header
       m(Header, {
-        title: `Players (${totalPlayers})`,
+        title: headerTitle,
         actions: [
           {
             label: "＋ Add Players",
