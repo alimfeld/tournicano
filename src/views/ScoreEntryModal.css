@@ -14,8 +14,6 @@ dialog.score-entry-modal>article {
   /* Better support for mobile browsers */
   max-height: 100dvh;
   max-width: 100vw;
-  /* Respect iOS safe area */
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Keyboard grid layout */
