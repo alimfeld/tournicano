@@ -41,7 +41,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     state.scoreEntryMatch = undefined;
     state.fullscreen = false;
     state.wakeLock = null;
-    
+
     // Request wake lock if enabled and supported
     if (attrs.settings.wakeLock && "wakeLock" in navigator) {
       try {
@@ -82,7 +82,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     if (state.wakeLockListener) {
       attrs.settings.removeListener(state.wakeLockListener);
     }
-    
+
     // Release wake lock when leaving page
     if (state.wakeLock !== null) {
       await state.wakeLock.release();
@@ -110,6 +110,31 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     // Computed wake lock state
     const isWakeLockActive = settings.wakeLock && "wakeLock" in navigator;
 
+    // Detect group configuration mismatch and return warning message if any
+    const getGroupMismatchWarning = (): string | null => {
+      // Skip check if not enough players (other warning takes precedence)
+      if (tournament.activePlayerCount < 4) {
+        return null;
+      }
+
+      const specUsesGroups = settings.matchingSpec.teamUp.groupFactor > 0 ||
+        settings.matchingSpec.matchUp.groupFactor > 0;
+      const groupCount = tournament.groups.length;
+
+      // Case A: Mode uses groups, but all players are in one group
+      if (specUsesGroups && groupCount === 1) {
+        return "Mode uses groups but all players are in one group - organize players into groups on the Players page";
+      }
+
+      // Case B: Players in multiple groups, but mode doesn't use groups
+      if (!specUsesGroups && groupCount > 1) {
+        return "Players are in multiple groups but mode doesn't use them - consider changing mode in Settings or regrouping players";
+      }
+
+      // No mismatch detected
+      return null;
+    };
+
     // Score entry handlers
     const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
       state.scoreEntryMatch = {
@@ -123,7 +148,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     const closeScoreEntry = () => {
       const scrollY = state.scoreEntryMatch?.scrollPosition ?? 0;
       state.scoreEntryMatch = undefined;
-      
+
       // Restore parent scroll after DOM updates (double RAF)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -203,6 +228,9 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       );
     }
 
+    // Check for group configuration mismatch
+    const groupMismatchWarning = getGroupMismatchWarning();
+
     return m.fragment({ key: `round-${roundIndex}` }, [
       !fullscreen ?
         m(Header, {
@@ -254,29 +282,30 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
               ]
               : null,
           ]
-          : [m(HelpCard, 
-              tournament.activePlayerCount < 4
-                ? {
-                    message: "⚠️ Not enough active players",
-                    hint: [
-                      `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}, but need at least 4 to create rounds.`,
-                      m("ul.tip-list", [
-                        m("li", "Go to Players and make sure you have 4+ active players")
-                      ])
-                    ],
-                    action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
-                  }
-                : {
-                    message: "🚀 Ready to play?",
-                    hint: [
-                      "Tap the ", m("strong", "＋"), " button to create your first round!",
-                      m("ul.tip-list", [
-                        m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
-                        m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''} + ${settings.courts} court${settings.courts !== 1 ? 's' : ''} = ${matchesPerRound} match${matchesPerRound !== 1 ? 'es' : ''} per round`)
-                      ])
-                    ]
-                  }
-            )],
+          : [m(HelpCard,
+            tournament.activePlayerCount < 4
+              ? {
+                message: "⚠️ Not enough active players",
+                hint: [
+                  `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}, but need at least 4 to create rounds.`,
+                  m("ul.tip-list", [
+                    m("li", "Go to Players and make sure you have 4+ active players")
+                  ])
+                ],
+                action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+              }
+              : {
+                message: "🚀 Ready to play?",
+                hint: [
+                  "Tap the ", m("strong", "＋"), " button to create your first round!",
+                  m("ul.tip-list", [
+                    m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
+                    m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''} + ${settings.courts} court${settings.courts !== 1 ? 's' : ''} = ${matchesPerRound} match${matchesPerRound !== 1 ? 'es' : ''} per round`),
+                    groupMismatchWarning ? m("li", m("mark", groupMismatchWarning)) : null
+                  ])
+                ]
+              }
+          )],
       ),
       matchesPerRound >= 1 ? m(FAB, {
         icon: "＋",
