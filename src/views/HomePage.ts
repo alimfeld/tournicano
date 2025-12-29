@@ -74,7 +74,7 @@ export const HomePage: m.Component<HomeAttrs> = {
         ),
         m(
           "p",
-          "Scores can be entered and modified at any time. Rounds can be deleted individually or entirely while preserving player registration.",
+          "Scores can be entered and modified at any time. The last round can be deleted, or all rounds can be deleted entirely while preserving player registration.",
         ),
         m("h2", { id: "standings" }, "🏆 Standings"),
         m(
