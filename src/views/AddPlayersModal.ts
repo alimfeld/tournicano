@@ -69,7 +69,7 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
         m("p",
           m("small",
             m("b", "💡 "),
-            "Use groups (max 4) for modes like Americano Mixed or Group Battle."
+            "Use groups (max 4) to organize players for different tournament formats."
           )
         ),
 
