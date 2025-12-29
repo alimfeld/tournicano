@@ -6,13 +6,14 @@ import {
   PlayerId,
   TournamentPlayer,
   Round,
+  RoundInfo,
   Score,
   Team,
   Tournament,
   TournamentFactory,
   TournamentListener,
 } from "./Tournament";
-import { Americano, MatchingSpec, matching } from "./Tournament.matching";
+import { Americano, MatchingSpec, matching, partitionPlayers } from "./Tournament.matching";
 import { shuffle } from "./Util";
 
 // Export data structures
@@ -535,7 +536,11 @@ class TournamentImpl implements Mutable<Tournament> {
     return count;
   }
 
-  createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
+  private getPlayersForNextRound(shouldShuffle: boolean = false): {
+    participating: PlayerStatsImpl[];
+    active: PlayerStatsImpl[];
+    inactive: PlayerId[];
+  } {
     // Determine participating players for this round:
     // Any players participating in the previous round (along with their stats) plus
     // active players not yet in any round!
@@ -544,13 +549,16 @@ class TournamentImpl implements Mutable<Tournament> {
     if (previousRound) {
       participating.push(...Array.from(previousRound.playerMap.values()));
     }
+    const newPlayers = this.players()
+      .filter((p) => {
+        return p.active && !p.inAnyRound();
+      })
+      .map((p) => new PlayerStatsImpl(this, p.id));
+    
     participating.push(
-      ...shuffle(this.players() // shuffle in players to break patterns
-        .filter((p) => {
-          return p.active && !p.inAnyRound();
-        })
-        .map((p) => new PlayerStatsImpl(this, p.id))),
+      ...(shouldShuffle ? shuffle(newPlayers) : newPlayers)
     );
+
     const [active, inactive] = participating.reduce(
       (acc: [PlayerStatsImpl[], PlayerId[]], player) => {
         const tournamentPlayer = this.playerMap.get(player.id)!;
@@ -563,6 +571,26 @@ class TournamentImpl implements Mutable<Tournament> {
       },
       [[], []],
     );
+
+    return { participating, active, inactive };
+  }
+
+  getNextRoundInfo(spec?: MatchingSpec, maxMatches?: number): RoundInfo {
+    const { active } = this.getPlayersForNextRound(false); // no shuffle needed for info
+    const effectiveSpec = spec || Americano;
+    
+    const { competing, groupDistribution } = partitionPlayers(active, effectiveSpec, maxMatches);
+    
+    return {
+      matchCount: Math.floor(competing.length / 4),
+      activePlayerCount: active.length,
+      groupDistribution,
+      balancingEnabled: effectiveSpec.balanceGroups || false,
+    };
+  }
+
+  createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
+    const { participating, active, inactive } = this.getPlayersForNextRound(true); // shuffle new players
     const [matched, paused] = matching(active, spec || Americano, maxMatches);
     const round = new RoundImpl(
       this,

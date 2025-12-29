@@ -24,6 +24,7 @@ interface MatchingSpecModalState {
   matchUpPerformanceFactor: number;
   matchUpGroupFactor: number;
   matchUpGroupMode: number;
+  balanceGroups: boolean;
 }
 
 export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpecModalState> = {
@@ -38,6 +39,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
     state.matchUpPerformanceFactor = attrs.matchingSpec.matchUp.performanceFactor;
     state.matchUpGroupFactor = attrs.matchingSpec.matchUp.groupFactor;
     state.matchUpGroupMode = attrs.matchingSpec.matchUp.groupMode;
+    state.balanceGroups = attrs.matchingSpec.balanceGroups ?? false;
   },
 
   view: ({ attrs: { onconfirm, onClose, matchingSpec }, state }) => {
@@ -56,6 +58,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
           groupFactor: state.matchUpGroupFactor,
           groupMode: state.matchUpGroupMode,
         },
+        balanceGroups: state.balanceGroups,
       };
       return !matchingSpecEquals(currentSpec, matchingSpec);
     };
@@ -75,6 +78,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
           groupFactor: state.matchUpGroupFactor,
           groupMode: state.matchUpGroupMode,
         },
+        balanceGroups: state.balanceGroups,
       } as MatchingSpec;
 
       onconfirm(spec);
@@ -252,6 +256,20 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
                 )
               )
             ),
+          ),
+          m("fieldset",
+            m("h2", "Group balancing"),
+            m("label",
+              m("input", {
+                type: "checkbox",
+                name: "balance-groups",
+                checked: state.balanceGroups,
+                onchange: (e: Event) => {
+                  state.balanceGroups = (e.target as HTMLInputElement).checked;
+                }
+              }),
+              "Balance groups (equal players per group)"
+            )
           ),
         ),
 

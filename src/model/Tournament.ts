@@ -80,6 +80,13 @@ export interface TournamentListener {
   onchange: (tournament: Tournament) => void;
 }
 
+export interface RoundInfo {
+  matchCount: number;
+  activePlayerCount: number;
+  groupDistribution: Map<number, { total: number; competing: number; paused: number }>;
+  balancingEnabled: boolean;
+}
+
 export interface Tournament {
   readonly rounds: Round[];
   readonly groups: number[];
@@ -93,6 +100,7 @@ export interface Tournament {
   movePlayers(players: TournamentPlayer[], group: number): number;
   deletePlayers(players: TournamentPlayer[]): number;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
+  getNextRoundInfo(spec?: MatchingSpec, maxMatches?: number): RoundInfo;
   restart(): void;
   reset(): void;
   serialize(): string;

@@ -4,6 +4,7 @@ import { Score } from "./Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
+  AmericanoMixedBalanced,
   GroupBattle,
   GroupBattleMixed,
   Match,
@@ -15,6 +16,7 @@ import {
   TeamUpPerformanceMode,
   Tournicano,
   matching,
+  partitionPlayers,
 } from "./Tournament.matching.ts";
 
 class Player {
@@ -1858,4 +1860,588 @@ test("matchingSpecEquals should distinguish between different predefined modes",
   expect(matchingSpecEquals(Mexicano, Tournicano)).toBe(false);
   expect(matchingSpecEquals(GroupBattle, GroupBattleMixed)).toBe(false);
 });
+
+// Group Balancing Tests
+
+test("should balance groups with single group", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  players.forEach(p => p.group = 0);
+
+  const [matches, paused] = matching(players.slice(0, 8), spec, 2);
+
+  expect(matches).toHaveLength(2);
+  expect(paused).toHaveLength(0);
+});
+
+test("should balance 2 groups evenly", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 4; i++) players[i].group = 0;
+  for (let i = 4; i < 8; i++) players[i].group = 1;
+
+  const [matches, paused] = matching(players.slice(0, 8), spec, 2);
+
+  expect(matches).toHaveLength(2);
+  // Count players per group in competing
+  const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
+  const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
+  expect(competingGroup0).toHaveLength(4);
+  expect(competingGroup1).toHaveLength(4);
+});
+
+test("should balance 2 uneven groups", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // Group 0: 7 players, Group 1: 3 players
+  for (let i = 0; i < 7; i++) players[i].group = 0;
+  for (let i = 7; i < 10; i++) players[i].group = 1;
+
+  const [matches, paused] = matching(players, spec, 2);
+
+  // Group 1 has 3 players, can only contribute 2 (multiple of 2)
+  // So: 2 from each = 4 players = 1 match
+  expect(matches).toHaveLength(1);
+  const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
+  const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
+  expect(competingGroup0).toHaveLength(2);
+  expect(competingGroup1).toHaveLength(2);
+
+  // Paused: 5 from group 0, 1 from group 1
+  const pausedGroup0 = paused.filter(p => p.group === 0);
+  const pausedGroup1 = paused.filter(p => p.group === 1);
+  expect(pausedGroup0).toHaveLength(5);
+  expect(pausedGroup1).toHaveLength(1);
+});
+
+test("should balance 3 groups with multiple of 4", ({ players }) => {
+  const allPlayers = [...players];
+  for (let i = 10; i < 24; i++) {
+    allPlayers.push(new Player(`${i}`, `Player${i}`));
+  }
+
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // Group 0: 10 players, Group 1: 8 players, Group 2: 6 players
+  for (let i = 0; i < 10; i++) allPlayers[i].group = 0;
+  for (let i = 10; i < 18; i++) allPlayers[i].group = 1;
+  for (let i = 18; i < 24; i++) allPlayers[i].group = 2;
+
+  const [matches, paused] = matching(allPlayers, spec, 4);
+
+  // 3 groups are not supported with balancing - should return 0 matches
+  expect(matches).toHaveLength(0);
+  expect(paused).toHaveLength(24); // All players paused
+});
+
+test("should balance 4 groups", ({ players }) => {
+  const allPlayers = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 4);
+    allPlayers.push(p);
+  }
+
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  const [matches, paused] = matching(allPlayers, spec, 4);
+
+  expect(matches).toHaveLength(4);
+  // Each group should have 4 competing
+  for (let g = 0; g < 4; g++) {
+    const competingInGroup = matches.flatMap(m => m.flat()).filter(p => p.group === g);
+    expect(competingInGroup).toHaveLength(4);
+  }
+});
+
+test("should respect maxMatches constraint with balancing", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 4; i++) players[i].group = 0;
+  for (let i = 4; i < 8; i++) players[i].group = 1;
+
+  // With 8 players and 2 groups, could do 2 matches
+  // But limit to 1 match
+  const [matches, paused] = matching(players.slice(0, 8), spec, 1);
+
+  expect(matches).toHaveLength(1);
+  const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
+  const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
+  expect(competingGroup0).toHaveLength(2);
+  expect(competingGroup1).toHaveLength(2);
+});
+
+test("should handle impossible balance gracefully", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 8; i++) players[i].group = 0;
+  players[8].group = 1; // Only 1 player in group 1
+
+  const [matches, paused] = matching(players.slice(0, 9), spec, 2);
+
+  // Group 1 can only contribute 0 (multiple of 2)
+  expect(matches).toHaveLength(0);
+  expect(paused).toHaveLength(9);
+});
+
+test("should select by playRatio within each group", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 4; i++) players[i].group = 0;
+  for (let i = 4; i < 8; i++) players[i].group = 1;
+
+  // Set playRatios
+  players[0].matchCount = 2; // Higher ratio
+  players[1].matchCount = 1;
+  players[2].matchCount = 0; // Lower ratio - should play
+  players[3].matchCount = 0; // Lower ratio - should play
+
+  players[4].matchCount = 3; // Higher ratio
+  players[5].matchCount = 0; // Lower ratio - should play
+  players[6].matchCount = 0; // Lower ratio - should play
+  players[7].matchCount = 1;
+
+  const [matches, paused] = matching(players.slice(0, 8), spec, 1);
+
+  const competing = matches.flatMap(m => m.flat());
+  // Should include players with lower playRatio
+  expect(competing.some(p => p.id === "2")).toBe(true);
+  expect(competing.some(p => p.id === "3")).toBe(true);
+  expect(competing.some(p => p.id === "5")).toBe(true);
+  expect(competing.some(p => p.id === "6")).toBe(true);
+});
+
+test("should handle non-sequential group numbers", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 4; i++) players[i].group = 1; // Group 1
+  for (let i = 4; i < 8; i++) players[i].group = 5; // Group 5
+
+  const [matches, paused] = matching(players.slice(0, 8), spec, 2);
+
+  expect(matches).toHaveLength(2);
+  const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
+  const competingGroup5 = matches.flatMap(m => m.flat()).filter(p => p.group === 5);
+  expect(competingGroup1).toHaveLength(4);
+  expect(competingGroup5).toHaveLength(4);
+});
+
+test("GroupBattle mode should balance groups", ({ players }) => {
+  for (let i = 0; i < 5; i++) players[i].group = 0;
+  for (let i = 5; i < 10; i++) players[i].group = 1;
+
+  const [matches, paused] = matching(players, GroupBattle, 2);
+
+  // Should balance despite uneven group sizes
+  const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
+  const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
+  expect(competingGroup0.length).toBe(competingGroup1.length);
+});
+
+test("matchingSpecEquals should compare balanceGroups", () => {
+  const spec1 = { ...Americano, balanceGroups: true };
+  const spec2 = { ...Americano, balanceGroups: false };
+  const spec3 = { ...Americano }; // undefined
+
+  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
+  expect(matchingSpecEquals(spec2, spec3)).toBe(true); // false === undefined treated as false
+  expect(matchingSpecEquals(spec1, spec1)).toBe(true);
+});
+
+// AmericanoMixedBalanced preset tests
+test("AmericanoMixedBalanced should have balanceGroups enabled", () => {
+  expect(AmericanoMixedBalanced.balanceGroups).toBe(true);
+  expect(AmericanoMixedBalanced.teamUp.groupMode).toBe(TeamUpGroupMode.PAIRED);
+  expect(AmericanoMixedBalanced.matchUp.groupMode).toBe(MatchUpGroupMode.SAME);
+});
+
+test("AmericanoMixedBalanced should balance groups in practice", ({ players }) => {
+  for (let i = 0; i < 6; i++) players[i].group = 0;
+  for (let i = 6; i < 10; i++) players[i].group = 1;
+
+  const [matches, paused] = matching(players, AmericanoMixedBalanced, 2);
+
+  const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
+  const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
+  expect(competingGroup0.length).toBe(competingGroup1.length);
+});
+
+// Tests for partitionPlayers function
+
+test("partitionPlayers should return group distribution for single group", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  const result = partitionPlayers(players.slice(0, 8), Americano, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(0);
+  expect(result.groupDistribution.size).toBe(1);
+  
+  const group0 = result.groupDistribution.get(0)!;
+  expect(group0.total).toBe(8);
+  expect(group0.competing).toBe(8);
+  expect(group0.paused).toBe(0);
+});
+
+test("partitionPlayers should return group distribution for multiple groups", ({ players }) => {
+  for (let i = 0; i < 5; i++) players[i].group = 0;
+  for (let i = 5; i < 10; i++) players[i].group = 1;
+  
+  const result = partitionPlayers(players, Americano, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(2);
+  expect(result.groupDistribution.size).toBe(2);
+  
+  const group0 = result.groupDistribution.get(0)!;
+  const group1 = result.groupDistribution.get(1)!;
+  
+  expect(group0.total).toBe(5);
+  expect(group1.total).toBe(5);
+  expect(group0.competing + group1.competing).toBe(8);
+  expect(group0.paused + group1.paused).toBe(2);
+});
+
+test("partitionPlayers should balance groups when enabled", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 7; i++) players[i].group = 0;
+  for (let i = 7; i < 10; i++) players[i].group = 1;
+  
+  const result = partitionPlayers(players, spec, 2);
+  
+  expect(result.groupDistribution.size).toBe(2);
+  
+  const group0 = result.groupDistribution.get(0)!;
+  const group1 = result.groupDistribution.get(1)!;
+  
+  expect(group0.total).toBe(7);
+  expect(group1.total).toBe(3);
+  
+  // With balancing, should have equal competing from each group
+  expect(group0.competing).toBe(2);
+  expect(group1.competing).toBe(2);
+  expect(group0.paused).toBe(5);
+  expect(group1.paused).toBe(1);
+});
+
+test("partitionPlayers should respect maxMatches constraint", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  const result = partitionPlayers(players, Americano, 1);
+  
+  expect(result.competing).toHaveLength(4); // 1 match = 4 players
+  expect(result.paused).toHaveLength(6);
+  
+  const group0 = result.groupDistribution.get(0)!;
+  expect(group0.competing).toBe(4);
+  expect(group0.paused).toBe(6);
+});
+
+test("partitionPlayers should reject 3 groups with balancing", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // Create 3 groups with 4 players each (12 total)
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"), new Player("2", "P2"), new Player("3", "P3"),
+    new Player("4", "P4"), new Player("5", "P5"), new Player("6", "P6"), new Player("7", "P7"),
+    new Player("8", "P8"), new Player("9", "P9"), new Player("10", "P10"), new Player("11", "P11"),
+  ];
+  for (let i = 0; i < 4; i++) testPlayers[i].group = 0;
+  for (let i = 4; i < 8; i++) testPlayers[i].group = 1;
+  for (let i = 8; i < 12; i++) testPlayers[i].group = 2;
+  
+  const result = partitionPlayers(testPlayers, spec, 10);
+  
+  // Should return all paused, none competing
+  expect(result.competing).toHaveLength(0);
+  expect(result.paused).toHaveLength(12);
+  expect(result.groupDistribution.size).toBe(3);
+  
+  // All players should be paused
+  const group0 = result.groupDistribution.get(0)!;
+  const group1 = result.groupDistribution.get(1)!;
+  const group2 = result.groupDistribution.get(2)!;
+  expect(group0.competing).toBe(0);
+  expect(group1.competing).toBe(0);
+  expect(group2.competing).toBe(0);
+  expect(group0.paused).toBe(4);
+  expect(group1.paused).toBe(4);
+  expect(group2.paused).toBe(4);
+});
+
+test("partitionPlayers should work with 2 groups and balancing", ({ players }) => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  for (let i = 0; i < 5; i++) players[i].group = 0;
+  for (let i = 5; i < 10; i++) players[i].group = 1;
+  
+  const result = partitionPlayers(players, spec, 2);
+  
+  // Should successfully create matches with 2 groups
+  expect(result.competing.length).toBeGreaterThan(0);
+  expect(result.groupDistribution.size).toBe(2);
+});
+
+test("partitionPlayers should work with 4 groups and balancing", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // Create 4 groups with 4 players each (16 total)
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"), new Player("2", "P2"), new Player("3", "P3"),
+    new Player("4", "P4"), new Player("5", "P5"), new Player("6", "P6"), new Player("7", "P7"),
+    new Player("8", "P8"), new Player("9", "P9"), new Player("10", "P10"), new Player("11", "P11"),
+    new Player("12", "P12"), new Player("13", "P13"), new Player("14", "P14"), new Player("15", "P15"),
+  ];
+  for (let i = 0; i < 4; i++) testPlayers[i].group = 0;
+  for (let i = 4; i < 8; i++) testPlayers[i].group = 1;
+  for (let i = 8; i < 12; i++) testPlayers[i].group = 2;
+  for (let i = 12; i < 16; i++) testPlayers[i].group = 3;
+  
+  const result = partitionPlayers(testPlayers, spec, 4);
+  
+  // Should successfully create matches with 4 groups
+  expect(result.competing.length).toBeGreaterThan(0);
+  expect(result.groupDistribution.size).toBe(4);
+});
+
+test("partitionPlayers should work with 4 groups having uneven sizes", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // Create 4 groups: A=3, B=2, C=2, D=1 (8 total)
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"), new Player("2", "P2"), // Group A
+    new Player("3", "P3"), new Player("4", "P4"),                        // Group B
+    new Player("5", "P5"), new Player("6", "P6"),                        // Group C
+    new Player("7", "P7"),                                               // Group D
+  ];
+  testPlayers[0].group = 0; testPlayers[1].group = 0; testPlayers[2].group = 0;
+  testPlayers[3].group = 1; testPlayers[4].group = 1;
+  testPlayers[5].group = 2; testPlayers[6].group = 2;
+  testPlayers[7].group = 3;
+  
+  const result = partitionPlayers(testPlayers, spec, 2);
+  
+  // Should create 1 match with 1 player from each group (4 total)
+  expect(result.competing.length).toBe(4);
+  expect(result.paused.length).toBe(4);
+  expect(result.groupDistribution.size).toBe(4);
+  
+  // Each group should have 1 competing
+  for (let i = 0; i < 4; i++) {
+    const group = result.groupDistribution.get(i)!;
+    expect(group.competing).toBe(1);
+  }
+});
+
+test("partitionPlayers should work with 4 groups having 1 player each", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"),
+    new Player("2", "P2"), new Player("3", "P3"),
+  ];
+  testPlayers[0].group = 0;
+  testPlayers[1].group = 1;
+  testPlayers[2].group = 2;
+  testPlayers[3].group = 3;
+  
+  const result = partitionPlayers(testPlayers, spec, 1);
+  
+  // Should create 1 match with all 4 players
+  expect(result.competing.length).toBe(4);
+  expect(result.paused.length).toBe(0);
+  expect(result.groupDistribution.size).toBe(4);
+});
+
+test("partitionPlayers should reject 2 groups with only 1 player each", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"),
+  ];
+  testPlayers[0].group = 0;
+  testPlayers[1].group = 1;
+  
+  const result = partitionPlayers(testPlayers, spec, 1);
+  
+  // Should return all paused (need 2 per group for 2-group mode)
+  expect(result.competing.length).toBe(0);
+  expect(result.paused.length).toBe(2);
+});
+
+test("partitionPlayers should reject 5 groups with balancing", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"),
+    new Player("2", "P2"), new Player("3", "P3"),
+    new Player("4", "P4"),
+  ];
+  testPlayers[0].group = 0;
+  testPlayers[1].group = 1;
+  testPlayers[2].group = 2;
+  testPlayers[3].group = 3;
+  testPlayers[4].group = 4;
+  
+  const result = partitionPlayers(testPlayers, spec, 2);
+  
+  // Should return all paused (only 2 or 4 groups supported)
+  expect(result.competing.length).toBe(0);
+  expect(result.paused.length).toBe(5);
+});
+
+test("partitionPlayers should reject 6 groups with balancing", () => {
+  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  const testPlayers = [
+    new Player("0", "P0"), new Player("1", "P1"),
+    new Player("2", "P2"), new Player("3", "P3"),
+    new Player("4", "P4"), new Player("5", "P5"),
+  ];
+  for (let i = 0; i < 6; i++) testPlayers[i].group = i;
+  
+  const result = partitionPlayers(testPlayers, spec, 2);
+  
+  // Should return all paused (only 2 or 4 groups supported)
+  expect(result.competing.length).toBe(0);
+  expect(result.paused.length).toBe(6);
+});
+
+// Tests for Tournament.getNextRoundInfo
+
+test("getNextRoundInfo should return correct match count for new tournament", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  const info = tournament.getNextRoundInfo(Americano, 2);
+  
+  expect(info.matchCount).toBe(2);
+  expect(info.activePlayerCount).toBe(10);
+  expect(info.balancingEnabled).toBe(false);
+});
+
+test("getNextRoundInfo should respect maxMatches constraint", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  const info = tournament.getNextRoundInfo(Americano, 1);
+  
+  expect(info.matchCount).toBe(1);
+  expect(info.activePlayerCount).toBe(10);
+});
+
+test("getNextRoundInfo should return group distribution for single group", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  const info = tournament.getNextRoundInfo(Americano, 2);
+  
+  expect(info.groupDistribution.size).toBe(1);
+  const group0 = info.groupDistribution.get(0)!;
+  expect(group0.total).toBe(10);
+  expect(group0.competing).toBe(8); // 2 matches = 8 players
+  expect(group0.paused).toBe(2);
+});
+
+test("getNextRoundInfo should return group distribution for multiple groups", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Charlie", "Dave", "Eve"], 0);
+  tournament.addPlayers(["Frank", "Grace", "Henry", "Ivy", "Jack"], 1);
+  
+  const info = tournament.getNextRoundInfo(Americano, 2);
+  
+  expect(info.groupDistribution.size).toBe(2);
+  expect(info.activePlayerCount).toBe(10);
+  
+  const group0 = info.groupDistribution.get(0)!;
+  const group1 = info.groupDistribution.get(1)!;
+  
+  expect(group0.total).toBe(5);
+  expect(group1.total).toBe(5);
+  expect(group0.competing + group1.competing).toBe(8);
+  expect(group0.paused + group1.paused).toBe(2);
+});
+
+test("getNextRoundInfo should indicate balancing enabled", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Charlie", "Dave"], 0);
+  tournament.addPlayers(["Eve", "Frank", "Grace", "Henry"], 1);
+  
+  const info = tournament.getNextRoundInfo(AmericanoMixedBalanced, 2);
+  
+  expect(info.balancingEnabled).toBe(true);
+  expect(info.matchCount).toBe(2);
+  
+  const group0 = info.groupDistribution.get(0)!;
+  const group1 = info.groupDistribution.get(1)!;
+  
+  // With balancing, equal from each group
+  expect(group0.competing).toBe(4);
+  expect(group1.competing).toBe(4);
+});
+
+test("getNextRoundInfo should handle unbalanced groups with balancing enabled", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["A1", "A2", "A3", "A4", "A5", "A6", "A7"], 0);
+  tournament.addPlayers(["B1", "B2", "B3"], 1);
+  
+  const info = tournament.getNextRoundInfo(AmericanoMixedBalanced, 2);
+  
+  expect(info.balancingEnabled).toBe(true);
+  expect(info.matchCount).toBe(1); // Only 1 match possible (2 from each group)
+  
+  const group0 = info.groupDistribution.get(0)!;
+  const group1 = info.groupDistribution.get(1)!;
+  
+  expect(group0.total).toBe(7);
+  expect(group1.total).toBe(3);
+  expect(group0.competing).toBe(2);
+  expect(group1.competing).toBe(2);
+});
+
+test("getNextRoundInfo should return 0 matches when balancing impossible", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"], 0);
+  tournament.addPlayers(["B1"], 1);
+  
+  const info = tournament.getNextRoundInfo(AmericanoMixedBalanced, 2);
+  
+  expect(info.balancingEnabled).toBe(true);
+  expect(info.matchCount).toBe(0); // Impossible to balance
+  expect(info.activePlayerCount).toBe(9);
+});
+
+test("getNextRoundInfo should return 0 matches with 3 groups and balancing", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["A1", "A2", "A3", "A4"], 0);
+  tournament.addPlayers(["B1", "B2", "B3", "B4"], 1);
+  tournament.addPlayers(["C1", "C2", "C3", "C4"], 2);
+  
+  const info = tournament.getNextRoundInfo(AmericanoMixedBalanced, 10);
+  
+  expect(info.balancingEnabled).toBe(true);
+  expect(info.matchCount).toBe(0); // 3 groups not supported with balancing
+  expect(info.activePlayerCount).toBe(12);
+  expect(info.groupDistribution.size).toBe(3);
+  
+  const group0 = info.groupDistribution.get(0)!;
+  const group1 = info.groupDistribution.get(1)!;
+  const group2 = info.groupDistribution.get(2)!;
+  
+  expect(group0.total).toBe(4);
+  expect(group1.total).toBe(4);
+  expect(group2.total).toBe(4);
+  expect(group0.competing).toBe(0);
+  expect(group1.competing).toBe(0);
+  expect(group2.competing).toBe(0);
+});
+
+test("getNextRoundInfo should match createRound match count", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  const info = tournament.getNextRoundInfo(Americano, 2);
+  const matchCountBefore = info.matchCount;
+  
+  const round = tournament.createRound(Americano, 2);
+  
+  expect(round.matches).toHaveLength(matchCountBefore);
+});
+
+test("getNextRoundInfo should handle inactive players correctly", ({ players }) => {
+  const tournament = runTournament(players);
+  
+  // Deactivate 3 players
+  tournament.players()[0].activate(false);
+  tournament.players()[1].activate(false);
+  tournament.players()[2].activate(false);
+  
+  const info = tournament.getNextRoundInfo(Americano, 2);
+  
+  expect(info.activePlayerCount).toBe(7);
+  expect(info.matchCount).toBe(1); // 7 active = 4 competing = 1 match
+  
+  const group0 = info.groupDistribution.get(0)!;
+  expect(group0.total).toBe(7); // Only active players in distribution
+});
+
 

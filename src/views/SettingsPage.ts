@@ -4,6 +4,7 @@ import { Tournament } from "../model/Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
+  AmericanoMixedBalanced,
   GroupBattle,
   GroupBattleMixed,
   matchingSpecEquals,
@@ -39,6 +40,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
   view: ({ attrs: { settings, tournament, showToast, checkForUpdates, checkingForUpdates, nav, currentPage }, state }) => {
     const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
     const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
+    const isAmericanoMixedBalanced = isMatchingSpecMode(settings.matchingSpec, AmericanoMixedBalanced);
     const isMexicano = isMatchingSpecMode(settings.matchingSpec, Mexicano);
     const isTournicano = isMatchingSpecMode(settings.matchingSpec, Tournicano);
     const isGroupBattle = isMatchingSpecMode(settings.matchingSpec, GroupBattle);
@@ -100,6 +102,17 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
             m("input", {
               type: "radio",
               name: "matching-spec",
+              id: "americano-mixed-balanced",
+              checked: isAmericanoMixedBalanced,
+              onchange: () => handleMatchingSpecChange(AmericanoMixedBalanced),
+            }),
+            "Americano Mixed Balanced",
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
               id: "mexicano",
               checked: isMexicano,
               onchange: () => handleMatchingSpecChange(Mexicano),
@@ -148,6 +161,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               checked:
                 !isAmericano &&
                 !isAmericanoMixed &&
+                !isAmericanoMixedBalanced &&
                 !isMexicano &&
                 !isTournicano &&
                 !isGroupBattle &&

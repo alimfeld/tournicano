@@ -105,7 +105,10 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("dd", "Focuses on variety, maximizing partner and opponent rotation. Groups: None • Players: 4+ (8+ recommended)"),
 
           m("dt", "🎯 Americano Mixed"),
-          m("dd", "Americano for mixed doubles. Teams consist of one player from each of two groups. Groups: Exactly 2 (A, B) • Players: 4+ with 2+ per group (12+ recommended)"),
+          m("dd", "Americano for mixed doubles. Teams consist of one player from each of two groups. Groups: Designed for 2 (A, B) • Players: 4+ with 2+ per group (12+ recommended)"),
+
+          m("dt", "🎯 Americano Mixed Balanced"),
+          m("dd", "Americano Mixed with strict group balancing. Ensures equal number of players from each group participate in every round. Groups: Designed for 2 (A, B) • Players: 4+ with 2+ per group, equal numbers recommended"),
 
           m("dt", "🎯 Mexicano"),
           m("dd", "Emphasizes competitive balance. Forms teams based on rankings (1st with 3rd, 2nd with 4th) and matches similarly skilled teams. Requires score entry. Groups: None • Players: 4+ (8+ recommended)"),
@@ -114,10 +117,10 @@ export const HomePage: m.Component<HomeAttrs> = {
           m("dd", "Balances variety, performance, and group mix for well-rounded competition. Groups: 1 or 2 (1=all together, 2=one from each group) • Players: 4+ (8+ recommended)"),
 
           m("dt", "🎯 Group Battle"),
-          m("dd", "Competition between two groups. Players pair within their own group, then groups compete against each other. Groups: Exactly 2 (Side A, Side B) • Players: 4+ with 2+ per side (12+ recommended)"),
+          m("dd", "Competition between two groups. Players pair within their own group, then groups compete against each other. Groups: Designed for 2 (Side A, Side B) • Players: 4+ with 2+ per side (12+ recommended)"),
 
           m("dt", "🎯 Group Battle Mixed"),
-          m("dd", "Group Battle for mixed doubles. Each side has two groups where players from different groups pair together. Groups: Exactly 4 (Side 1: A+B, Side 2: C+D) • Players: 4+ with 1+ per group (16+ recommended)")
+          m("dd", "Group Battle for mixed doubles. Each side has two groups where players from different groups pair together. Groups: Designed for 4 (Side 1: A+B, Side 2: C+D) • Players: 4+ with 1+ per group (16+ recommended)")
         ]),
 
         m("h3", "Customization"),

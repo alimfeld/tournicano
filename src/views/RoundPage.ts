@@ -93,9 +93,9 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     attrs: { settings, tournament, roundIndex, changeRound, showToast, nav, currentPage },
     state
   }) => {
-    const matchesPerRound = Math.min(
-      Math.floor(tournament.activePlayerCount / 4),
-      settings.courts,
+    const nextRoundInfo = tournament.getNextRoundInfo(
+      settings.matchingSpec,
+      settings.courts
     );
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
@@ -113,22 +113,22 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     // Detect group configuration mismatch and return warning message if any
     const getGroupMismatchWarning = (): string | null => {
       // Skip check if not enough players (other warning takes precedence)
-      if (tournament.activePlayerCount < 4) {
+      if (nextRoundInfo.activePlayerCount < 4) {
         return null;
       }
 
       const specUsesGroups = settings.matchingSpec.teamUp.groupFactor > 0 ||
         settings.matchingSpec.matchUp.groupFactor > 0;
-      const groupCount = tournament.groups.length;
+      const groupCount = nextRoundInfo.groupDistribution.size;
 
-      // Case A: Mode uses groups, but all players are in one group
+      // Case A: Mode uses groups, but all active players are in one group
       if (specUsesGroups && groupCount === 1) {
-        return "Mode uses groups but all players are in one group - organize players into groups on the Players page";
+        return "Mode uses groups but all active players are in one group - organize players into groups on the Players page";
       }
 
-      // Case B: Players in multiple groups, but mode doesn't use groups
+      // Case B: Active players in multiple groups, but mode doesn't use groups
       if (!specUsesGroups && groupCount > 1) {
-        return "Players are in multiple groups but mode doesn't use them - consider changing mode in Settings or regrouping players";
+        return "Active players are in multiple groups but mode doesn't use them - consider changing mode in Settings or regrouping players";
       }
 
       // No mismatch detected
@@ -283,31 +283,105 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
               : null,
           ]
           : [m(HelpCard,
-            tournament.activePlayerCount < 4
+            // STATE 1: No players (0 active players)
+            tournament.activePlayerCount === 0
               ? {
-                message: "⚠️ Not enough active players",
-                hint: [
-                  `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}, but need at least 4 to create rounds.`,
-                  m("ul.tip-list", [
-                    m("li", "Go to Players and make sure you have 4+ active players")
-                  ])
-                ],
-                action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+                message: "⚠️ No players yet",
+                hint: "Add players to start your tournament",
+                action: { label: "Add Players", onclick: () => nav(Page.PLAYERS) }
               }
-              : {
-                message: "🚀 Ready to play?",
-                hint: [
-                  "Tap the ", m("strong", "＋"), " button to create your first round!",
-                  m("ul.tip-list", [
-                    m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
-                    m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''} + ${settings.courts} court${settings.courts !== 1 ? 's' : ''} = ${matchesPerRound} match${matchesPerRound !== 1 ? 'es' : ''} per round`),
-                    groupMismatchWarning ? m("li", m("mark", groupMismatchWarning)) : null
-                  ])
-                ]
-              }
+              // STATE 2: Not enough active players (1-3 active players)
+              : tournament.activePlayerCount < 4
+                ? {
+                  message: "⚠️ Not enough active players",
+                  hint: `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}, but need at least 4 to create matches.`,
+                  action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+                }
+                // STATE 3: No courts configured
+                : settings.courts === 0
+                  ? {
+                    message: "⚠️ No courts configured",
+                    hint: [
+                      m("p", `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''} ready to play, but no courts are configured.`),
+                      m("small", "Set how many matches can be played simultaneously")
+                    ],
+                    action: { label: "Go to Settings", onclick: () => nav(Page.SETTINGS) }
+                  }
+                  // STATE 4: Group balancing issue (unified for all balancing failures)
+                  : nextRoundInfo.matchCount === 0 && nextRoundInfo.balancingEnabled
+                    ? {
+                      message: "⚠️ Group balancing issue",
+                      hint: [
+                        "Cannot create balanced matches with current group configuration.",
+                        m("ul.tip-list", [
+                          m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
+                          m("li", (() => {
+                            // Build group text if multiple groups
+                            let groupText = "";
+                            if (nextRoundInfo.groupDistribution.size > 1) {
+                              const groups = Array.from(nextRoundInfo.groupDistribution.entries())
+                                .sort((a, b) => a[0] - b[0])
+                                .map(([groupNum, counts]) => {
+                                  const groupLetter = String.fromCharCode(65 + groupNum);
+                                  return `${groupLetter}: ${counts.total}`;
+                                });
+                              groupText = ` (${groups.join(", ")})`;
+                            }
+
+                            return `${nextRoundInfo.activePlayerCount} active player${nextRoundInfo.activePlayerCount !== 1 ? 's' : ''}${groupText} • ${settings.courts} court${settings.courts !== 1 ? 's' : ''} • Group balancing: enabled`;
+                          })())
+                        ]),
+                        m("small", "Reorganize groups, or switch to non-balanced mode")
+                      ],
+                      action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+                    }
+                    // FALLBACK: Other reason for no matches (shouldn't normally happen)
+                    : nextRoundInfo.matchCount === 0
+                      ? {
+                        message: "⚠️ Cannot create matches",
+                        hint: [
+                          "Current configuration:",
+                          m("ul.tip-list", [
+                            m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}`),
+                            m("li", `${settings.courts} court${settings.courts !== 1 ? 's' : ''}`),
+                            m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`)
+                          ])
+                        ]
+                      }
+                      // STATE 5: Ready to play (matches can be created)
+                      : {
+                        message: "🚀 Ready to play?",
+                        hint: [
+                          "Tap the ", m("strong", "＋"), " button to create your first round!",
+                          m("ul.tip-list", [
+                            m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
+                            m("li", (() => {
+                              // Build group text if multiple groups
+                              let groupText = "";
+                              if (nextRoundInfo.groupDistribution.size > 1) {
+                                const groups = Array.from(nextRoundInfo.groupDistribution.entries())
+                                  .sort((a, b) => a[0] - b[0])
+                                  .map(([groupNum, counts]) => {
+                                    const groupLetter = String.fromCharCode(65 + groupNum);
+                                    return `${groupLetter}: ${counts.total}`;
+                                  });
+                                groupText = ` (${groups.join(", ")})`;
+                              }
+
+                              // Build match count text (no inline warnings)
+                              const matchText = nextRoundInfo.balancingEnabled
+                                ? `Group balancing: ${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''}`
+                                : `${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''} per round`;
+
+                              return `${nextRoundInfo.activePlayerCount} active player${nextRoundInfo.activePlayerCount !== 1 ? 's' : ''}${groupText} • ${settings.courts} court${settings.courts !== 1 ? 's' : ''} • ${matchText}`;
+                            })())
+                          ]),
+                          groupMismatchWarning ? m("mark", groupMismatchWarning) : null
+                        ]
+                      }
           )],
       ),
-      matchesPerRound >= 1 ? m(FAB, {
+      nextRoundInfo.matchCount >= 1 ? m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
@@ -317,7 +391,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
           if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0 && showToast) {
             showToast(`Round ${newRoundNumber} created with incomplete scores from previous rounds`, "error");
           }
-          tournament.createRound(settings.matchingSpec, matchesPerRound);
+          tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           if (isFirstRound && showToast) {
             const modeName = getMatchingSpecName(settings.matchingSpec);
             showToast(`Tournament started in ${modeName} mode`, "success");

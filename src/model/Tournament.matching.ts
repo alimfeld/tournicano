@@ -87,6 +87,23 @@ export const AmericanoMixed: MatchingSpec = {
   },
 };
 
+export const AmericanoMixedBalanced: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.PAIRED,
+  },
+  matchUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
+  },
+  balanceGroups: true,
+};
+
 export const Mexicano: MatchingSpec = {
   teamUp: {
     varietyFactor: 0,
@@ -133,6 +150,7 @@ export const GroupBattle: MatchingSpec = {
     groupFactor: 100,
     groupMode: MatchUpGroupMode.CROSS,
   },
+  balanceGroups: true,
 };
 
 export const GroupBattleMixed: MatchingSpec = {
@@ -149,12 +167,14 @@ export const GroupBattleMixed: MatchingSpec = {
     groupFactor: 100,
     groupMode: MatchUpGroupMode.CROSS,
   },
+  balanceGroups: true,
 };
 
 // Registry of predefined modes with their names
 const PREDEFINED_MODES = [
   { name: "Americano", spec: Americano },
   { name: "Americano Mixed", spec: AmericanoMixed },
+  { name: "Americano Mixed Balanced", spec: AmericanoMixedBalanced },
   { name: "Mexicano", spec: Mexicano },
   { name: "Tournicano", spec: Tournicano },
   { name: "Group Battle", spec: GroupBattle },
@@ -172,7 +192,8 @@ export function matchingSpecEquals(a: MatchingSpec, b: MatchingSpec): boolean {
     a.matchUp.varietyFactor === b.matchUp.varietyFactor &&
     a.matchUp.performanceFactor === b.matchUp.performanceFactor &&
     a.matchUp.groupFactor === b.matchUp.groupFactor &&
-    a.matchUp.groupMode === b.matchUp.groupMode
+    a.matchUp.groupMode === b.matchUp.groupMode &&
+    (a.balanceGroups ?? false) === (b.balanceGroups ?? false)
   );
 }
 
@@ -194,10 +215,50 @@ export function isMatchingSpecMode(spec: MatchingSpec, mode: MatchingSpec): bool
 export interface MatchingSpec {
   teamUp: TeamUpSpec;
   matchUp: MatchUpSpec;
+  balanceGroups?: boolean;
 }
 
 export type Team = [Player, Player];
 export type Match = [Team, Team];
+
+export interface PartitionResult {
+  competing: Player[];
+  paused: Player[];
+  groupDistribution: Map<number, { total: number; competing: number; paused: number }>;
+}
+
+export const partitionPlayers = (
+  players: Player[],
+  spec: MatchingSpec,
+  maxMatches?: number,
+): PartitionResult => {
+  const effectiveMaxMatches = maxMatches ? maxMatches : Math.floor(players.length / 4);
+
+  const [competing, paused] = spec.balanceGroups
+    ? partitionBalanced(players, effectiveMaxMatches)
+    : partition(players, effectiveMaxMatches);
+
+  // Calculate group distribution
+  const groupDistribution = new Map<number, { total: number; competing: number; paused: number }>();
+
+  for (const player of players) {
+    const current = groupDistribution.get(player.group) || { total: 0, competing: 0, paused: 0 };
+    current.total++;
+    groupDistribution.set(player.group, current);
+  }
+
+  for (const player of competing) {
+    const current = groupDistribution.get(player.group)!;
+    current.competing++;
+  }
+
+  for (const player of paused) {
+    const current = groupDistribution.get(player.group)!;
+    current.paused++;
+  }
+
+  return { competing, paused, groupDistribution };
+};
 
 export const matching = (
   players: Player[],
@@ -205,10 +266,7 @@ export const matching = (
   maxMatches?: number,
   debug = false,
 ): [matches: Match[], paused: Player[]] => {
-  const [competing, paused] = partition(
-    players,
-    maxMatches ? maxMatches : Math.floor(players.length / 4),
-  );
+  const { competing, paused } = partitionPlayers(players, spec, maxMatches);
 
   let teams = match(
     competing,
@@ -403,6 +461,77 @@ const findGroupDistribution = (
     }
   }
   return null;
+};
+
+const partitionBalanced = (
+  players: Player[],
+  maxMatches: number,
+): [competing: Player[], paused: Player[]] => {
+  // Step 1: Group players by their group number
+  const playersByGroup = new Map<number, Player[]>();
+  for (const player of players) {
+    const groupPlayers = playersByGroup.get(player.group) || [];
+    groupPlayers.push(player);
+    playersByGroup.set(player.group, groupPlayers);
+  }
+
+  const numberOfGroups = playersByGroup.size;
+
+  // Only support 2 or 4 groups with balancing
+  // - Single group: no balancing needed, use regular partition logic
+  // - 3 groups: not supported (would require 3 courts minimum and 12 players per match)
+  // - 5+ groups: not supported (adds complexity without clear use case)
+  if (numberOfGroups === 1) {
+    // Single group - no balancing needed, use regular partition
+    return partition(players, maxMatches);
+  }
+  if (numberOfGroups !== 2 && numberOfGroups !== 4) {
+    return [[], players]; // Everyone paused
+  }
+
+  // Step 2: Determine required multiple per group
+  // - 2 groups: need 2 players per group (min 4 total for 1 match)
+  // - 4 groups: need 1 player per group (min 4 total for 1 match)
+  const multipleRequired = numberOfGroups === 2 ? 2 : 1;
+
+  // Step 3: Find max players per group (as a multiple)
+  let playersPerGroup = Infinity;
+  for (const groupPlayers of playersByGroup.values()) {
+    const maxFromThisGroup = Math.floor(groupPlayers.length / multipleRequired) * multipleRequired;
+    playersPerGroup = Math.min(playersPerGroup, maxFromThisGroup);
+  }
+
+  // Step 4: Apply maxMatches constraint
+  const maxTotalPlayers = maxMatches * PLAYERS_PER_MATCH;
+  const maxPlayersPerGroupFromCourts =
+    Math.floor(maxTotalPlayers / numberOfGroups / multipleRequired) * multipleRequired;
+  playersPerGroup = Math.min(playersPerGroup, maxPlayersPerGroupFromCourts);
+
+  // Step 5: If playersPerGroup is 0 or invalid, everyone paused
+  if (!isFinite(playersPerGroup) || playersPerGroup <= 0) {
+    return [[], players];
+  }
+
+  // Step 6: Select players from each group by playRatio
+  const competing: Player[] = [];
+  const paused: Player[] = [];
+
+  for (const groupPlayers of playersByGroup.values()) {
+    // Sort by playRatio (ascending), then by lastPause (descending)
+    const sorted = groupPlayers.toSorted((p, q) => {
+      const ratioP = playRatio(p);
+      const ratioQ = playRatio(q);
+      if (ratioP !== ratioQ) {
+        return ratioP - ratioQ; // Lower ratio first (played less)
+      }
+      return q.lastPause - p.lastPause; // Paused longer ago first
+    });
+
+    competing.push(...sorted.slice(0, playersPerGroup));
+    paused.push(...sorted.slice(playersPerGroup));
+  }
+
+  return [competing, paused];
 };
 
 const match = <Type>(
