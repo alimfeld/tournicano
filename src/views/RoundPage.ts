@@ -283,8 +283,8 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
               : null,
           ]
           : [m(HelpCard,
-            // STATE 1: No players (0 active players)
-            tournament.activePlayerCount === 0
+            // STATE 1: No players
+            tournament.players().length === 0
               ? {
                 message: "⚠️ No players yet",
                 hint: "Add players to start your tournament",
