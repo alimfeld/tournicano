@@ -13,28 +13,88 @@ interface AddPlayersModalState {
 }
 
 const handleAddPlayers = (attrs: AddPlayersModalAttrs, state: AddPlayersModalState) => {
-  const groups = state.textareaContent.split(/\n/);
+  const lines = state.textareaContent.split(/\n/);
   let allAdded: string[] = [];
   let allDuplicates: string[] = [];
+  const groupsUsed = new Set<number>();
+  let ignoredGroupsCount = 0;
 
-  groups.forEach((group, i) => {
+  lines.forEach((line, i) => {
     if (i < 4) {
-      const line = group.trim();
-      if (line) {
-        const names = line.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
-        const result = attrs.tournament.addPlayers(names, i);
-        allAdded = allAdded.concat(result.added);
-        allDuplicates = allDuplicates.concat(result.duplicates);
+      const trimmed = line.trim();
+      if (trimmed) {
+        const names = trimmed.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
+        if (names.length > 0) {
+          const result = attrs.tournament.addPlayers(names, i);
+          if (result.added.length > 0) {
+            groupsUsed.add(i);
+          }
+          allAdded = allAdded.concat(result.added);
+          allDuplicates = allDuplicates.concat(result.duplicates);
+        }
+      }
+    } else {
+      const trimmed = line.trim();
+      if (trimmed) {
+        const names = trimmed.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
+        if (names.length > 0) {
+          ignoredGroupsCount++;
+        }
       }
     }
   });
 
-  if (allDuplicates.length > 0) {
-    const duplicateNames = allDuplicates.join(", ");
-    attrs.showToast(`Duplicate players ignored: ${duplicateNames}`, "error");
-  } else if (allAdded.length > 0) {
-    const count = allAdded.length;
-    attrs.showToast(`Added ${count} player${count > 1 ? 's' : ''} to the tournament`, "success");
+  // Build toast message based on what happened
+  const addedCount = allAdded.length;
+  const duplicateCount = allDuplicates.length;
+  const groupCount = groupsUsed.size;
+  const hasErrors = duplicateCount > 0 || ignoredGroupsCount > 0;
+
+  if (addedCount === 0 && !hasErrors) {
+    // Nothing added and no errors
+    attrs.showToast("No players added", "info");
+  } else if (addedCount === 0 && hasErrors) {
+    // Nothing added but there were duplicates/ignored groups
+    const errorParts: string[] = [];
+    if (duplicateCount > 0) {
+      errorParts.push(`${duplicateCount} duplicate${duplicateCount !== 1 ? 's' : ''}`);
+    }
+    if (ignoredGroupsCount > 0) {
+      errorParts.push(`${ignoredGroupsCount} group${ignoredGroupsCount !== 1 ? 's' : ''}`);
+    }
+    attrs.showToast(`No players added - ${errorParts.join(" and ")} ignored`, "error");
+  } else if (hasErrors) {
+    // Players added but with errors
+    let message = `Added ${addedCount} player${addedCount !== 1 ? 's' : ''}`;
+    
+    if (groupCount > 1) {
+      message += ` in ${groupCount} group${groupCount !== 1 ? 's' : ''}`;
+    }
+    
+    message += " - ";
+    
+    const errorParts: string[] = [];
+    if (duplicateCount > 0) {
+      errorParts.push(`${duplicateCount} duplicate${duplicateCount !== 1 ? 's' : ''}`);
+    }
+    if (ignoredGroupsCount > 0) {
+      errorParts.push(`${ignoredGroupsCount} group${ignoredGroupsCount !== 1 ? 's' : ''}`);
+    }
+    
+    message += errorParts.join(" and ") + " ignored";
+    
+    attrs.showToast(message, "error");
+  } else {
+    // Success - players added with no errors
+    let message = `Added ${addedCount} player${addedCount !== 1 ? 's' : ''}`;
+    
+    if (groupCount > 1) {
+      message += ` in ${groupCount} groups`;
+    }
+    
+    message += " to the tournament";
+    
+    attrs.showToast(message, "success");
   }
 
   attrs.onClose();
