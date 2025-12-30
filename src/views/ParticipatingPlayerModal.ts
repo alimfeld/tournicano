@@ -45,29 +45,30 @@ export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs
 
         // Stats Section - Use semantic HTML (dl/dt/dd)
         m("dl.stats-grid",
+
+          // Win %
+          m("dt", "Win Ratio"),
+          m("dd", `${(player.winRatio * 100).toFixed(0)}%`),
+
           // Record
           m("dt", "W-D-L"),
           m("dd", `${player.wins}-${player.draws}-${player.losses}`),
 
-          // Win %
-          m("dt", "Win %"),
-          m("dd", `${(player.winRatio * 100).toFixed(0)}%`),
-
           // Plus/Minus
-          m("dt", "+/-"),
+          m("dt", "Points"),
           m("dd", `${player.plusMinus >= 0 ? "+" : ""}${player.plusMinus}`),
 
-          // Plus/Minus
-          m("dt", "For/Against"),
-          m("dd", `${player.pointsFor}/${player.pointsAgainst}`),
+          // Points For/Against
+          m("dt", "Plus/Minus"),
+          m("dd", `+${player.pointsFor}/-${player.pointsAgainst}`),
+
+          // Play %
+          m("dt", "Play Ratio"),
+          m("dd", `${(player.playRatio * 100).toFixed(0)}% `),
 
           // Matches (& Pauses)
           m("dt", "Matches"),
           m("dd", `${player.matchCount} / ${player.matchCount + player.pauseCount}`),
-
-          // Play %
-          m("dt", "Play %"),
-          m("dd", `${(player.playRatio * 100).toFixed(0)}% `),
 
           // Partners
           m("dt", "Partners"),
