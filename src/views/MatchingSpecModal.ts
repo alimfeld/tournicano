@@ -15,12 +15,12 @@ const SYMBOL_GROUPS = "☻";
 
 // Performance mode symbols (Team up only)
 const MODE_BALANCED = "≈";
-const MODE_EQUAL = "≡";
-const MODE_MEXICANO = "⋈";
+const MODE_EQUAL = "=";
+const MODE_MEXICANO = "⊗";
 
 // Group mode symbols
-const MODE_GROUP_SAME = "≡";
-const MODE_GROUP_CROSS = "⋈";
+const MODE_GROUP_SAME = "=";
+const MODE_GROUP_CROSS = "≠";
 
 // Separator for summary
 const SEPARATOR = " · ";
