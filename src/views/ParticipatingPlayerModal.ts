@@ -3,6 +3,7 @@ import "./ParticipatingPlayerModal.css";
 import { ParticipatingPlayer } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
+import { Modal } from "./Modal.ts";
 
 export interface ParticipatingPlayerModalAttrs {
   player: ParticipatingPlayer;
@@ -12,21 +13,7 @@ export interface ParticipatingPlayerModalAttrs {
 export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs> = {
   view: ({ attrs: { player, onClose } }) => {
 
-    return m("dialog.participating-player-modal", {
-      oncreate: (vnode) => {
-        (vnode.dom as HTMLDialogElement).showModal();
-        document.documentElement.classList.add('modal-is-open');
-      },
-      onremove: () => {
-        document.documentElement.classList.remove('modal-is-open');
-      },
-      onclick: (e: MouseEvent) => {
-        // Close on backdrop click
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }
-    },
+    return m(Modal, { onClose, className: 'participating-player-modal' },
       m("article",
         // Header: Avatar, Name, Performance Badge, Group
         m("header",

@@ -1,0 +1,6 @@
+/* Modal - generic base styles */
+dialog.modal article {
+  margin: 0;
+  max-height: 100vh;
+  max-height: 100dvh;
+}

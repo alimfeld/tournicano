@@ -1,13 +1,5 @@
 /* PlayerModal component */
 
-/* Full-screen dialog */
-dialog.player-modal article {
-  margin: 0;
-  max-height: 100vh;
-  /* Better support for mobile browsers */
-  max-height: 100dvh;
-}
-
 /* Header section - centered identity display */
 dialog.player-modal header section {
   display: flex;

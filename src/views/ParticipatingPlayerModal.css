@@ -1,12 +1,5 @@
 /* ParticipatingPlayerModal - minimal styles, Pico CSS first */
 
-/* Dialog layout - use Pico defaults, only override what's needed */
-dialog.participating-player-modal article {
-  margin: 0;
-  max-height: 100vh;
-  max-height: 100dvh;
-}
-
 dialog.participating-player-modal header section {
   display: flex;
   flex-direction: column;

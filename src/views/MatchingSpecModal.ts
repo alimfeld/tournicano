@@ -7,6 +7,7 @@ import {
   TeamUpPerformanceMode,
 } from "../model/Tournament.matching.ts";
 import "./MatchingSpecModal.css";
+import { Modal } from "./Modal.ts";
 
 // Symbol constants for matching factors
 const SYMBOL_VARIETY = "↻";
@@ -122,15 +123,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
       return state.matchUpGroupMode === MatchUpGroupMode.SAME ? MODE_GROUP_SAME : MODE_GROUP_CROSS;
     };
 
-    return m("dialog.matching-spec", {
-      oncreate: (vnode) => {
-        (vnode.dom as HTMLDialogElement).showModal();
-        document.documentElement.classList.add('modal-is-open');
-      },
-      onremove: () => {
-        document.documentElement.classList.remove('modal-is-open');
-      }
-    },
+    return m(Modal, { onClose, className: 'matching-spec' },
       m("article",
         // Header: Close button and title
         m("header",

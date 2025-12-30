@@ -3,6 +3,7 @@ import "./PlayerModal.css";
 import { Player } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol, getGroupSymbol, getGroupLetter } from "./GroupSymbol.ts";
+import { Modal } from "./Modal.ts";
 
 export interface PlayerModalAttrs {
   player: Player;
@@ -117,15 +118,7 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       }
     };
 
-    return m("dialog.player-modal", {
-      oncreate: (vnode) => {
-        (vnode.dom as HTMLDialogElement).showModal();
-        document.documentElement.classList.add('modal-is-open');
-      },
-      onremove: () => {
-        document.documentElement.classList.remove('modal-is-open');
-      }
-    },
+    return m(Modal, { onClose, className: 'player-modal' },
       m("article",
         // Header: Close button, Avatar, Name, Participation Status
         m("header",

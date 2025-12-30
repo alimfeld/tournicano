@@ -1,12 +1,5 @@
 /* MatchingSpecModal component */
 
-dialog.matching-spec article {
-  margin: 0;
-  max-height: 100vh;
-  /* Better support for mobile browsers */
-  max-height: 100dvh;
-}
-
 /* Slider label layout - inline value display */
 dialog.matching-spec .slider-label {
   display: flex;

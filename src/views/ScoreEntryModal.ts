@@ -3,6 +3,7 @@ import "./ScoreEntryModal.css";
 import "./MatchSection.css";
 import { MatchSection } from "./MatchSection.ts";
 import { Match, Score } from "../model/Tournament.ts";
+import { Modal } from "./Modal.ts";
 
 export interface ScoreEntryModalAttrs {
   roundIndex: number;
@@ -131,15 +132,7 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
       ? parts[0].length >= 2  // Before colon: disable if 2+ digits
       : parts[1].length >= 2; // After colon: disable if 2+ digits on right side
 
-    return m("dialog.score-entry-modal", {
-      oncreate: (vnode) => {
-        (vnode.dom as HTMLDialogElement).showModal();
-        document.documentElement.classList.add('modal-is-open');
-      },
-      onremove: () => {
-        document.documentElement.classList.remove('modal-is-open');
-      }
-    },
+    return m(Modal, { onClose, className: 'score-entry-modal' },
       m("article",
         m(MatchSection, {
           roundIndex,

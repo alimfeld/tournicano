@@ -1,6 +1,6 @@
 import m from "mithril";
-import "./AddPlayersModal.css";
 import { Tournament } from "../model/Tournament.ts";
+import { Modal } from "./Modal.ts";
 
 export interface AddPlayersModalAttrs {
   tournament: Tournament;
@@ -106,22 +106,16 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
   },
 
   view: ({ attrs, state }) => {
-    return m("dialog.add-players-modal", {
-      oncreate: (vnode) => {
-        (vnode.dom as HTMLDialogElement).showModal();
-        document.documentElement.classList.add('modal-is-open');
-
-        // Focus textarea after modal opens
-        requestAnimationFrame(() => {
-          const textarea = vnode.dom.querySelector('textarea');
-          if (textarea) (textarea as HTMLTextAreaElement).focus();
-        });
+    return m(Modal, { onClose: attrs.onClose, className: 'add-players-modal' },
+      m("article", {
+        oncreate: (vnode) => {
+          // Focus textarea after modal opens
+          requestAnimationFrame(() => {
+            const textarea = vnode.dom.querySelector('textarea');
+            if (textarea) (textarea as HTMLTextAreaElement).focus();
+          });
+        }
       },
-      onremove: () => {
-        document.documentElement.classList.remove('modal-is-open');
-      }
-    },
-      m("article",
         m("h2", "Add Players"),
 
         m("p", "Separate players with commas (,) or periods (.). Start a new line for each group."),
