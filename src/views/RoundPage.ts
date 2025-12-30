@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./RoundPage.css";
-import { PlayerCard } from "./PlayerCard.ts";
+import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
 import { Tournament, Match } from "../model/Tournament.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchSection } from "./MatchSection.ts";
@@ -261,11 +261,11 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                   [
                     // Paused players first (with sleep emoji)
                     ...round.paused.map((player) =>
-                      m(PlayerCard, { player, debug: settings.debug, badge: "💤" })
+                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "💤" })
                     ),
                     // Inactive players after (with power off emoji)
                     ...round.inactive.map((player) =>
-                      m(PlayerCard, { player, debug: settings.debug, badge: "⏻" })
+                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "⏻" })
                     )
                   ]
                 ),

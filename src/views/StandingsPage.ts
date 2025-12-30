@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./StandingsPage.css";
-import { PlayerCard } from "./PlayerCard.ts";
+import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
 import { Tournament } from "../model/Tournament.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { HelpCard } from "./HelpCard.ts";
@@ -207,7 +207,7 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                 ),
                 // Cell 2: PlayerCard (centered)
                 m("div.standings-cell.player-cell",
-                  m(PlayerCard, {
+                  m(ParticipatingPlayerCard, {
                     player: ranked.player,
                     badge: award(ranked.rank)
                   })

@@ -1,9 +1,9 @@
 import m from "mithril";
 import { ParticipatingPlayer } from "../model/Tournament";
 import { getAvatar } from "./AvatarCache.ts";
-import "./PlayerCard.css";
+import "./ParticipatingPlayerCard.css";
 
-export interface PlayerCardAttrs {
+export interface ParticipatingPlayerCardAttrs {
   player: ParticipatingPlayer;
   debug?: boolean;
   badge?: string;
@@ -24,7 +24,7 @@ const getPerformanceBadge = (player: ParticipatingPlayer): string | undefined =>
   return undefined;
 };
 
-export const PlayerCard: m.Component<PlayerCardAttrs> = {
+export const ParticipatingPlayerCard: m.Component<ParticipatingPlayerCardAttrs> = {
   view: (vnode) => {
     const player = vnode.attrs.player;
     const avatarUri = getAvatar(player.name);
