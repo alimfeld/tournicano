@@ -17,8 +17,16 @@ export interface HeaderAttrs {
   actions?: HeaderAction[];
 }
 
-export const Header: m.Component<HeaderAttrs> = {
-  view: ({ attrs: { title, actions } }) => {
+interface HeaderState {
+  openConfirmationIndex: number | null;
+}
+
+export const Header: m.Component<HeaderAttrs, HeaderState> = {
+  oninit: ({ state }) => {
+    state.openConfirmationIndex = null;
+  },
+
+  view: ({ attrs: { title, actions }, state }) => {
     const hasActions = actions && actions.length > 0;
 
     if (!hasActions) {
@@ -26,7 +34,7 @@ export const Header: m.Component<HeaderAttrs> = {
     }
 
     // Action handlers
-    const handleAction = (action: HeaderAction, dialogId: string, event: Event) => {
+    const handleAction = (action: HeaderAction, index: number, event: Event) => {
       event.preventDefault();
 
       // Close the dropdown
@@ -34,46 +42,53 @@ export const Header: m.Component<HeaderAttrs> = {
       if (details) details.removeAttribute("open");
 
       if (action.confirmation) {
-        const dialog = document.getElementById(dialogId);
-        if (dialog) dialog.setAttribute("open", "true");
+        state.openConfirmationIndex = index;
       } else {
         action.onclick();
       }
     };
 
-    const confirmAction = (action: HeaderAction, dialogId: string, event: Event) => {
+    const confirmAction = (action: HeaderAction, event: Event) => {
       event.preventDefault();
       action.onclick();
-      const dialog = document.getElementById(dialogId);
-      if (dialog) dialog.setAttribute("open", "false");
+      state.openConfirmationIndex = null;
     };
 
-    const cancelAction = (dialogId: string, event: Event) => {
+    const cancelAction = (event: Event) => {
       event.preventDefault();
-      const dialog = document.getElementById(dialogId);
-      if (dialog) dialog.setAttribute("open", "false");
+      state.openConfirmationIndex = null;
     };
 
     // Filter out disabled actions
     const enabledActions = actions.filter((action) => !action.disabled);
 
-    // Generate unique IDs for dialogs
-    const actionDialogIds = enabledActions.map(() => crypto.randomUUID());
-
     return [
-      // Confirmation dialogs
+      // Confirmation dialogs (conditionally rendered)
       ...enabledActions
         .map((action, index) => {
           if (!action.confirmation) return null;
-          const dialogId = actionDialogIds[index];
+          
+          const isOpen = state.openConfirmationIndex === index;
+          
+          // Only render if this confirmation is open
+          if (!isOpen) return null;
+          
           return m(
             "dialog",
-            { id: dialogId },
+            {
+              oncreate: (vnode) => {
+                (vnode.dom as HTMLDialogElement).showModal();
+                document.documentElement.classList.add('modal-is-open');
+              },
+              onremove: () => {
+                document.documentElement.classList.remove('modal-is-open');
+              },
+            },
             m(
               "article",
               m("header",
                 m("button[aria-label=Close][rel=prev]", {
-                  onclick: (event: Event) => cancelAction(dialogId, event),
+                  onclick: cancelAction,
                 }),
                 m("p", m("strong", action.confirmation.title)),
               ),
@@ -83,10 +98,10 @@ export const Header: m.Component<HeaderAttrs> = {
               m(
                 "footer",
                 m("button.secondary", {
-                  onclick: (event: Event) => cancelAction(dialogId, event),
+                  onclick: cancelAction,
                 }, "Cancel"),
                 m("button", {
-                  onclick: (event: Event) => confirmAction(action, dialogId, event),
+                  onclick: (event: Event) => confirmAction(action, event),
                 }, action.confirmation.confirmButtonText || "Confirm"),
               ),
             ),
@@ -101,11 +116,10 @@ export const Header: m.Component<HeaderAttrs> = {
           m("summary.secondary.outline", { role: "button" }, "☰"),
           m("ul",
             enabledActions.map((action, index) => {
-              const dialogId = actionDialogIds[index];
               return m("li",
                 m("a", {
                   href: "#",
-                  onclick: (e: Event) => handleAction(action, dialogId, e),
+                  onclick: (e: Event) => handleAction(action, index, e),
                 }, action.label)
               );
             })
