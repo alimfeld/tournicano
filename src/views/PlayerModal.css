@@ -8,22 +8,16 @@ dialog.player-modal article {
   max-height: 100dvh;
 }
 
-/* Player info section - centered identity display */
-dialog.player-modal .player-info {
+/* Header section - centered identity display */
+dialog.player-modal header section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--pico-spacing);
-  text-align: center;
-  padding-bottom: var(--pico-spacing);
-}
-
-dialog.player-modal .player-info h2 {
-  margin: 0;
+  clear: both;
 }
 
 /* Avatar */
-dialog.player-modal .avatar-large {
+dialog.player-modal header img {
   width: var(--player-modal-avatar-size);
   height: var(--player-modal-avatar-size);
 }
@@ -37,22 +31,14 @@ dialog.player-modal .participating-icon {
   opacity: 0.7;
 }
 
+/* Active toggle - right aligned */
+dialog.player-modal form label.active-toggle {
+  margin-left: auto;
+}
+
 /* Error message styling */
 dialog.player-modal .error-message {
   color: var(--pico-form-element-invalid-border-color);
-}
-
-/* Footer with two-row layout */
-dialog.player-modal footer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--pico-spacing);
-}
-
-dialog.player-modal footer .primary-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--pico-spacing);
 }
 
 /* Delete button styling */

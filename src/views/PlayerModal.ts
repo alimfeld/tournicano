@@ -29,6 +29,12 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
     const { player, onClose, showToast } = attrs;
     const trimmedEditName = state.editName.trim();
 
+    // Check if any changes have been made
+    const hasChanges = 
+      player.name !== trimmedEditName ||
+      player.group !== state.editGroup ||
+      player.active !== state.editActive;
+
     const validateEditName = (name: string): string => {
       const trimmed = name.trim();
       if (!trimmed) return "Name is required";
@@ -111,8 +117,6 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       }
     };
 
-    const canDelete = !player.inAnyRound();
-
     return m("dialog.player-modal", {
       oncreate: (vnode) => {
         (vnode.dom as HTMLDialogElement).showModal();
@@ -123,19 +127,24 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       }
     },
       m("article",
-        // Player info section (avatar, name, status)
-        m("div.player-info",
-          m("img.avatar-large", {
-            src: getAvatar(trimmedEditName || player.name),
-            alt: trimmedEditName || player.name
+        // Header: Close button, Avatar, Name, Participation Status
+        m("header",
+          m("button[aria-label=Close][rel=prev]", {
+            onclick: onClose,
           }),
-          m("h2", trimmedEditName || player.name),
-          player.inAnyRound()
-            ? m("div.participation-status",
-              m("span.participating-icon", "🚀"),
-              " Participating in rounds"
-            )
-            : m("div.participation-status", "Not yet participating")
+          m("section",
+            m("img", {
+              src: getAvatar(trimmedEditName || player.name),
+              alt: trimmedEditName || player.name
+            }),
+            m("h2", trimmedEditName || player.name),
+            player.inAnyRound()
+              ? m("div.participation-status",
+                m("span.participating-icon", "🚀"),
+                " Participating in rounds"
+              )
+              : m("div.participation-status", "Not yet participating")
+          ),
         ),
 
         // Form content
@@ -171,7 +180,7 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
             ])
           ),
 
-          m("label", { for: "player-active" },
+          m("label.active-toggle", { for: "player-active" },
             m("input", {
               type: "checkbox",
               role: "switch",
@@ -188,33 +197,19 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
 
         // Footer with action buttons
         m("footer",
-          // Destructive action row (less prominent at top)
-          m("button.delete-player", {
-            disabled: !canDelete,
+          !player.inAnyRound() ? m("button.delete-player", {
             onclick: (e: Event) => {
               e.preventDefault();
               handleDelete();
             },
-            title: canDelete
-              ? "Delete this player"
-              : "Cannot delete - player is participating in rounds"
-          }, "Delete Player"),
-          // Primary actions row (prominent at bottom)
-          m("div.primary-actions",
-            m("button.secondary", {
-              onclick: (e: Event) => {
-                e.preventDefault();
-                onClose();
-              }
-            }, "Cancel"),
-            m("button", {
-              disabled: !!state.editNameError || !state.editName.trim(),
-              onclick: (e: Event) => {
-                e.preventDefault();
-                handleSave();
-              }
-            }, "Save")
-          )
+          }, "Delete Player") : null,
+          m("button", {
+            disabled: !!state.editNameError || !state.editName.trim() || !hasChanges,
+            onclick: (e: Event) => {
+              e.preventDefault();
+              handleSave();
+            }
+          }, "Apply Changes")
         )
       )
     );
