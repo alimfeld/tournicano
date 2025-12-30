@@ -20,12 +20,14 @@ section.benched {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-section.benched article {
-  opacity: 0.6;
-}
-
 @media (min-width: 768px) {
   section.benched {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
+}
+
+/* Inactive player styling */
+
+main.round article.player.inactive {
+  opacity: 0.5;
 }

@@ -13,13 +13,13 @@ const getPerformanceBadge = (player: ParticipatingPlayer): string | undefined =>
   // Don't show badge if no matches played
   const totalGames = player.wins + player.losses + player.draws;
   if (totalGames === 0) return undefined;
-  
+
   // 100% win rate → 💯
   if (player.winRatio === 1.0) return "💯";
-  
+
   // >= 75% win rate → 🔥
   if (player.winRatio >= 0.75) return "🔥";
-  
+
   // < 75% → no badge
   return undefined;
 };
@@ -33,6 +33,7 @@ export const PlayerCard: m.Component<PlayerCardAttrs> = {
 
     return m(
       "article.player",
+      { class: player.active ? "active" : "inactive" },
       leftBadge ? m("span.player-badge-left", leftBadge) : null,
       rightBadge ? m("span.player-badge-right", rightBadge) : null,
       m("img", { src: avatarUri }),
