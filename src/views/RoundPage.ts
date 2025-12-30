@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./RoundPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Tournament, Match } from "../model/Tournament.ts";
+import { Tournament, Match, ParticipatingPlayer } from "../model/Tournament.ts";
 import { Settings } from "../model/Settings.ts";
 import { MatchSection } from "./MatchSection.ts";
 import { Swipeable } from "./Swipeable.ts";
@@ -11,6 +11,7 @@ import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
 import { ExitFullscreenButton } from "./ExitFullscreenButton.ts";
 import { ScoreEntryModal } from "./ScoreEntryModal.ts";
+import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
 
@@ -30,6 +31,7 @@ interface RoundState {
     matchIndex: number;
     match: Match;
   };
+  selectedPlayer?: ParticipatingPlayer;
   fullscreen: boolean;
   wakeLock: WakeLockSentinel | null;
   wakeLockListener?: { onchange: () => Promise<void> };
@@ -38,6 +40,7 @@ interface RoundState {
 export const RoundPage: m.Component<RoundAttrs, RoundState> = {
   oninit: async ({ attrs, state }) => {
     state.scoreEntryMatch = undefined;
+    state.selectedPlayer = undefined;
     state.fullscreen = false;
     state.wakeLock = null;
 
@@ -147,6 +150,15 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       state.scoreEntryMatch = undefined;
     };
 
+    // Player modal handlers
+    const openPlayerModal = (player: ParticipatingPlayer) => {
+      state.selectedPlayer = player;
+    };
+
+    const closePlayerModal = () => {
+      state.selectedPlayer = undefined;
+    };
+
     // Build actions for header overflow menu
     const actions: HeaderAction[] = [
       {
@@ -252,7 +264,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         round
           ? [
             ...round.matches.map((match, matchIndex) =>
-              m(MatchSection, { roundIndex, match, matchIndex, debug: settings.debug, showRoundIndex: fullscreen, openScoreEntry }),
+              m(MatchSection, { roundIndex, match, matchIndex, debug: settings.debug, showRoundIndex: fullscreen, openScoreEntry, openPlayerModal }),
             ),
             round.paused.length > 0 || round.inactive.length > 0
               ? [
@@ -261,11 +273,11 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                   [
                     // Paused players first (with sleep emoji)
                     ...round.paused.map((player) =>
-                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "💤" })
+                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "💤", onClick: () => openPlayerModal(player) })
                     ),
                     // Inactive players after (with power off emoji)
                     ...round.inactive.map((player) =>
-                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "⏻" })
+                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "⏻", onClick: () => openPlayerModal(player) })
                     )
                   ]
                 ),
@@ -398,6 +410,11 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         matchIndex: state.scoreEntryMatch.matchIndex,
         match: state.scoreEntryMatch.match,
         onClose: closeScoreEntry
+      }) : null,
+      // Player stats modal (conditionally rendered)
+      state.selectedPlayer ? m(ParticipatingPlayerModal, {
+        player: state.selectedPlayer,
+        onClose: closePlayerModal
       }) : null,
     ]);
   },

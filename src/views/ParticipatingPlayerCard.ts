@@ -7,6 +7,7 @@ export interface ParticipatingPlayerCardAttrs {
   player: ParticipatingPlayer;
   debug?: boolean;
   badge?: string;
+  onClick?: () => void;
 }
 
 const getPerformanceBadge = (player: ParticipatingPlayer): string | undefined => {
@@ -33,7 +34,11 @@ export const ParticipatingPlayerCard: m.Component<ParticipatingPlayerCardAttrs> 
 
     return m(
       "article.player",
-      { class: player.active ? "active" : "inactive" },
+      {
+        class: player.active ? "active" : "inactive",
+        onclick: vnode.attrs.onClick,
+        style: vnode.attrs.onClick ? "cursor: pointer;" : undefined
+      },
       leftBadge ? m("span.player-badge-left", leftBadge) : null,
       rightBadge ? m("span.player-badge-right", rightBadge) : null,
       m("img", { src: avatarUri }),

@@ -1,0 +1,50 @@
+/* ParticipatingPlayerModal - minimal styles, Pico CSS first */
+
+/* Dialog layout - use Pico defaults, only override what's needed */
+dialog.participating-player-modal article {
+  margin: 0;
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+dialog.participating-player-modal header section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  clear: both;
+}
+
+dialog.participating-player-modal header img {
+  width: var(--player-modal-avatar-size);
+  height: var(--player-modal-avatar-size);
+}
+
+/* Stats section - centered grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  margin-bottom: var(--pico-spacing);
+  max-width: 12rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.stats-grid dt {
+  color: var(--pico-muted-color);
+  text-align: right;
+  font-weight: normal;
+}
+
+.stats-grid dd {
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Footer - flex layout for toggle + button */
+dialog.participating-player-modal footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--pico-spacing);
+}

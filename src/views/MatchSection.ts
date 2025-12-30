@@ -15,13 +15,14 @@ export interface MatchSectionAttrs {
   
   // Interactive mode only
   openScoreEntry?: (roundIndex: number, matchIndex: number, match: Match) => void;
+  openPlayerModal?: (player: ParticipatingPlayer) => void;
   
   // Display mode only
   displayScore?: string;  // Override score text in display mode
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, debug, mode, showRoundIndex, openScoreEntry, displayScore } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, debug, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : "";
@@ -39,7 +40,8 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       return m(ParticipatingPlayerCard, { 
         key: `player-${player.id}`,
         player, 
-        debug
+        debug,
+        onClick: openPlayerModal ? () => openPlayerModal(player) : undefined
       });
     }
     const renderMatchDebug = (match: Match) => {
