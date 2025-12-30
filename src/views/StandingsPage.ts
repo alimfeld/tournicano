@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./StandingsPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Tournament } from "../model/Tournament.ts";
+import { Tournament, ParticipatingPlayer } from "../model/Tournament.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
@@ -10,6 +10,7 @@ import { GroupFilter } from "./GroupFilter.ts";
 import { StandingsFilters } from "../App.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
+import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
 
 export interface StandingsAttrs {
   tournament: Tournament;
@@ -22,9 +23,17 @@ export interface StandingsAttrs {
   currentPage: Page;
 }
 
-export const StandingsPage: m.Component<StandingsAttrs> = {
+interface StandingsState {
+  selectedPlayer?: ParticipatingPlayer;
+}
+
+export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
+  oninit: ({ state }) => {
+    state.selectedPlayer = undefined;
+  },
   view: ({
     attrs: { tournament, roundIndex, standingsFilters, changeRound, changeStandingsFilters, showToast, nav, currentPage },
+    state
   }) => {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
@@ -76,6 +85,15 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
     const matchCount = groupWins + groupLosses + groupDraws;
     const groupWinRatio = matchCount === 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
     const groupPlusMinus = groupPointsFor - groupPointsAgainst;
+
+    // Player modal handlers
+    const openPlayerModal = (player: ParticipatingPlayer) => {
+      state.selectedPlayer = player;
+    };
+
+    const closePlayerModal = () => {
+      state.selectedPlayer = undefined;
+    };
 
     // Build actions for header overflow menu
     const actions: HeaderAction[] = tournament.rounds.length > 0 ? [
@@ -209,7 +227,8 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
                 m("div.standings-cell.player-cell",
                   m(ParticipatingPlayerCard, {
                     player: ranked.player,
-                    badge: award(ranked.rank)
+                    badge: award(ranked.rank),
+                    onClick: () => openPlayerModal(ranked.player)
                   })
                 ),
                 // Cell 3: All stats combined (left-aligned, 2 lines)
@@ -257,6 +276,11 @@ export const StandingsPage: m.Component<StandingsAttrs> = {
           }),
       ),
       m(Nav, { nav, currentPage }),
+      // Player stats modal (conditionally rendered)
+      state.selectedPlayer ? m(ParticipatingPlayerModal, {
+        player: state.selectedPlayer,
+        onClose: closePlayerModal
+      }) : null,
     ];
   },
 };
