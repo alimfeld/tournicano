@@ -341,7 +341,6 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
       // Player modal (conditionally rendered)
       state.playerView ? m(PlayerModal, {
         player: state.playerView.player,
-        tournament,
         onClose: closePlayerView,
         showToast
       }) : null,

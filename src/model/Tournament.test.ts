@@ -145,6 +145,20 @@ test("should not rename player to existing name", ({ players }) => {
   expect(player.name).toBe(name);
 });
 
+test("should check if can rename to name", ({ players }) => {
+  const tournament = runTournament(players);
+  const player = tournament.players()[0];
+  
+  // New name should be available
+  expect(player.canRenameTo("NewName")).toBe(true);
+  
+  // Existing name (other player) should not be available
+  expect(player.canRenameTo(tournament.players()[1].name)).toBe(false);
+  
+  // Own name should be available (can rename to same name)
+  expect(player.canRenameTo(player.name)).toBe(true);
+});
+
 test("should activate player", ({ players }) => {
   const tournament = runTournament(players);
   const player = tournament.players()[0];

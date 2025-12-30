@@ -83,16 +83,21 @@ class PlayerImpl implements Mutable<Player> {
     return false;
   }
 
+  canRenameTo(name: string): boolean {
+    const existingNames = this.tournament.players()
+      .filter(p => p.id !== this.id)
+      .map(p => p.name);
+    
+    return !existingNames.includes(name);
+  }
+
   rename(name: string) {
-    const existingNames = new Set(
-      this.tournament.players().map((p) => p.name),
-    );
-    if (!existingNames.has(name)) {
-      this.name = name;
-      this.tournament.notifyChange();
-      return true;
+    if (!this.canRenameTo(name)) {
+      return false;
     }
-    return false;
+    this.name = name;
+    this.tournament.notifyChange();
+    return true;
   }
 
   setGroup(group: number, notify = true) {
@@ -215,6 +220,10 @@ class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<Partici
 
   inAnyRound(): boolean {
     return this.player.inAnyRound();
+  }
+
+  canRenameTo(name: string): boolean {
+    return this.player.canRenameTo(name);
   }
 
   rename(name: string): boolean {

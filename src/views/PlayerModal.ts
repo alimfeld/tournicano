@@ -1,12 +1,11 @@
 import m from "mithril";
 import "./PlayerModal.css";
-import { Tournament, Player } from "../model/Tournament.ts";
+import { Player } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol, getGroupSymbol, getGroupLetter } from "./GroupSymbol.ts";
 
 export interface PlayerModalAttrs {
   player: Player;
-  tournament: Tournament;
   onClose: () => void;
   showToast?: (message: string, type?: "success" | "error" | "info") => void;
 }
@@ -27,9 +26,8 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
   },
 
   view: ({ attrs, state }) => {
-    const { player, tournament, onClose, showToast } = attrs;
+    const { player, onClose, showToast } = attrs;
     const trimmedEditName = state.editName.trim();
-    const allPlayers = tournament.groups.flatMap(group => tournament.players(group));
 
     const validateEditName = (name: string): string => {
       const trimmed = name.trim();
@@ -40,11 +38,10 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
         return "Name cannot contain commas or periods";
       }
 
-      const existingNames = allPlayers
-        .filter(p => p.id !== player.id)
-        .map(p => p.name);
+      if (!player.canRenameTo(trimmed)) {
+        return "Name already exists";
+      }
 
-      if (existingNames.includes(trimmed)) return "Name already exists";
       return "";
     };
 
@@ -63,7 +60,6 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       }
 
       const oldName = player.name;
-      const oldGroup = player.group;
       const nameChanged = player.name !== trimmedName;
       const groupChanged = player.group !== state.editGroup;
       const activeChanged = player.active !== state.editActive;
@@ -92,14 +88,6 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
         messages.push(`${trimmedName} moved to group ${groupLabel}`);
       } else if (activeChanged) {
         messages.push(`${trimmedName} ${state.editActive ? 'activated' : 'deactivated'}`);
-      }
-
-      if (groupChanged) {
-        const oldGroupPlayers = tournament.players(oldGroup);
-        if (oldGroupPlayers.length === 0) {
-          const oldGroupLabel = `${getGroupSymbol(oldGroup)} ${getGroupLetter(oldGroup)}`;
-          messages.push(`Group ${oldGroupLabel} removed (empty)`);
-        }
       }
 
       if (messages.length > 0 && showToast) {

@@ -8,6 +8,7 @@ export interface Player {
   readonly group: number;
   readonly active: boolean;
   inAnyRound(): boolean;
+  canRenameTo(name: string): boolean;
   rename(name: string): boolean;
   setGroup(group: number, notify?: boolean): void;
   activate(active: boolean, notify?: boolean): void;
