@@ -130,7 +130,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
 
       // Case B: Active players in multiple groups, but mode doesn't use groups
       if (!specUsesGroups && groupCount > 1) {
-        return "Active players are in multiple groups but mode doesn't use them - consider changing mode in Settings or regrouping players";
+        return "Active players are in multiple groups but mode ignores them";
       }
 
       // No mismatch detected
