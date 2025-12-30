@@ -8,6 +8,23 @@ import {
 } from "../model/Tournament.matching.ts";
 import "./MatchingSpecModal.css";
 
+// Symbol constants for matching factors
+const SYMBOL_VARIETY = "↻";
+const SYMBOL_SKILL = "★";
+const SYMBOL_GROUPS = "☻";
+
+// Performance mode symbols (Team up only)
+const MODE_BALANCED = "≈";
+const MODE_EQUAL = "≡";
+const MODE_MEXICANO = "⋈";
+
+// Group mode symbols
+const MODE_GROUP_SAME = "≡";
+const MODE_GROUP_CROSS = "⋈";
+
+// Separator for summary
+const SEPARATOR = " · ";
+
 export interface MatchingSpecModalAttrs {
   matchingSpec: MatchingSpec;
   onconfirm: (matchingSpec: MatchingSpec) => void;
@@ -85,6 +102,26 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
       onClose();
     };
 
+    const getTeamUpPerformanceModeSymbol = () => {
+      if (state.teamUpPerformanceFactor === 0) return "";
+      switch (state.teamUpPerformanceMode) {
+        case TeamUpPerformanceMode.AVERAGE: return MODE_BALANCED;
+        case TeamUpPerformanceMode.EQUAL: return MODE_EQUAL;
+        case TeamUpPerformanceMode.MEXICANO: return MODE_MEXICANO;
+        default: return "";
+      }
+    };
+
+    const getTeamUpGroupModeSymbol = () => {
+      if (state.teamUpGroupFactor === 0) return "";
+      return state.teamUpGroupMode === TeamUpGroupMode.SAME ? MODE_GROUP_SAME : MODE_GROUP_CROSS;
+    };
+
+    const getMatchUpGroupModeSymbol = () => {
+      if (state.matchUpGroupFactor === 0) return "";
+      return state.matchUpGroupMode === MatchUpGroupMode.SAME ? MODE_GROUP_SAME : MODE_GROUP_CROSS;
+    };
+
     return m("dialog.matching-spec", {
       oncreate: (vnode) => {
         (vnode.dom as HTMLDialogElement).showModal();
@@ -95,14 +132,25 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
       }
     },
       m("article",
+        // Header: Close button and title
+        m("header",
+          m("button[aria-label=Close][rel=prev]", {
+            onclick: onClose,
+          }),
+          m("h2", "Customize Matching")
+        ),
+
         // Form content
         m("form", { onsubmit: (e: SubmitEvent) => e.preventDefault() },
-          m("fieldset",
-            m("h2", "Team up factors"),
+          m("details",
+            m("summary.secondary.outline[role=button]",
+              m("div", "Team up"),
+              m("small", `${SYMBOL_VARIETY} ${state.teamUpVarietyFactor}%${SEPARATOR}${SYMBOL_SKILL} ${state.teamUpPerformanceFactor}% ${getTeamUpPerformanceModeSymbol()}${SEPARATOR}${SYMBOL_GROUPS} ${state.teamUpGroupFactor}% ${getTeamUpGroupModeSymbol()}`)
+            ),
             m(
               "label.slider-label",
               { for: "team-up-variety-factor" },
-              "Rotate partners",
+              `${SYMBOL_VARIETY} Rotate partners`,
               m("small.slider-label-text", state.teamUpVarietyFactor + "%"),
             ),
             m("input", {
@@ -118,7 +166,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "team-up-performance-factor" },
-              "Match by skill",
+              `${SYMBOL_SKILL} Match by skill`,
               m("small.slider-label-text", state.teamUpPerformanceFactor + "%"),
             ),
             m("input", {
@@ -134,9 +182,9 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "fieldset",
               [
-                { value: TeamUpPerformanceMode.AVERAGE, label: "Balanced teams" },
-                { value: TeamUpPerformanceMode.EQUAL, label: "Equal skill" },
-                { value: TeamUpPerformanceMode.MEXICANO, label: "Mexicano (1+3, 2+4)" }
+                { value: TeamUpPerformanceMode.AVERAGE, label: `${MODE_BALANCED} Balanced teams` },
+                { value: TeamUpPerformanceMode.EQUAL, label: `${MODE_EQUAL} Equal skill` },
+                { value: TeamUpPerformanceMode.MEXICANO, label: `${MODE_MEXICANO} Mexicano (1+3, 2+4)` }
               ].map(option =>
                 m("label",
                   m("input", {
@@ -154,7 +202,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "team-up-group-factor" },
-              "Group factor",
+              `${SYMBOL_GROUPS} Group factor`,
               m("small.slider-label-text", state.teamUpGroupFactor + "%"),
             ),
             m("input", {
@@ -170,8 +218,8 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "fieldset",
               [
-                { value: TeamUpGroupMode.PAIRED, label: "Pair groups (A&B, C&D)" },
-                { value: TeamUpGroupMode.SAME, label: "Same group only" }
+                { value: TeamUpGroupMode.PAIRED, label: `${MODE_GROUP_CROSS} Pair groups (A&B, C&D)` },
+                { value: TeamUpGroupMode.SAME, label: `${MODE_GROUP_SAME} Same group only` }
               ].map(option =>
                 m("label",
                   m("input", {
@@ -185,14 +233,17 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
                   option.label
                 )
               )
-            ),
+            )
           ),
-          m("fieldset",
-            m("h2", "Match up factors"),
+          m("details",
+            m("summary.secondary.outline[role=button]",
+              m("div", "Match up"),
+              m("small", `${SYMBOL_VARIETY} ${state.matchUpVarietyFactor}%${SEPARATOR}${SYMBOL_SKILL} ${state.matchUpPerformanceFactor}%${SEPARATOR}${SYMBOL_GROUPS} ${state.matchUpGroupFactor}% ${getMatchUpGroupModeSymbol()}`)
+            ),
             m(
               "label.slider-label",
               { for: "match-up-variety-factor" },
-              "Rotate opponents",
+              `${SYMBOL_VARIETY} Rotate opponents`,
               m("small.slider-label-text", state.matchUpVarietyFactor + "%"),
             ),
             m("input", {
@@ -208,7 +259,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "match-up-performance-factor" },
-              "Match similar skill",
+              `${SYMBOL_SKILL} Match similar skill`,
               m("small.slider-label-text", state.matchUpPerformanceFactor + "%"),
             ),
             m("input", {
@@ -224,7 +275,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "match-up-group-factor" },
-              "Group factor",
+              `${SYMBOL_GROUPS} Group factor`,
               m("small.slider-label-text", state.matchUpGroupFactor + "%"),
             ),
             m("input", {
@@ -240,8 +291,8 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "fieldset",
               [
-                { value: MatchUpGroupMode.SAME, label: "Same group mix" },
-                { value: MatchUpGroupMode.CROSS, label: "Cross groups" }
+                { value: MatchUpGroupMode.SAME, label: `${MODE_GROUP_SAME} Same group mix` },
+                { value: MatchUpGroupMode.CROSS, label: `${MODE_GROUP_CROSS} Cross groups` }
               ].map(option =>
                 m("label",
                   m("input", {
@@ -255,10 +306,12 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
                   option.label
                 )
               )
-            ),
+            )
           ),
-          m("fieldset",
-            m("h2", "Group balancing"),
+          m("details",
+            m("summary.secondary.outline[role=button]",
+              `Group balancing • ${state.balanceGroups ? "On" : "Off"}`
+            ),
             m("label",
               m("input", {
                 type: "checkbox",
@@ -268,19 +321,14 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
                   state.balanceGroups = (e.target as HTMLInputElement).checked;
                 }
               }),
-              "Balance groups (equal players per group)"
-            )
+              "Balance groups"
+            ),
+            m("small", "Equal player counts from each group will be selected for every round.")
           ),
         ),
 
-        // Footer with action buttons (Pico CSS pattern)
+        // Footer with action buttons
         m("footer",
-          m("button.secondary", {
-            onclick: (e: Event) => {
-              e.preventDefault();
-              onClose();
-            }
-          }, "Cancel"),
           m("button", {
             onclick: (e: Event) => {
               e.preventDefault();
