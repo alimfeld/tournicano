@@ -137,3 +137,9 @@ a[target="_blank"]::after {
   content: " ↗";
   display: inline-block;
 }
+
+/* Hide focus ring on modal close buttons unless keyboard navigation is used */
+dialog article > header > button[aria-label="Close"]:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
