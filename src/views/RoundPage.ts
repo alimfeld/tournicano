@@ -29,7 +29,6 @@ interface RoundState {
     roundIndex: number;
     matchIndex: number;
     match: Match;
-    scrollPosition: number;
   };
   fullscreen: boolean;
   wakeLock: WakeLockSentinel | null;
@@ -140,21 +139,12 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       state.scoreEntryMatch = {
         roundIndex,
         matchIndex,
-        match,
-        scrollPosition: window.scrollY
+        match
       };
     };
 
     const closeScoreEntry = () => {
-      const scrollY = state.scoreEntryMatch?.scrollPosition ?? 0;
       state.scoreEntryMatch = undefined;
-
-      // Restore parent scroll after DOM updates (double RAF)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollY);
-        });
-      });
     };
 
     // Build actions for header overflow menu
