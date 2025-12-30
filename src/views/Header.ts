@@ -67,12 +67,12 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
       ...enabledActions
         .map((action, index) => {
           if (!action.confirmation) return null;
-          
+
           const isOpen = state.openConfirmationIndex === index;
-          
+
           // Only render if this confirmation is open
           if (!isOpen) return null;
-          
+
           return m(
             "dialog",
             {
@@ -83,6 +83,11 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
               onremove: () => {
                 document.documentElement.classList.remove('modal-is-open');
               },
+              onclick: (e: MouseEvent) => {
+                if (e.target === e.currentTarget) {
+                  cancelAction(e);
+                }
+              }
             },
             m(
               "article",
