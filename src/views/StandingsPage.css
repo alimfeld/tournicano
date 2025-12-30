@@ -8,7 +8,7 @@ section.filter-section {
 /* Each row is a grid - left-shifted layout */
 .standings-row {
   display: grid;
-  grid-template-columns: 1fr 3fr 5fr;
+  grid-template-columns: 1fr 1fr 1fr;
   column-gap: var(--pico-spacing);
   align-items: center;
   padding: var(--pico-spacing) 0;
@@ -22,7 +22,7 @@ section.filter-section {
   }
 
   .standings-row {
-    grid-template-columns: 3fr 2fr 5fr;
+    grid-template-columns: 2fr 1fr 2fr;
   }
 }
 
@@ -42,6 +42,7 @@ section.filter-section {
 .standings-cell.rank-cell {
   text-align: right;
   font-weight: bold;
+  padding-right: var(--pico-spacing);
 }
 
 /* Player cell - centered (default), no padding */
@@ -75,6 +76,7 @@ section.filter-section {
   flex-direction: column;
   justify-content: space-evenly;
   align-self: stretch;
+  padding-left: var(--pico-spacing);
 }
 
 /* Remove paragraph margins for tighter spacing */
@@ -85,11 +87,4 @@ section.filter-section {
 /* Strong tags in stats - ensure they stand out */
 .standings-cell.stats-cell strong {
   font-weight: bold;
-}
-
-/* Stat values (percentages and plus/minus) - right-aligned with fixed width */
-.standings-cell.stats-cell .stat-value {
-  display: inline-block;
-  min-width: 5ch;
-  text-align: right;
 }

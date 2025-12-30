@@ -196,21 +196,11 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
                 ),
                 // Cell 3: All stats combined (left-aligned, 2 lines)
                 m("div.standings-cell.stats-cell",
-                  // Line 1: Win% PRIMARY (bold) + secondary details (small)
                   m("p",
-                    m("span.stat-value",
-                      m("strong", `${(groupWinRatio * 100).toFixed(0)}%`)
-                    ),
-                    " ",
-                    m("small", `(${groupWins}-${groupDraws}-${groupLosses})`)
+                    m("strong", `${(groupWinRatio * 100).toFixed(0)}%`)
                   ),
-                  // Line 2: Plus/minus PRIMARY (bold) + secondary details (small)
                   m("p",
-                    m("span.stat-value",
-                      m("strong", `${(groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus}`)
-                    ),
-                    " ",
-                    m("small", `(+${groupPointsFor}/-${groupPointsAgainst})`)
+                    m("strong", `${(groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus}`)
                   )
                 )
               )
@@ -233,24 +223,11 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
                 ),
                 // Cell 3: All stats combined (left-aligned, 2 lines)
                 m("div.standings-cell.stats-cell",
-                  // Line 1: Win% PRIMARY (bold) + secondary details (small)
-                  m("p", 
-                    m("span.stat-value",
-                      m("strong", `${(ranked.player.winRatio * 100).toFixed(0)}%`)
-                    ),
-                    " ",
-                    m("small", 
-                      `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})` +
-                      (participationCount < totalRounds ? ` • ${participationCount}/${totalRounds}` : '')
-                    )
-                  ),
-                  // Line 2: Plus/minus PRIMARY (bold) + secondary details (small)
                   m("p",
-                    m("span.stat-value",
-                      m("strong", `${(ranked.player.plusMinus >= 0 ? "+" : "") + ranked.player.plusMinus}`)
-                    ),
-                    " ",
-                    m("small", `(+${ranked.player.pointsFor}/-${ranked.player.pointsAgainst})`)
+                    m("strong", `${(ranked.player.winRatio * 100).toFixed(0)}%`)
+                  ),
+                  m("p",
+                    m("strong", `${(ranked.player.plusMinus >= 0 ? "+" : "") + ranked.player.plusMinus}`)
                   )
                 )
               );
@@ -262,14 +239,14 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
               : "📊 No scores entered yet",
             hint: tournament.rounds.length === 0
               ? [
-                  "Create rounds and enter match scores to see player rankings.",
-                  m("ul.tip-list", [
-                    m("li", "Players are ranked by win % with point differential as tiebreaker"),
-                    m("li", "Performance badges show achievement: 🔥 for ≥75% win rate, 💯 for 100%")
-                  ])
-                ]
+                "Create rounds and enter match scores to see player rankings.",
+                m("ul.tip-list", [
+                  m("li", "Players are ranked by win % with point differential as tiebreaker"),
+                  m("li", "Performance badges show achievement: 🔥 for ≥75% win rate, 💯 for 100%")
+                ])
+              ]
               : "Enter scores in the Rounds tab to see standings and rankings!",
-            action: { 
+            action: {
               label: tournament.rounds.length === 0 ? "Go to Rounds" : "Enter Scores",
               onclick: () => nav(Page.ROUNDS)
             }
