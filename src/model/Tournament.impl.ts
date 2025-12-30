@@ -2,9 +2,9 @@ import { Mutable } from "./Mutable";
 import {
   Match,
   Performance,
-  PlayerStats,
+  ParticipatingPlayer,
   PlayerId,
-  TournamentPlayer,
+  Player,
   Round,
   RoundInfo,
   Score,
@@ -66,7 +66,7 @@ export const tournamentFactory: TournamentFactory = {
   },
 };
 
-class TournamentPlayerImpl implements Mutable<TournamentPlayer> {
+class PlayerImpl implements Mutable<Player> {
   constructor(
     private tournament: TournamentImpl,
     readonly id: string,
@@ -183,7 +183,7 @@ class PerformanceImpl implements Mutable<Performance> {
   }
 }
 
-class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
+class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<ParticipatingPlayer> {
   partners: Map<string, number[]> = new Map();
   opponents: Map<string, number[]> = new Map();
 
@@ -191,19 +191,46 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
   pauseCount: number = 0;
   lastPause: number = -1;
 
+  private player: PlayerImpl;
+
   constructor(
     private tournament: TournamentImpl,
     readonly id: PlayerId,
   ) {
     super();
+    this.player = this.tournament.playerMap.get(this.id)!;
   }
 
   get name() {
-    return this.tournament.playerMap.get(this.id)!.name;
+    return this.player.name;
   }
 
   get group() {
-    return this.tournament.playerMap.get(this.id)!.group;
+    return this.player.group;
+  }
+
+  get active(): boolean {
+    return this.player.active;
+  }
+
+  inAnyRound(): boolean {
+    return this.player.inAnyRound();
+  }
+
+  rename(name: string): boolean {
+    return this.player.rename(name);
+  }
+
+  setGroup(group: number, notify?: boolean): void {
+    this.player.setGroup(group, notify);
+  }
+
+  activate(active: boolean, notify?: boolean): void {
+    this.player.activate(active, notify);
+  }
+
+  delete(): boolean {
+    return this.player.delete();
   }
 
   get playRatio() {
@@ -223,8 +250,8 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
     this.opponents.set(id, rounds);
   }
 
-  deepCopy(): PlayerStatsImpl {
-    const copy = new PlayerStatsImpl(this.tournament, this.id);
+  deepCopy(): ParticipatingPlayerImpl {
+    const copy = new ParticipatingPlayerImpl(this.tournament, this.id);
 
     copy.partners = new Map([...this.partners].map(([key, value]) => [key, [...value]]))
     copy.opponents = new Map([...this.opponents].map(([key, value]) => [key, [...value]]))
@@ -245,8 +272,8 @@ class PlayerStatsImpl extends PerformanceImpl implements Mutable<PlayerStats> {
 
 class TeamImpl implements Team {
   constructor(
-    readonly player1: PlayerStatsImpl,
-    readonly player2: PlayerStatsImpl,
+    readonly player1: ParticipatingPlayerImpl,
+    readonly player2: ParticipatingPlayerImpl,
   ) { };
 }
 
@@ -280,14 +307,14 @@ class MatchImpl implements Mutable<Match> {
 
 class RoundImpl implements Round {
   matches: MatchImpl[] = [];
-  paused: PlayerStatsImpl[];
-  inactive: PlayerStatsImpl[];
-  playerMap: Map<PlayerId, PlayerStatsImpl>;
+  paused: ParticipatingPlayerImpl[];
+  inactive: ParticipatingPlayerImpl[];
+  playerMap: Map<PlayerId, ParticipatingPlayerImpl>;
 
   constructor(
     readonly tournament: TournamentImpl,
     readonly index: number,
-    participating: PlayerStatsImpl[],
+    participating: ParticipatingPlayerImpl[],
     matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
     paused: PlayerId[],
     inactive: PlayerId[],
@@ -296,7 +323,7 @@ class RoundImpl implements Round {
     const getOrCreate = (id: PlayerId) => {
       let result = this.playerMap.get(id);
       if (!result) {
-        result = new PlayerStatsImpl(this.tournament, id);
+        result = new ParticipatingPlayerImpl(this.tournament, id);
         this.playerMap.set(id, result);
       }
       return result;
@@ -394,14 +421,14 @@ type CompactTournament = [CompactPlayer[], CompactRound[]];
 
 class TournamentImpl implements Mutable<Tournament> {
   private listeners: TournamentListener[] = [];
-  playerMap: Map<PlayerId, TournamentPlayerImpl> = new Map();
+  playerMap: Map<PlayerId, PlayerImpl> = new Map();
   rounds: RoundImpl[] = [];
 
   constructor(serialized?: string) {
     if (serialized) {
       const compact = JSON.parse(serialized) as CompactTournament;
       compact[0].forEach((cp) => {
-        const player = new TournamentPlayerImpl(
+        const player = new PlayerImpl(
           this,
           cp[0],
           cp[1],
@@ -464,7 +491,7 @@ class TournamentImpl implements Mutable<Tournament> {
       const existingNames = new Set(this.players().map((p) => p.name));
       if (!existingNames.has(name)) {
         const id = crypto.randomUUID();
-        const player = new TournamentPlayerImpl(this, id, name, group, true);
+        const player = new PlayerImpl(this, id, name, group, true);
         this.playerMap.set(player.id, player);
         added.push(name);
       } else {
@@ -489,18 +516,18 @@ class TournamentImpl implements Mutable<Tournament> {
     this.notifyChange();
   }
 
-  activatePlayers(players: TournamentPlayer[], active: boolean): number {
+  activatePlayers(players: Player[], active: boolean): number {
     let count = 0;
     players.forEach((player) => {
       // Only count players that can be activated/deactivated
       if (active) {
         if (!player.active) {
-          (player as TournamentPlayerImpl).activate(active, false);
+          (player as PlayerImpl).activate(active, false);
           count++;
         }
       } else {
         if (player.active) {
-          (player as TournamentPlayerImpl).activate(active, false);
+          (player as PlayerImpl).activate(active, false);
           count++;
         }
       }
@@ -511,9 +538,9 @@ class TournamentImpl implements Mutable<Tournament> {
     return count;
   }
 
-  movePlayers(players: TournamentPlayer[], group: number): number {
+  movePlayers(players: Player[], group: number): number {
     players.forEach((player) => {
-      (player as TournamentPlayerImpl).setGroup(group, false);
+      (player as PlayerImpl).setGroup(group, false);
     });
     if (players.length > 0) {
       this.notifyChange();
@@ -521,7 +548,7 @@ class TournamentImpl implements Mutable<Tournament> {
     return players.length;
   }
 
-  deletePlayers(players: TournamentPlayer[]): number {
+  deletePlayers(players: Player[]): number {
     let count = 0;
     players.forEach((player) => {
       if (!player.inAnyRound()) {
@@ -537,14 +564,14 @@ class TournamentImpl implements Mutable<Tournament> {
   }
 
   private getPlayersForNextRound(shouldShuffle: boolean = false): {
-    participating: PlayerStatsImpl[];
-    active: PlayerStatsImpl[];
+    participating: ParticipatingPlayerImpl[];
+    active: ParticipatingPlayerImpl[];
     inactive: PlayerId[];
   } {
     // Determine participating players for this round:
     // Any players participating in the previous round (along with their stats) plus
     // active players not yet in any round!
-    const participating: PlayerStatsImpl[] = [];
+    const participating: ParticipatingPlayerImpl[] = [];
     const previousRound = this.rounds[this.rounds.length - 1];
     if (previousRound) {
       participating.push(...Array.from(previousRound.playerMap.values()));
@@ -553,14 +580,14 @@ class TournamentImpl implements Mutable<Tournament> {
       .filter((p) => {
         return p.active && !p.inAnyRound();
       })
-      .map((p) => new PlayerStatsImpl(this, p.id));
+      .map((p) => new ParticipatingPlayerImpl(this, p.id));
     
     participating.push(
       ...(shouldShuffle ? shuffle(newPlayers) : newPlayers)
     );
 
     const [active, inactive] = participating.reduce(
-      (acc: [PlayerStatsImpl[], PlayerId[]], player) => {
+      (acc: [ParticipatingPlayerImpl[], PlayerId[]], player) => {
         const tournamentPlayer = this.playerMap.get(player.id)!;
         if (tournamentPlayer.active) {
           acc[0].push(player);

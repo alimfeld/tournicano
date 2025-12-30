@@ -1,11 +1,11 @@
 import m from "mithril";
 import "./PlayerModal.css";
-import { Tournament, TournamentPlayer } from "../model/Tournament.ts";
+import { Tournament, Player } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol, getGroupSymbol, getGroupLetter } from "./GroupSymbol.ts";
 
 export interface PlayerModalAttrs {
-  player: TournamentPlayer;
+  player: Player;
   tournament: Tournament;
   onClose: () => void;
   showToast?: (message: string, type?: "success" | "error" | "info") => void;

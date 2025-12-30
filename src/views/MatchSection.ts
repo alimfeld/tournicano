@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./MatchSection.css";
-import { Match, PlayerStats, Team } from "../model/Tournament.ts";
+import { Match, ParticipatingPlayer, Team } from "../model/Tournament.ts";
 import { PlayerCard } from "./PlayerCard.ts";
 
 export interface MatchSectionAttrs {
@@ -35,7 +35,7 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
     const diffTeamGroup = (team: Team) => {
       return Math.abs(team.player1.group - team.player2.group);
     };
-    const renderPlayer = (player: PlayerStats) => {
+    const renderPlayer = (player: ParticipatingPlayer) => {
       return m(PlayerCard, { 
         key: `player-${player.id}`,
         player, 

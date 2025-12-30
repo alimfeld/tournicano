@@ -1,15 +1,15 @@
 import m from "mithril";
-import { PlayerStats } from "../model/Tournament";
+import { ParticipatingPlayer } from "../model/Tournament";
 import { getAvatar } from "./AvatarCache.ts";
 import "./PlayerCard.css";
 
 export interface PlayerCardAttrs {
-  player: PlayerStats;
+  player: ParticipatingPlayer;
   debug?: boolean;
   badge?: string;
 }
 
-const getPerformanceBadge = (player: PlayerStats): string | undefined => {
+const getPerformanceBadge = (player: ParticipatingPlayer): string | undefined => {
   // Don't show badge if no matches played
   const totalGames = player.wins + player.losses + player.draws;
   if (totalGames === 0) return undefined;

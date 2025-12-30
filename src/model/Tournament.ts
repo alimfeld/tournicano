@@ -6,9 +6,6 @@ export interface Player {
   readonly id: PlayerId;
   readonly name: string;
   readonly group: number;
-}
-
-export interface TournamentPlayer extends Player {
   readonly active: boolean;
   inAnyRound(): boolean;
   rename(name: string): boolean;
@@ -38,7 +35,7 @@ export interface Performance {
   readonly pointsAgainst: number;
 }
 
-export interface PlayerStats
+export interface ParticipatingPlayer
   extends Player,
   Matchings,
   Participation,
@@ -50,12 +47,12 @@ export interface PlayerStats
 
 export interface RankedPlayer {
   rank: number;
-  player: PlayerStats;
+  player: ParticipatingPlayer;
 }
 
 export interface Team {
-  readonly player1: PlayerStats;
-  readonly player2: PlayerStats;
+  readonly player1: ParticipatingPlayer;
+  readonly player2: ParticipatingPlayer;
 }
 
 export type Score = [number, number];
@@ -69,8 +66,8 @@ export interface Match {
 
 export interface Round {
   readonly matches: Match[];
-  readonly paused: PlayerStats[];
-  readonly inactive: PlayerStats[];
+  readonly paused: ParticipatingPlayer[];
+  readonly inactive: ParticipatingPlayer[];
   standings(groups?: number[]): RankedPlayer[];
   isLast(): boolean;
   delete(): boolean;
@@ -92,13 +89,13 @@ export interface Tournament {
   readonly groups: number[];
   readonly activePlayerCount: number;
   readonly hasAllScoresSubmitted: boolean;
-  players(group?: number): TournamentPlayer[];
+  players(group?: number): Player[];
   addPlayers(names: string[], group?: number): { added: string[], duplicates: string[] };
   activateAll(active: boolean): void;
   activateGroup(group: number, active: boolean): void;
-  activatePlayers(players: TournamentPlayer[], active: boolean): number;
-  movePlayers(players: TournamentPlayer[], group: number): number;
-  deletePlayers(players: TournamentPlayer[]): number;
+  activatePlayers(players: Player[], active: boolean): number;
+  movePlayers(players: Player[], group: number): number;
+  deletePlayers(players: Player[]): number;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
   getNextRoundInfo(spec?: MatchingSpec, maxMatches?: number): RoundInfo;
   restart(): void;

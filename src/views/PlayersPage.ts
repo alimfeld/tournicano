@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { Tournament, TournamentPlayer } from "../model/Tournament.ts";
+import { Tournament, Player } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { PlayerFilters } from "../App.ts";
 import { HelpCard } from "./HelpCard.ts";
@@ -24,7 +24,7 @@ export interface PlayersAttrs {
 interface PlayersState {
   showAddPlayersModal: boolean;
   playerView?: {
-    player: TournamentPlayer;
+    player: Player;
     scrollPosition: number;
   };
 }
@@ -105,7 +105,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
       state.showAddPlayersModal = false;
     };
 
-    const openPlayerView = (player: TournamentPlayer) => {
+    const openPlayerView = (player: Player) => {
       state.playerView = {
         player,
         scrollPosition: window.scrollY
