@@ -161,53 +161,49 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     };
 
     // Build actions for header overflow menu
-    const actions: HeaderAction[] = [];
-    // Add delete actions only when there are rounds
-    if (tournament.rounds.length > 0) {
-      actions.push(
-        {
-          icon: "－",
-          label: "Delete Last Round",
-          onclick: () => {
-            const lastRound = tournament.rounds.at(-1);
-            if (lastRound) {
-              const lastRoundNumber = tournament.rounds.length;
-              lastRound.delete();
-              // Navigate to previous round if we were viewing the last round
-              if (roundIndex >= tournament.rounds.length) {
-                changeRound(Math.max(0, tournament.rounds.length - 1));
-              }
-              showToast(`Deleted Round ${lastRoundNumber}`, "success");
+    const actions: HeaderAction[] = [
+      {
+        icon: "－",
+        label: "Delete Last Round",
+        disabled: tournament.rounds.length === 0,
+        onclick: () => {
+          const lastRound = tournament.rounds.at(-1);
+          if (lastRound) {
+            const lastRoundNumber = tournament.rounds.length;
+            lastRound.delete();
+            // Navigate to previous round if we were viewing the last round
+            if (roundIndex >= tournament.rounds.length) {
+              changeRound(Math.max(0, tournament.rounds.length - 1));
             }
-          },
-          confirmation: {
-            title: `🚨 Delete Round ${roundCount}?`,
-            description: [
-              `This will delete the last round (round ${roundCount}) and all its matches.`,
-              "This action cannot be undone!"
-            ],
-            confirmButtonText: "Delete"
+            showToast(`Deleted Round ${lastRoundNumber}`, "success");
           }
         },
-        {
-          icon: "↺",
-          label: "Restart Tournament",
-          onclick: () => {
-            tournament.restart();
-            showToast("Tournament restarted", "success");
-          },
-          confirmation: {
-            title: "🚨 Restart the Tournament?",
-            description: [
-              "This will delete all rounds, but keep all players.",
-              "This action cannot be undone!"
-            ],
-            confirmButtonText: "Restart"
-          }
+        confirmation: {
+          title: `🚨 Delete Round ${roundCount}?`,
+          description: [
+            `This will delete the last round (round ${roundCount}) and all its matches.`,
+            "This action cannot be undone!"
+          ],
+          confirmButtonText: "Delete"
         }
-      );
-    }
-    actions.push(
+      },
+      {
+        icon: "↺",
+        label: "Restart Tournament",
+        disabled: tournament.rounds.length === 0,
+        onclick: () => {
+          tournament.restart();
+          showToast("Tournament restarted", "success");
+        },
+        confirmation: {
+          title: "🚨 Restart the Tournament?",
+          description: [
+            "This will delete all rounds, but keep all players.",
+            "This action cannot be undone!"
+          ],
+          confirmButtonText: "Restart"
+        }
+      },
       {
         icon: "☼",
         label: isWakeLockActive ? "Disable Keep Screen On" : "Enable Keep Screen On",
@@ -221,7 +217,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         },
         disabled: !("wakeLock" in navigator),
       },
-    );
+    ];
 
     // Check for group configuration mismatch
     const groupMismatchWarning = getGroupMismatchWarning();
