@@ -2,8 +2,8 @@ import m from "mithril";
 import "./HelpCard.css";
 
 export interface HelpCardAttrs {
+  title: string | m.Children;
   message: string | m.Children;
-  hint: string | m.Children;
   action?: {
     label: string;
     onclick: () => void;
@@ -11,7 +11,7 @@ export interface HelpCardAttrs {
 }
 
 export const HelpCard: m.Component<HelpCardAttrs> = {
-  view: ({ attrs: { message, hint, action } }) => {
+  view: ({ attrs: { title: message, message: hint, action } }) => {
     return m("article.help-card", [
       m("header", m("strong", message)),
       m("div", hint),

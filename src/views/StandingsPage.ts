@@ -105,13 +105,11 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
 
           try {
             await navigator.share({ text });
-            showToast("Tournament data shared successfully", "success");
           } catch (err) {
             // If share fails or is cancelled, try clipboard as fallback
             if (err instanceof Error && err.name !== 'AbortError') {
               try {
                 await navigator.clipboard.writeText(text);
-                showToast("Tournament data copied to clipboard", "success");
               } catch (clipboardErr) {
                 showToast("Failed to share or copy tournament data", "error");
               }
@@ -216,20 +214,16 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
             })
           ])
           : m(HelpCard, {
+            title: tournament.rounds.length === 0
+              ? "🚀 Create rounds"
+              : "🚀 Enter scores",
             message: tournament.rounds.length === 0
-              ? "🏆 Standings appear after matches"
-              : "📊 No scores entered yet",
-            hint: tournament.rounds.length === 0
               ? [
-                "Create rounds and enter match scores to see player rankings.",
-                m("ul.tip-list", [
-                  m("li", "Players are ranked by win % with point differential as tiebreaker"),
-                  m("li", "Performance badges show achievement: 🔥 for ≥75% win rate, 💯 for 100%")
-                ])
+                m("p", "Create rounds and enter match scores to see standings."),
               ]
-              : "Enter scores in the Rounds tab to see standings and rankings!",
+              : m("p", "Enter match scores to see standings!"),
             action: {
-              label: tournament.rounds.length === 0 ? "Go to Rounds" : "Enter Scores",
+              label: "Go to Rounds",
               onclick: () => nav(Page.ROUNDS)
             }
           }),

@@ -12,6 +12,7 @@ import { Header, HeaderAction } from "./Header.ts";
 import { ToggleFullscreenButton } from "./ToggleFullscreenButton.ts";
 import { ScoreEntryModal } from "./ScoreEntryModal.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
+import { GroupSymbol } from "./GroupSymbol.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
 
@@ -20,7 +21,7 @@ export interface RoundAttrs {
   tournament: Tournament;
   roundIndex: number;
   changeRound: (index: number) => void;
-  showToast?: (message: string, type?: "success" | "error" | "info") => void;
+  showToast: (message: string, type?: "success" | "error" | "info") => void;
   nav: (page: Page) => void;
   currentPage: Page;
 }
@@ -125,7 +126,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
 
       // Case A: Mode uses groups, but all active players are in one group
       if (specUsesGroups && groupCount === 1) {
-        return "Mode uses groups but all active players are in one group - organize players into groups on the Players page";
+        return "Mode uses groups but all active players are in one group - consider organizing players into groups or switch tournament mode";
       }
 
       // Case B: Active players in multiple groups, but mode doesn't use groups
@@ -176,15 +177,13 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
               if (roundIndex >= tournament.rounds.length) {
                 changeRound(Math.max(0, tournament.rounds.length - 1));
               }
-              if (showToast) {
-                showToast(`Deleted Round ${lastRoundNumber}`, "success");
-              }
+              showToast(`Deleted Round ${lastRoundNumber}`, "success");
             }
           },
           confirmation: {
             title: `🚨 Delete Round ${roundCount}?`,
             description: [
-              "This will delete the last round and all its matches.",
+              "This will delete the last round ${roundCount} and all its matches.",
               "This action cannot be undone!"
             ],
             confirmButtonText: "Delete"
@@ -192,20 +191,18 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         },
         {
           icon: "↺",
-          label: "Delete All Rounds",
+          label: "Restart Tournament",
           onclick: () => {
             tournament.restart();
-            if (showToast) {
-              showToast("Deleted all rounds", "success");
-            }
+            showToast("Tournament restarted", "success");
           },
           confirmation: {
-            title: "🚨 Delete All Rounds?",
+            title: "🚨 Restart the Tournament?",
             description: [
-              "This will delete all rounds, but keep all players and their registration status.",
+              "This will delete all rounds, but keep all players.",
               "This action cannot be undone!"
             ],
-            confirmButtonText: "Delete"
+            confirmButtonText: "Restart"
           }
         }
       );
@@ -217,14 +214,39 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         pressed: isWakeLockActive,
         onclick: () => {
           settings.enableWakeLock(!settings.wakeLock);
+          showToast(
+            settings.wakeLock ? "Keep Screen On" : "Allow Screen to turn Off",
+            "success"
+          );
         },
         disabled: !("wakeLock" in navigator),
       },
     );
 
-
     // Check for group configuration mismatch
     const groupMismatchWarning = getGroupMismatchWarning();
+
+    const renderSetup = () => {
+      return [
+        m("ul", [
+          m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}`),
+          // Show group distribution if multiple groups exist
+          nextRoundInfo.groupDistribution.size > 1
+            ? m("li", [
+              ...Array.from(nextRoundInfo.groupDistribution.entries())
+                .sort((a, b) => a[0] - b[0])
+                .flatMap(([groupNum, counts], index, array) => [
+                  m(GroupSymbol, { group: groupNum, neutral: false }),
+                  `: ${counts.total}`,
+                  index < array.length - 1 ? " · " : ""
+                ])
+            ])
+            : null,
+          m("li", `${getMatchingSpecName(settings.matchingSpec)} mode`),
+          m("li", `${settings.courts} available court${settings.courts !== 1 ? 's' : ''}`),
+        ])
+      ]
+    };
 
     return m.fragment({ key: `round-${roundIndex}` }, [
       !fullscreen ?
@@ -278,124 +300,55 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
               : null,
           ]
           : [m(HelpCard,
-            // STATE 1: No players
+            // No players
             tournament.players().length === 0
               ? {
-                message: "⚠️ No players yet",
-                hint: "Add players to start your tournament",
-                action: { label: "Add Players", onclick: () => nav(Page.PLAYERS) }
+                title: "🤖 Add Players",
+                message: m("p", "Add at least 4 players to start a tournament."),
+                action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
               }
-              // STATE 2: Not enough active players (1-3 active players)
-              : tournament.activePlayerCount < 4
+              // No matches
+              : nextRoundInfo.matchCount === 0
                 ? {
-                  message: "⚠️ Not enough active players",
-                  hint: `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}, but need at least 4 to create matches.`,
+                  title: "⚠️ Check yor Setup",
+                  message: [
+                    m("p", "Your current setup does not result in any matches."),
+                    renderSetup(),
+                  ],
                   action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
                 }
-                // STATE 3: No courts configured
-                : settings.courts === 0
-                  ? {
-                    message: "⚠️ No courts configured",
-                    hint: [
-                      m("p", `You have ${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''} ready to play, but no courts are configured.`),
-                      m("small", "Set how many matches can be played simultaneously")
-                    ],
-                    action: { label: "Go to Settings", onclick: () => nav(Page.SETTINGS) }
-                  }
-                  // STATE 4: Group balancing issue (unified for all balancing failures)
-                  : nextRoundInfo.matchCount === 0 && nextRoundInfo.balancingEnabled
-                    ? {
-                      message: "⚠️ Group balancing issue",
-                      hint: [
-                        "Cannot create balanced matches with current group configuration.",
-                        m("ul.tip-list", [
-                          m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
-                          m("li", (() => {
-                            // Build group text if multiple groups
-                            let groupText = "";
-                            if (nextRoundInfo.groupDistribution.size > 1) {
-                              const groups = Array.from(nextRoundInfo.groupDistribution.entries())
-                                .sort((a, b) => a[0] - b[0])
-                                .map(([groupNum, counts]) => {
-                                  const groupLetter = String.fromCharCode(65 + groupNum);
-                                  return `${groupLetter}: ${counts.total}`;
-                                });
-                              groupText = ` (${groups.join(", ")})`;
-                            }
-
-                            return `${nextRoundInfo.activePlayerCount} active player${nextRoundInfo.activePlayerCount !== 1 ? 's' : ''}${groupText} • ${settings.courts} court${settings.courts !== 1 ? 's' : ''} • Group balancing: enabled`;
-                          })())
-                        ]),
-                        m("small", "Reorganize groups, or switch to non-balanced mode")
-                      ],
-                      action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+                // Ready to play (matches can be created)
+                : {
+                  title: "🚀 Ready to play?",
+                  message: [
+                    renderSetup(),
+                    m("p", `${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''} will be created.`),
+                    groupMismatchWarning ? m("small", m("mark", groupMismatchWarning)) : null
+                  ],
+                  action: {
+                    label: "Create first Round", onclick: () => {
+                      tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
+                      changeRound(roundCount);
                     }
-                    // FALLBACK: Other reason for no matches (shouldn't normally happen)
-                    : nextRoundInfo.matchCount === 0
-                      ? {
-                        message: "⚠️ Cannot create matches",
-                        hint: [
-                          "Current configuration:",
-                          m("ul.tip-list", [
-                            m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}`),
-                            m("li", `${settings.courts} court${settings.courts !== 1 ? 's' : ''}`),
-                            m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`)
-                          ])
-                        ]
-                      }
-                      // STATE 5: Ready to play (matches can be created)
-                      : {
-                        message: "🚀 Ready to play?",
-                        hint: [
-                          "Tap the ", m("strong", "＋"), " button to create your first round!",
-                          m("ul.tip-list", [
-                            m("li", `Playing ${getMatchingSpecName(settings.matchingSpec)} mode`),
-                            m("li", (() => {
-                              // Build group text if multiple groups
-                              let groupText = "";
-                              if (nextRoundInfo.groupDistribution.size > 1) {
-                                const groups = Array.from(nextRoundInfo.groupDistribution.entries())
-                                  .sort((a, b) => a[0] - b[0])
-                                  .map(([groupNum, counts]) => {
-                                    const groupLetter = String.fromCharCode(65 + groupNum);
-                                    return `${groupLetter}: ${counts.total}`;
-                                  });
-                                groupText = ` (${groups.join(", ")})`;
-                              }
-
-                              // Build match count text (no inline warnings)
-                              const matchText = nextRoundInfo.balancingEnabled
-                                ? `Group balancing: ${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''}`
-                                : `${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''} per round`;
-
-                              return `${nextRoundInfo.activePlayerCount} active player${nextRoundInfo.activePlayerCount !== 1 ? 's' : ''}${groupText} • ${settings.courts} court${settings.courts !== 1 ? 's' : ''} • ${matchText}`;
-                            })())
-                          ]),
-                          groupMismatchWarning ? m("small", m("mark", groupMismatchWarning)) : null
-                        ]
-                      }
+                  }
+                }
           )],
       ),
-      nextRoundInfo.matchCount >= 1 || tournament.rounds.length > 0 ? m(FAB, {
+      tournament.rounds.length > 0 ? m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
         disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
           const newRoundNumber = roundCount + 1;
-          const isFirstRound = tournament.rounds.length === 0;
-          if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0 && showToast) {
-            showToast(`Round ${newRoundNumber} created with incomplete scores from previous rounds`, "error");
+          if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0) {
+            showToast(`Missing scores`, "error");
           }
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
-          if (isFirstRound && showToast) {
-            const modeName = getMatchingSpecName(settings.matchingSpec);
-            showToast(`Tournament started in ${modeName} mode`, "success");
-          }
           changeRound(roundCount);
         },
       }) : null,
-      nextRoundInfo.matchCount >= 1 || tournament.rounds.length > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
+      tournament.rounds.length > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
       !fullscreen ? m(Nav, { nav, currentPage }) : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {

@@ -126,12 +126,10 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
 
       try {
         await navigator.share({ text });
-        showToast("Players shared successfully", "success");
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
           try {
             await navigator.clipboard.writeText(text);
-            showToast("Players copied to clipboard", "success");
           } catch (clipboardErr) {
             showToast("Failed to share or copy players", "error");
           }
@@ -185,10 +183,10 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
             confirmation: {
               title: "🚨 Delete All Players?",
               description: [
-                "This will delete all players and all rounds.",
+                "This will delete all players and restart the tournament.",
                 "This action cannot be undone!"
               ],
-              confirmButtonText: "Delete"
+              confirmButtonText: "Delete All"
             }
           },
           {
@@ -320,22 +318,20 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
           )
           : playerFilters.search || activeFilterCount > 0
             ? m(HelpCard, {
-              message: "🔍 No players found",
-              hint: "Try different filters or search terms, or clear all filters to see everyone.",
+              title: "🔍 No players found",
+              message: m("p", "Try different filters or search terms, or clear all filters to see everyone."),
               action: {
                 label: "Clear All Filters",
                 onclick: () => changePlayerFilters({ search: "", participatingOnly: false, groups: [] })
               }
             })
             : m(HelpCard, {
-              message: "🎾 Ready to start your tournament?",
-              hint: [
-                "Add players to get started. Each player gets a unique avatar for easy recognition.",
-                m("ul.tip-list", [
-                  m("li", "Players can be added anytime, even during an ongoing tournament"),
-                  m("li", "Once added, use toggle switches to deactivate players when taking a break and activate players when re-joining")
-                ])
-              ],
+              title: "🤖 Add Players to get started",
+              message: m("ul", [
+                m("li", "Add players anytime, even during a tournament"),
+                m("li", "Organize players into groups for tournament formats"),
+                m("li", "Activate players as they join or take breaks"),
+              ]),
               action: { label: "Add Your First Players", onclick: openAddPlayersModal }
             }),
       ),

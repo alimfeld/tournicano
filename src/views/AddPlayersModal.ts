@@ -128,7 +128,7 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
               state.textareaContent = (e.target as HTMLTextAreaElement).value;
             }
           }),
-          m("small", "Separate players with commas (,) or periods (.) and start a new line for each group.")
+          m("small", "Separate players with commas (,) or periods (.) and put each group (max 4) on a new line.")
         ),
 
         m("footer",

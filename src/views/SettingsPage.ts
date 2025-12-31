@@ -50,7 +50,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
     const handleMatchingSpecChange = (matchingSpec: typeof Americano) => {
       settings.setMatchingSpec(matchingSpec);
       if (tournament.rounds.length > 0 && showToast) {
-        showToast("Tournament mode changed during ongoing tournament. This will affect all newly created rounds.", "error");
+        showToast("Mode change affects ongoing tournament", "error");
       }
     };
 
@@ -278,10 +278,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
         onconfirm: (matchingSpec) => {
           // Only update if the spec actually changed
           if (!matchingSpecEquals(settings.matchingSpec, matchingSpec)) {
-            settings.setMatchingSpec(matchingSpec);
-            if (tournament.rounds.length > 0 && showToast) {
-              showToast("Tournament mode changed during ongoing tournament. This will affect all newly created rounds.", "error");
-            }
+            handleMatchingSpecChange(matchingSpec);
           }
         },
         onClose: () => {
