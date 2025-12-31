@@ -17,6 +17,7 @@ import { BUILD_VERSION } from "../version.ts";
 import { Header } from "./Header.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
+import "./SettingsPage.css";
 
 export interface SettingsAttrs {
   settings: Settings;
@@ -85,6 +86,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(Americano),
             }),
             "Americano",
+            m("small", "Maximizes partner and opponent rotation."),
           ),
           m(
             "label",
@@ -96,6 +98,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(AmericanoMixed),
             }),
             "Americano Mixed",
+            m("small", "Designed for 2 groups. Mixed doubles with rotating partners."),
           ),
           m(
             "label",
@@ -107,6 +110,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(AmericanoMixedBalanced),
             }),
             "Americano Mixed Balanced",
+            m("small", "Designed for 2 groups. Mixed doubles with equal group participation."),
           ),
           m(
             "label",
@@ -118,6 +122,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(Mexicano),
             }),
             "Mexicano",
+            m("small", "Skill-based team formation and competitive balance."),
           ),
           m(
             "label",
@@ -129,6 +134,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(Tournicano),
             }),
             "Tournicano",
+            m("small", "Balances variety, performance, and group mix."),
           ),
           m(
             "label",
@@ -140,6 +146,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(GroupBattle),
             }),
             "Group Battle",
+            m("small", "Designed for 2 groups. Competition between two sides."),
           ),
           m(
             "label",
@@ -151,6 +158,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(GroupBattleMixed),
             }),
             "Group Battle Mixed",
+            m("small", "Designed for 4 groups. Mixed doubles team battle."),
           ),
           m(
             "label",

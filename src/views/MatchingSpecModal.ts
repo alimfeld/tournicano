@@ -10,14 +10,14 @@ import "./MatchingSpecModal.css";
 import { Modal } from "./Modal.ts";
 
 // Symbol constants for matching factors
-const SYMBOL_VARIETY = "↻";
-const SYMBOL_SKILL = "★";
-const SYMBOL_GROUPS = "☻";
+const SYMBOL_VARIETY = "V";
+const SYMBOL_PERFORMANCE = "P";
+const SYMBOL_GROUPS = "G";
 
 // Performance mode symbols (Team up only)
-const MODE_BALANCED = "≈";
+const MODE_BALANCED = "△";
 const MODE_EQUAL = "=";
-const MODE_MEXICANO = "⊗";
+const MODE_MEXICANO = "m";
 
 // Group mode symbols
 const MODE_GROUP_SAME = "=";
@@ -138,12 +138,12 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
           m("details",
             m("summary.secondary.outline[role=button]",
               m("div", "Team up"),
-              m("small", `${SYMBOL_VARIETY} ${state.teamUpVarietyFactor}%${SEPARATOR}${SYMBOL_SKILL} ${state.teamUpPerformanceFactor}% ${getTeamUpPerformanceModeSymbol()}${SEPARATOR}${SYMBOL_GROUPS} ${state.teamUpGroupFactor}% ${getTeamUpGroupModeSymbol()}`)
+              m("small", `${SYMBOL_VARIETY} ${state.teamUpVarietyFactor}%${SEPARATOR}${SYMBOL_PERFORMANCE} ${state.teamUpPerformanceFactor}% ${getTeamUpPerformanceModeSymbol()}${SEPARATOR}${SYMBOL_GROUPS} ${state.teamUpGroupFactor}% ${getTeamUpGroupModeSymbol()}`)
             ),
             m(
               "label.slider-label",
               { for: "team-up-variety-factor" },
-              `${SYMBOL_VARIETY} Rotate partners`,
+              "Rotate partners",
               m("small.slider-label-text", state.teamUpVarietyFactor + "%"),
             ),
             m("input", {
@@ -159,7 +159,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "team-up-performance-factor" },
-              `${SYMBOL_SKILL} Match by skill`,
+              "Match by performance",
               m("small.slider-label-text", state.teamUpPerformanceFactor + "%"),
             ),
             m("input", {
@@ -176,7 +176,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
               "fieldset",
               [
                 { value: TeamUpPerformanceMode.AVERAGE, label: `${MODE_BALANCED} Balanced teams` },
-                { value: TeamUpPerformanceMode.EQUAL, label: `${MODE_EQUAL} Equal skill` },
+                { value: TeamUpPerformanceMode.EQUAL, label: `${MODE_EQUAL} Equal performance` },
                 { value: TeamUpPerformanceMode.MEXICANO, label: `${MODE_MEXICANO} Mexicano (1+3, 2+4)` }
               ].map(option =>
                 m("label",
@@ -195,7 +195,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "team-up-group-factor" },
-              `${SYMBOL_GROUPS} Group factor`,
+              "Group factor",
               m("small.slider-label-text", state.teamUpGroupFactor + "%"),
             ),
             m("input", {
@@ -231,12 +231,12 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
           m("details",
             m("summary.secondary.outline[role=button]",
               m("div", "Match up"),
-              m("small", `${SYMBOL_VARIETY} ${state.matchUpVarietyFactor}%${SEPARATOR}${SYMBOL_SKILL} ${state.matchUpPerformanceFactor}%${SEPARATOR}${SYMBOL_GROUPS} ${state.matchUpGroupFactor}% ${getMatchUpGroupModeSymbol()}`)
+              m("small", `${SYMBOL_VARIETY} ${state.matchUpVarietyFactor}%${SEPARATOR}${SYMBOL_PERFORMANCE} ${state.matchUpPerformanceFactor}%${SEPARATOR}${SYMBOL_GROUPS} ${state.matchUpGroupFactor}% ${getMatchUpGroupModeSymbol()}`)
             ),
             m(
               "label.slider-label",
               { for: "match-up-variety-factor" },
-              `${SYMBOL_VARIETY} Rotate opponents`,
+              "Rotate opponents",
               m("small.slider-label-text", state.matchUpVarietyFactor + "%"),
             ),
             m("input", {
@@ -252,7 +252,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "match-up-performance-factor" },
-              `${SYMBOL_SKILL} Match similar skill`,
+              "Match similar performance",
               m("small.slider-label-text", state.matchUpPerformanceFactor + "%"),
             ),
             m("input", {
@@ -268,7 +268,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m(
               "label.slider-label",
               { for: "match-up-group-factor" },
-              `${SYMBOL_GROUPS} Group factor`,
+              "Group factor",
               m("small.slider-label-text", state.matchUpGroupFactor + "%"),
             ),
             m("input", {

@@ -13,25 +13,25 @@ export const Nav: m.Component<NavAttrs> = {
       "nav",
       m(
         "ul",
-        m("li", { 
+        m("li", {
           class: currentPage === Page.HOME ? "active" : "",
-          onclick: () => nav(Page.HOME) 
-        }, "📢"),
-        m("li", { 
+          onclick: () => nav(Page.HOME)
+        }, "🏠"),
+        m("li", {
           class: currentPage === Page.SETTINGS ? "active" : "",
-          onclick: () => nav(Page.SETTINGS) 
+          onclick: () => nav(Page.SETTINGS)
         }, "⚙️"),
-        m("li", { 
+        m("li", {
           class: currentPage === Page.PLAYERS ? "active" : "",
-          onclick: () => nav(Page.PLAYERS) 
+          onclick: () => nav(Page.PLAYERS)
         }, "🤖"),
-        m("li", { 
+        m("li", {
           class: currentPage === Page.ROUNDS ? "active" : "",
-          onclick: () => nav(Page.ROUNDS) 
+          onclick: () => nav(Page.ROUNDS)
         }, "🚀"),
-        m("li", { 
+        m("li", {
           class: currentPage === Page.STANDINGS ? "active" : "",
-          onclick: () => nav(Page.STANDINGS) 
+          onclick: () => nav(Page.STANDINGS)
         }, "🏆"),
       ),
     );
