@@ -5,7 +5,6 @@ import "./ParticipatingPlayerCard.css";
 
 export interface ParticipatingPlayerCardAttrs {
   player: ParticipatingPlayer;
-  debug?: boolean;
   badge?: string;
   onClick?: () => void;
 }
@@ -43,25 +42,6 @@ export const ParticipatingPlayerCard: m.Component<ParticipatingPlayerCardAttrs> 
       rightBadge ? m("span.player-badge-right", rightBadge) : null,
       m("img", { src: avatarUri }),
       m("p", player.name),
-      vnode.attrs.debug
-        ? m("div.debug",
-          m("span", "Group"),
-          m("span", player.group),
-          m("span", "ΣTeams"),
-          m("span", player.partners.size),
-          m("span", "Win%"),
-          m("span", (player.winRatio * 100).toFixed(0)),
-          m("span", "+/-"),
-          m("span", player.plusMinus),
-          m("span", "Play%"),
-          m("span", (player.playRatio * 100).toFixed(0)),
-          m("span", "Paused"),
-          m(
-            "span",
-            `${player.pauseCount}/${player.matchCount + player.pauseCount}`,
-          ),
-        )
-        : null,
     );
   },
 };

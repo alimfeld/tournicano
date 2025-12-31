@@ -10,7 +10,6 @@ export interface SettingsData {
   readonly courts: number;
   readonly theme: Theme;
   readonly wakeLock: boolean;
-  readonly debug: boolean;
   readonly matchingSpec: MatchingSpec;
 }
 
@@ -19,7 +18,6 @@ export interface Settings extends SettingsData {
   setCourts(courts: number): void;
   setTheme(theme: Theme): void;
   enableWakeLock(enable: boolean): void;
-  showDebug(debug: boolean): void;
   setMatchingSpec(matchingSpec: MatchingSpec): void;
   addListener(listener: SettingsListener): void;
   removeListener(listener: SettingsListener): void;

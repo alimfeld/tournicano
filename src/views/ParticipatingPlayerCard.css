@@ -38,20 +38,3 @@ article.player .player-badge-right {
   right: 0;
   padding: 0 calc(var(--pico-form-element-spacing-horizontal) / 4);
 }
-
-/* Debug info displayed below player card */
-
-div.debug {
-  font-size: 60%;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  color: var(--pico-muted-color);
-  padding: calc(var(--pico-spacing) / 2);
-  border: var(--pico-border-width) solid;
-  border-color: var(--pico-muted-border-color);
-}
-
-div.debug> :nth-child(2n) {
-  justify-self: end;
-}

@@ -7,7 +7,6 @@ export interface MatchSectionAttrs {
   roundIndex: number;
   match: Match;
   matchIndex: number;
-  debug: boolean;
   
   // Mode toggle
   mode?: "interactive" | "display";  // Default: "interactive"
@@ -22,75 +21,18 @@ export interface MatchSectionAttrs {
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, debug, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : "";
     const isValid = !!match.score;
-    const avgTeamWinRatio = (team: Team) => {
-      return (team.player1.winRatio + team.player2.winRatio) / 2;
-    };
-    const sumTeamPlusMinus = (team: Team) => {
-      return team.player1.plusMinus + team.player2.plusMinus;
-    };
-    const diffTeamGroup = (team: Team) => {
-      return Math.abs(team.player1.group - team.player2.group);
-    };
     const renderPlayer = (player: ParticipatingPlayer) => {
       return m(ParticipatingPlayerCard, { 
         key: `player-${player.id}`,
         player, 
-        debug,
         onClick: openPlayerModal ? () => openPlayerModal(player) : undefined
       });
     }
-    const renderMatchDebug = (match: Match) => {
-      const opponentSum =
-        match.teamA.player1.opponents.get(match.teamB.player1.id)!.length +
-        match.teamA.player1.opponents.get(match.teamB.player2.id)!.length +
-        match.teamA.player2.opponents.get(match.teamB.player1.id)!.length +
-        match.teamA.player2.opponents.get(match.teamB.player2.id)!.length;
-      return m(
-        "div.debug",
-        m("span", "ΔGroup"),
-        m(
-          "span",
-          Math.abs(diffTeamGroup(match.teamA) - diffTeamGroup(match.teamB)),
-        ),
-        m("span", "ΣOpp"),
-        m("span", opponentSum),
-        m("span", "ΔWin%"),
-        m(
-          "span",
-          (
-            Math.abs(
-              avgTeamWinRatio(match.teamA) - avgTeamWinRatio(match.teamB),
-            ) * 100
-          ).toFixed(0),
-        ),
-        m("span", "Δ+/-"),
-        m(
-          "span",
-          Math.abs(
-            sumTeamPlusMinus(match.teamA) - sumTeamPlusMinus(match.teamB),
-          ),
-        ),
-      );
-    };
-    const renderTeamDebug = (team: Team) => {
-      const partnerCount = team.player1.partners.get(team.player2.id)!.length;
-      return m(
-        "div.debug",
-        m("span", "ΔGroup"),
-        m("span", diffTeamGroup(team)),
-        m("span", "ΣPartner"),
-        m("span", partnerCount),
-        m("span", "ØWin%"),
-        m("span", (avgTeamWinRatio(team) * 100).toFixed(0)),
-        m("span", "Σ+/-"),
-        m("span", sumTeamPlusMinus(team)),
-      );
-    };
     const renderTeam = (team: Team) => {
       return m(
         "section.team",
@@ -102,9 +44,6 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       [
         m(
           "section.match",
-          debug ? renderTeamDebug(match.teamA) : null,
-          debug ? renderMatchDebug(match) : null,
-          debug ? renderTeamDebug(match.teamB) : null,
           renderTeam(match.teamA),
           m(
             "section.vs",

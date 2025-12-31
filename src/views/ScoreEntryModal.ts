@@ -138,7 +138,6 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
           roundIndex,
           match,
           matchIndex,
-          debug: false,
           mode: "display",
           showRoundIndex: true,
           displayScore: formatScore()

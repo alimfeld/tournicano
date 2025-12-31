@@ -279,7 +279,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         round
           ? [
             ...round.matches.map((match, matchIndex) =>
-              m(MatchSection, { roundIndex, match, matchIndex, debug: settings.debug, showRoundIndex: fullscreen, openScoreEntry, openPlayerModal }),
+              m(MatchSection, { roundIndex, match, matchIndex, showRoundIndex: fullscreen, openScoreEntry, openPlayerModal }),
             ),
             round.paused.length > 0 || round.inactive.length > 0
               ? [
@@ -288,11 +288,11 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                   [
                     // Paused players first (with sleep emoji)
                     ...round.paused.map((player) =>
-                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "💤", onClick: () => openPlayerModal(player) })
+                      m(ParticipatingPlayerCard, { player, badge: "💤", onClick: () => openPlayerModal(player) })
                     ),
                     // Inactive players after (with power off emoji)
                     ...round.inactive.map((player) =>
-                      m(ParticipatingPlayerCard, { player, debug: settings.debug, badge: "⏻", onClick: () => openPlayerModal(player) })
+                      m(ParticipatingPlayerCard, { player, badge: "⏻", onClick: () => openPlayerModal(player) })
                     )
                   ]
                 ),

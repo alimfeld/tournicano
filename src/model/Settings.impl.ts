@@ -18,7 +18,6 @@ class SettingsImpl implements Mutable<Settings> {
   private listeners: SettingsListener[] = [];
   courts = 2;
   theme: Theme = "auto";
-  debug: boolean = false;
   wakeLock: boolean = false;
   matchingSpec: MatchingSpec = Americano;
 
@@ -28,7 +27,6 @@ class SettingsImpl implements Mutable<Settings> {
       this.courts = data.courts;
       this.theme = data.theme;
       this.wakeLock = data.wakeLock;
-      this.debug = data.debug;
       this.matchingSpec = data.matchingSpec;
     }
   }
@@ -37,7 +35,6 @@ class SettingsImpl implements Mutable<Settings> {
     return JSON.stringify({
       courts: this.courts,
       theme: this.theme,
-      debug: this.debug,
       wakeLock: this.wakeLock,
       matchingSpec: this.matchingSpec,
     } as SettingsData);
@@ -55,11 +52,6 @@ class SettingsImpl implements Mutable<Settings> {
 
   enableWakeLock(enable: boolean): void {
     this.wakeLock = enable;
-    this.notifyChange();
-  }
-
-  showDebug(debug: boolean): void {
-    this.debug = debug;
     this.notifyChange();
   }
 
