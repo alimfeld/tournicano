@@ -80,7 +80,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     const participatingPlayers = allPlayers.filter(p => p.inAnyRound());
     const participatingCount = participatingPlayers.length;
     const activePlayerCount = tournament.activePlayerCount;
-    const headerTitle = activePlayerCount === totalPlayers 
+    const headerTitle = activePlayerCount === totalPlayers
       ? `Players (${totalPlayers})`
       : `Players (${activePlayerCount}/${totalPlayers})`;
 
@@ -178,13 +178,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
             onclick: openAddPlayersModal
           },
           {
-            icon: "⤴",
-            label: "Share Players",
-            onclick: sharePlayersAction,
-            disabled: totalPlayers === 0
-          },
-          {
-            icon: "␡",
+            icon: "↺",
             label: "Delete All Players",
             onclick: deleteAllPlayersAction,
             disabled: totalPlayers === 0,
@@ -196,7 +190,13 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
               ],
               confirmButtonText: "Delete"
             }
-          }
+          },
+          {
+            icon: "⤴",
+            label: "Share Players",
+            onclick: sharePlayersAction,
+            disabled: totalPlayers === 0
+          },
         ]
       }),
       m(

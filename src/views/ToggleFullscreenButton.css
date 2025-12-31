@@ -1,0 +1,42 @@
+/* Toggle Fullscreen Button - Positioned on left side, mirrors FAB vertical positioning */
+
+.toggle-fullscreen-button {
+  position: fixed;
+  /* Position on left side of screen */
+  left: var(--pico-spacing);
+  /* Normal mode: leave room for the fixed nav (matches FAB) */
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  width: var(--toggle-fullscreen-width);
+  height: var(--toggle-fullscreen-height);
+
+  /* Use Pico CSS variables for theme-aware styling (like chevrons) */
+  background: var(--pico-muted-color);
+  border-color: var(--pico-muted-border-color);
+  color: var(--pico-color);
+
+  /* Typography */
+  font-size: var(--toggle-fullscreen-font-size);
+  line-height: 1;
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  /* Interaction - subtle like chevrons */
+  cursor: pointer;
+  user-select: none;
+  opacity: var(--overlay-button-opacity);
+
+  /* Z-index: Same as FAB, appears together */
+  z-index: 100;
+
+  /* Prevent tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle-fullscreen-button.fullscreen {
+  /* In fullscreen mode, move down to match FAB position (no nav bar) */
+  bottom: calc(var(--pico-spacing) + env(safe-area-inset-bottom));
+}

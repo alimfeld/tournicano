@@ -55,7 +55,27 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
     };
 
     return [
-      m(Header, { title: "Settings" }),
+      m(Header, {
+        title: "Settings", actions: [
+          {
+            icon: "↓",
+            label: "Download JSON",
+            onclick: () => {
+              const json = tournament.exportJSON();
+              const blob = new Blob([json], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.style.display = "none";
+              a.href = url;
+              const date = new Date().toISOString().slice(0, 10);
+              a.download = `tournament-${date}.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            },
+          }],
+      }),
       m(
         "main.settings.container",
         m("h2", "Courts"),

@@ -21,16 +21,16 @@
   --nav-active-border-width: 3px;
   --nav-icon-font-size: 1.5rem;
 
-  /* Overlay buttons (chevrons, exit fullscreen) */
+  /* Overlay buttons (chevrons, toggle fullscreen) */
   --overlay-button-opacity: 0.35;
   --chevron-width: 1.5rem;
   --chevron-height: 3rem;
   --chevron-font-size: 1.2rem;
 
-  /* Exit fullscreen button */
-  --exit-fullscreen-width: 2.5rem;
-  --exit-fullscreen-height: 2.5rem;
-  --exit-fullscreen-font-size: 1.2rem;
+  /* Toggle fullscreen button */
+  --toggle-fullscreen-width: 2.5rem;
+  --toggle-fullscreen-height: 2.5rem;
+  --toggle-fullscreen-font-size: 1.2rem;
 
   /* Player cards */
   --player-card-avatar-size: 3rem;

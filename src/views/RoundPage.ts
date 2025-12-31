@@ -9,7 +9,7 @@ import { FAB } from "./FAB.ts";
 import { getMatchingSpecName } from "../model/Tournament.matching.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
-import { ExitFullscreenButton } from "./ExitFullscreenButton.ts";
+import { ToggleFullscreenButton } from "./ToggleFullscreenButton.ts";
 import { ScoreEntryModal } from "./ScoreEntryModal.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
 import { Nav } from "./Nav.ts";
@@ -160,26 +160,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     };
 
     // Build actions for header overflow menu
-    const actions: HeaderAction[] = [
-      {
-        icon: "⛶",
-        label: fullscreen ? "Exit Fullscreen" : "Enter Fullscreen",
-        pressed: fullscreen,
-        onclick: () => {
-          toggleFullscreen();
-        },
-      },
-      {
-        icon: "☼",
-        label: isWakeLockActive ? "Disable Keep Screen On" : "Enable Keep Screen On",
-        pressed: isWakeLockActive,
-        onclick: () => {
-          settings.enableWakeLock(!settings.wakeLock);
-        },
-        disabled: !("wakeLock" in navigator),
-      },
-    ];
-
+    const actions: HeaderAction[] = [];
     // Add delete actions only when there are rounds
     if (tournament.rounds.length > 0) {
       actions.push(
@@ -229,6 +210,18 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         }
       );
     }
+    actions.push(
+      {
+        icon: "☼",
+        label: isWakeLockActive ? "Disable Keep Screen On" : "Enable Keep Screen On",
+        pressed: isWakeLockActive,
+        onclick: () => {
+          settings.enableWakeLock(!settings.wakeLock);
+        },
+        disabled: !("wakeLock" in navigator),
+      },
+    );
+
 
     // Check for group configuration mismatch
     const groupMismatchWarning = getGroupMismatchWarning();
@@ -402,7 +395,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
           changeRound(roundCount);
         },
       }) : null,
-      fullscreen ? m(ExitFullscreenButton, { onclick: toggleFullscreen }) : null,
+      nextRoundInfo.matchCount >= 1 || tournament.rounds.length > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
       !fullscreen ? m(Nav, { nav, currentPage }) : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {

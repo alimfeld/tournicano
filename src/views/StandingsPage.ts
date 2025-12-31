@@ -120,26 +120,6 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
           }
         },
       },
-      {
-        icon: "↓",
-        label: "Download JSON",
-        onclick: () => {
-          const json = tournament.exportJSON(roundIndex);
-          const blob = new Blob([json], { type: "application/json" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.style.display = "none";
-          a.href = url;
-          const date = new Date().toISOString().slice(0, 10);
-          const rounds = roundIndex + 1 < roundCount ? `-round${roundIndex + 1}` : "";
-          a.download = `tournament-${date}${rounds}.json`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          showToast("Tournament data downloaded", "success");
-        },
-      },
     ] : [];
 
     return [

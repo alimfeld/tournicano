@@ -12,7 +12,7 @@ button.fab {
 }
 
 button.fab.fullscreen {
-  /* In fullscreen mode, move down to match ExitFullscreenButton position (no nav bar) */
+  /* In fullscreen mode, move down to match ToggleFullscreenButton position (no nav bar) */
   bottom: calc(var(--pico-spacing) + env(safe-area-inset-bottom));
 }
 
