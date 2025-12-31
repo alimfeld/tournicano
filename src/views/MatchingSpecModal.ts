@@ -10,9 +10,9 @@ import "./MatchingSpecModal.css";
 import { Modal } from "./Modal.ts";
 
 // Symbol constants for matching factors
-const SYMBOL_VARIETY = "V";
-const SYMBOL_PERFORMANCE = "P";
-const SYMBOL_GROUPS = "G";
+const SYMBOL_VARIETY = "Var";
+const SYMBOL_PERFORMANCE = "Perf";
+const SYMBOL_GROUPS = "Grp";
 
 // Performance mode symbols (Team up only)
 const MODE_BALANCED = "△";
