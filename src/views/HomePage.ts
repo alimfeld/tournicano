@@ -11,7 +11,18 @@ export interface HomeAttrs {
 export const HomePage: m.Component<HomeAttrs> = {
   view: ({ attrs: { nav, currentPage } }) => {
     return [
-      m(Header, { title: "Tournicano" }),
+      m(Header, { 
+        title: "Tournicano",
+        actions: [
+          {
+            icon: "↗",
+            label: "View on GitHub",
+            onclick: () => {
+              window.open("https://github.com/alimfeld/tournicano", "_blank", "noopener,noreferrer");
+            }
+          }
+        ]
+      }),
       m(
         "main.home.container",
         m(

@@ -98,7 +98,8 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
     // Build actions for header overflow menu
     const actions: HeaderAction[] = tournament.rounds.length > 0 ? [
       {
-        label: "⤴ Share Standings",
+        icon: "⤴",
+        label: "Share Standings",
         onclick: async () => {
           const text = tournament.exportText(roundIndex);
 
@@ -120,7 +121,8 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
         },
       },
       {
-        label: "↓ Download JSON",
+        icon: "↓",
+        label: "Download JSON",
         onclick: () => {
           const json = tournament.exportJSON(roundIndex);
           const blob = new Blob([json], { type: "application/json" });

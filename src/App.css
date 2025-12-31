@@ -21,7 +21,7 @@
   --nav-active-border-width: 3px;
   --nav-icon-font-size: 1.5rem;
 
-  /* Overlay buttons (chevrons, exit fullscreen) - simplified, no animations */
+  /* Overlay buttons (chevrons, exit fullscreen) */
   --overlay-button-opacity: 0.35;
   --chevron-width: 1.5rem;
   --chevron-height: 3rem;
@@ -44,7 +44,7 @@
   /* Help cards */
   --help-card-max-width: 30rem;
 
-  /* Score entry modal - no animations */
+  /* Score entry modal */
   --score-entry-keyboard-max-width: 100%;
 }
 
@@ -97,14 +97,10 @@
 
 /* Heading size overrides - conservative scaling */
 h1 {
-  --pico-font-size: 1.25rem;
-}
-
-h2 {
   --pico-font-size: 1.125rem;
 }
 
-h3 {
+h2 {
   --pico-font-size: 1rem;
 }
 
@@ -130,16 +126,4 @@ body>main {
 /* Disable double-tap zoom */
 * {
   touch-action: manipulation;
-}
-
-/* External link indicator */
-a[target="_blank"]::after {
-  content: " ↗";
-  display: inline-block;
-}
-
-/* Hide focus ring on modal close buttons unless keyboard navigation is used */
-dialog article > header > button[aria-label="Close"]:focus:not(:focus-visible) {
-  outline: none;
-  box-shadow: none;
 }

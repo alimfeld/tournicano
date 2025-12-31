@@ -2,9 +2,11 @@ import m from "mithril";
 import "./Header.css";
 
 export interface HeaderAction {
-  label: string | m.Children;
+  icon: string;
+  label: string;
   onclick: () => void;
   disabled?: boolean;
+  pressed?: boolean;
   confirmation?: {
     title: string;
     description: string | string[];
@@ -18,57 +20,48 @@ export interface HeaderAttrs {
 }
 
 interface HeaderState {
-  openConfirmationIndex: number | null;
+  openConfirmationActionId: string | null;
 }
 
 export const Header: m.Component<HeaderAttrs, HeaderState> = {
   oninit: ({ state }) => {
-    state.openConfirmationIndex = null;
+    state.openConfirmationActionId = null;
   },
 
   view: ({ attrs: { title, actions }, state }) => {
     const hasActions = actions && actions.length > 0;
 
-    if (!hasActions) {
-      return m("header", m("h1", title));
-    }
+    // Helper to create stable action ID
+    const getActionId = (action: HeaderAction) => `${action.icon}:${action.label}`;
 
     // Action handlers
-    const handleAction = (action: HeaderAction, index: number, event: Event) => {
-      event.preventDefault();
-
-      // Close the dropdown
-      const details = (event.target as HTMLElement).closest("details");
-      if (details) details.removeAttribute("open");
-
+    const handleAction = (action: HeaderAction) => {
       if (action.confirmation) {
-        state.openConfirmationIndex = index;
+        state.openConfirmationActionId = getActionId(action);
       } else {
         action.onclick();
       }
     };
 
-    const confirmAction = (action: HeaderAction, event: Event) => {
-      event.preventDefault();
+    const confirmAction = (action: HeaderAction) => {
       action.onclick();
-      state.openConfirmationIndex = null;
+      state.openConfirmationActionId = null;
     };
 
-    const cancelAction = (event: Event) => {
-      event.preventDefault();
-      state.openConfirmationIndex = null;
+    const cancelAction = () => {
+      state.openConfirmationActionId = null;
     };
 
     // Filter out disabled actions
-    const enabledActions = actions.filter((action) => !action.disabled);
+    const enabledActions = hasActions ? actions.filter((action) => !action.disabled) : [];
 
     return [
       // Confirmation dialogs (conditionally rendered)
       ...enabledActions
-        .map((action, index) => {
+        .map((action) => {
           if (!action.confirmation) return null;
 
-          const isOpen = state.openConfirmationIndex === index;
+          const isOpen = state.openConfirmationActionId === getActionId(action);
 
           // Only render if this confirmation is open
           if (!isOpen) return null;
@@ -85,7 +78,7 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
               },
               onclick: (e: MouseEvent) => {
                 if (e.target === e.currentTarget) {
-                  cancelAction(e);
+                  cancelAction();
                 }
               }
             },
@@ -103,7 +96,7 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
               m(
                 "footer",
                 m("button", {
-                  onclick: (event: Event) => confirmAction(action, event),
+                  onclick: () => confirmAction(action),
                 }, action.confirmation.confirmButtonText || "Confirm"),
               ),
             ),
@@ -111,22 +104,23 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
         })
         .filter((dialog) => dialog !== null),
 
-      // Header with dropdown menu
-      m("header", [
+      // Header with icon actions
+      m("header.container-fluid", [
         m("h1", title),
-        m("details.dropdown", [
-          m("summary.secondary.outline", { role: "button" }, "☰"),
-          m("ul",
-            enabledActions.map((action, index) => {
-              return m("li",
-                m("a", {
-                  href: "#",
-                  onclick: (e: Event) => handleAction(action, index, e),
-                }, action.label)
-              );
+        hasActions
+          ? m("div.actions",
+            enabledActions.map((action) => {
+              return m("button.secondary", {
+                class: action.pressed ? "pressed" : "outline",
+                "aria-label": action.label,
+                "aria-pressed": action.pressed !== undefined ? String(action.pressed) : undefined,
+                title: action.label,
+                onclick: () => handleAction(action),
+                disabled: action.disabled,
+              }, action.icon);
             })
-          ),
-        ]),
+          )
+          : null,
       ]),
     ];
   },

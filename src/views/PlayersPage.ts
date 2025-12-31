@@ -173,16 +173,19 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
         title: headerTitle,
         actions: [
           {
-            label: "＋ Add Players",
+            icon: "＋",
+            label: "Add Players",
             onclick: openAddPlayersModal
           },
           {
-            label: "⤴ Share Players",
+            icon: "⤴",
+            label: "Share Players",
             onclick: sharePlayersAction,
             disabled: totalPlayers === 0
           },
           {
-            label: "␡ Delete All Players",
+            icon: "␡",
+            label: "Delete All Players",
             onclick: deleteAllPlayersAction,
             disabled: totalPlayers === 0,
             confirmation: {

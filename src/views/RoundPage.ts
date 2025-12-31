@@ -162,23 +162,21 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     // Build actions for header overflow menu
     const actions: HeaderAction[] = [
       {
-        label: fullscreen ? "⛶ Exit Fullscreen" : "⛶ Enter Fullscreen",
+        icon: "⛶",
+        label: fullscreen ? "Exit Fullscreen" : "Enter Fullscreen",
+        pressed: fullscreen,
         onclick: () => {
           toggleFullscreen();
         },
       },
       {
-        label: isWakeLockActive ? "⏿ Allow Screen to Turn Off" : "⏿ Keep Screen On",
+        icon: "☼",
+        label: isWakeLockActive ? "Disable Keep Screen On" : "Enable Keep Screen On",
+        pressed: isWakeLockActive,
         onclick: () => {
           settings.enableWakeLock(!settings.wakeLock);
         },
         disabled: !("wakeLock" in navigator),
-      },
-      {
-        label: settings.debug ? "? Hide Debug Info" : "? Show Debug Info",
-        onclick: () => {
-          settings.showDebug(!settings.debug);
-        },
       },
     ];
 
@@ -186,7 +184,8 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     if (tournament.rounds.length > 0) {
       actions.push(
         {
-          label: "－ Delete Last Round",
+          icon: "－",
+          label: "Delete Last Round",
           onclick: () => {
             const lastRound = tournament.rounds.at(-1);
             if (lastRound) {
@@ -211,7 +210,8 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
           }
         },
         {
-          label: "↺ Delete All Rounds",
+          icon: "↺",
+          label: "Delete All Rounds",
           onclick: () => {
             tournament.restart();
             if (showToast) {
@@ -240,7 +240,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
             ? roundIndex + 1 === roundCount
               ? `Round ${roundIndex + 1}`
               : `Round ${roundIndex + 1}/${roundCount}`
-            : "Rounds") + (isWakeLockActive ? " ⏿" : ""),
+            : "Rounds"),
           actions: actions
         }) : null,
       m(
