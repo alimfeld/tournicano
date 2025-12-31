@@ -15,49 +15,30 @@ import {
 } from "./Tournament";
 import { Americano, MatchingSpec, matching, partitionPlayers } from "./Tournament.matching";
 import { shuffle } from "./Util";
+import { Settings } from "./Settings.ts";
 
 // Export data structures
-interface RankedPlayerExportData {
-  rank: number;
-  name: string;
-  group: string;
-  wins: number;
-  draws: number;
-  losses: number;
-  winRatio: number;
-  plusMinus: number;
-  pointsFor: number;
-  pointsAgainst: number;
-  matchCount: number;
-  pauseCount: number;
-  reliability: number;
-}
-
-interface TournamentExportData {
+interface TournamentBackup {
   version: number;
-  metadata: {
-    exportDate: string;
-    roundCount: number;
-    playerCount: number;
-    groups: string[];
+  exportDate: string;
+  settings: {
+    courts: number;
+    matchingSpec: MatchingSpec;
   };
   players: {
     name: string;
-    group: string;
+    group: number;
+    active: boolean;
   }[];
   rounds: {
-    roundNumber: number;
     matches: {
-      teamA: { player1: string; player2: string };
-      teamB: { player1: string; player2: string };
+      teamA: [string, string];
+      teamB: [string, string];
       score?: Score;
     }[];
     paused: string[];
+    inactive: string[];
   }[];
-  standings: {
-    overall: RankedPlayerExportData[];
-    byGroup: { [groupLabel: string]: RankedPlayerExportData[] };
-  };
 }
 
 export const tournamentFactory: TournamentFactory = {
@@ -684,312 +665,115 @@ class TournamentImpl implements Mutable<Tournament> {
     return String.fromCharCode(65 + groupNumber); // 0→"A", 1→"B", etc.
   }
 
-  private exportData(roundIndex?: number): TournamentExportData {
-    // Determine which round to export (default to latest)
-    const targetRoundIndex = roundIndex !== undefined
-      ? Math.max(0, Math.min(roundIndex, this.rounds.length - 1))
-      : this.rounds.length - 1;
-
+  exportStandingsText(roundIndex: number, groups?: number[]): string {
+    // Validate roundIndex
+    const targetRoundIndex = Math.max(0, Math.min(roundIndex, this.rounds.length - 1));
     const targetRound = this.rounds[targetRoundIndex];
 
     if (!targetRound) {
-      // No rounds yet - still build players list
-      const players = Array.from(this.playerMap.values())
-        .map(player => ({
-          name: player.name,
-          group: this.groupToLabel(player.group),
-        }))
-        .sort((a, b) => {
-          // Sort by group first, then by name
-          if (a.group !== b.group) {
-            return a.group.localeCompare(b.group);
-          }
-          return a.name.localeCompare(b.name);
-        });
-
-      return {
-        version: 1,
-        metadata: {
-          exportDate: new Date().toISOString(),
-          roundCount: 0,
-          playerCount: this.playerMap.size,
-          groups: this.groups.map(g => this.groupToLabel(g)),
-        },
-        players,
-        rounds: [],
-        standings: {
-          overall: [],
-          byGroup: {},
-        },
-      };
+      return "No standings available";
     }
 
-    // Build players list - only include players who participated in rounds
-    const players = Array.from(targetRound.playerMap.values())
-      .map(player => ({
-        name: player.name,
-        group: this.groupToLabel(player.group),
-      }))
-      .sort((a, b) => {
-        // Sort by group first, then by name
-        if (a.group !== b.group) {
-          return a.group.localeCompare(b.group);
-        }
-        return a.name.localeCompare(b.name);
-      });
-
-    // Build rounds data
-    const rounds = this.rounds.slice(0, targetRoundIndex + 1).map((round, idx) => ({
-      roundNumber: idx + 1,
-      matches: round.matches.map((match) => ({
-        teamA: {
-          player1: match.teamA.player1.name,
-          player2: match.teamA.player2.name,
-        },
-        teamB: {
-          player1: match.teamB.player1.name,
-          player2: match.teamB.player2.name,
-        },
-        score: match.score,
-      })),
-      paused: round.paused.map((p) => p.name),
-    }));
-
-    // Build overall standings
-    const totalRounds = targetRoundIndex + 1;
-    const overallStandings = targetRound.standings().map((ranked) => {
-      const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
-      const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
-      return {
-        rank: ranked.rank,
-        name: ranked.player.name,
-        group: this.groupToLabel(ranked.player.group),
-        wins: ranked.player.wins,
-        draws: ranked.player.draws,
-        losses: ranked.player.losses,
-        winRatio: ranked.player.winRatio,
-        plusMinus: ranked.player.plusMinus,
-        pointsFor: ranked.player.pointsFor,
-        pointsAgainst: ranked.player.pointsAgainst,
-        matchCount: ranked.player.matchCount,
-        pauseCount: ranked.player.pauseCount,
-        reliability,
-      };
-    });
-
-    // Get unique groups from participating players only
-    const participatingGroups = [...new Set(Array.from(targetRound.playerMap.values()).map(p => p.group))].sort();
-
-    // Build per-group standings (only if multiple participating groups exist)
-    const byGroup: { [groupLabel: string]: RankedPlayerExportData[] } = {};
-
-    // Collect all group standings first (avoid calling standings() twice)
-    const groupStandingsMap = new Map<number, any[]>();
-    participatingGroups.forEach((groupNumber) => {
-      const groupStandings = targetRound.standings([groupNumber]);
-      if (groupStandings.length > 0) {
-        groupStandingsMap.set(groupNumber, groupStandings);
-      }
-    });
-
-    // Only populate byGroup if there are multiple participating groups
-    const hasMultipleGroups = groupStandingsMap.size > 1;
-
-    if (hasMultipleGroups) {
-      groupStandingsMap.forEach((standings, groupNumber) => {
-        const groupLabel = this.groupToLabel(groupNumber);
-        const groupStandings = standings.map((ranked) => {
-          const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
-          const reliability = totalRounds > 0 ? participationCount / totalRounds : 0;
-          return {
-            rank: ranked.rank,
-            name: ranked.player.name,
-            group: groupLabel,
-            wins: ranked.player.wins,
-            draws: ranked.player.draws,
-            losses: ranked.player.losses,
-            winRatio: ranked.player.winRatio,
-            plusMinus: ranked.player.plusMinus,
-            pointsFor: ranked.player.pointsFor,
-            pointsAgainst: ranked.player.pointsAgainst,
-            matchCount: ranked.player.matchCount,
-            pauseCount: ranked.player.pauseCount,
-            reliability,
-          };
-        });
-        byGroup[groupLabel] = groupStandings;
-      });
-    }
-
-    return {
-      version: 1,
-      metadata: {
-        exportDate: new Date().toISOString(),
-        roundCount: targetRoundIndex + 1,
-        playerCount: targetRound.playerMap.size,
-        groups: participatingGroups.map(g => this.groupToLabel(g)),
-      },
-      players,
-      rounds,
-      standings: {
-        overall: overallStandings,
-        byGroup,
-      },
-    };
-  }
-
-  exportJSON(roundIndex?: number): string {
-    const data = this.exportData(roundIndex);
-    return JSON.stringify(data, null, 2);
-  }
-
-  exportText(roundIndex?: number): string {
-    const data = this.exportData(roundIndex);
     let result = "";
-
+    
     // Header
-    result += "TOURNAMENT EXPORT\n";
-    result += "=================\n";
-    result += `Export Date: ${data.metadata.exportDate}\n`;
-    result += `Rounds Completed: ${data.metadata.roundCount}\n`;
-    result += `Players: ${data.metadata.playerCount}\n`;
-    if (data.metadata.groups.length > 0) {
-      result += `Groups: ${data.metadata.groups.join(", ")}\n`;
-    }
+    result += `STANDINGS - Round ${targetRoundIndex + 1} of ${this.rounds.length}\n`;
+    result += `Export Date: ${new Date().toISOString()}\n`;
     result += "\n";
 
-    // Players
-    if (data.players.length > 0) {
-      result += "PLAYERS\n";
-      result += "-------\n";
-
-      // Check if there are multiple groups
-      const hasMultipleGroups = data.metadata.groups.length > 1;
-
-      if (hasMultipleGroups) {
-        // Group players by their group letter
-        const playersByGroup: { [group: string]: string[] } = {};
-        data.players.forEach(player => {
-          if (!playersByGroup[player.group]) {
-            playersByGroup[player.group] = [];
-          }
-          playersByGroup[player.group].push(player.name);
-        });
-
-        // Output each group
-        Object.entries(playersByGroup).sort((a, b) => a[0].localeCompare(b[0])).forEach(([group, names]) => {
-          result += `Group ${group}: ${names.join(", ")}\n`;
-        });
+    // Determine which standings to show
+    if (groups && groups.length === 1) {
+      // Single group selected - show only that group
+      const groupStandings = targetRound.standings(groups);
+      if (groupStandings.length === 0) {
+        result += `GROUP ${this.groupToLabel(groups[0])} STANDINGS\n`;
+        result += "-".repeat(`GROUP ${this.groupToLabel(groups[0])} STANDINGS`.length) + "\n";
+        result += "No standings available\n";
       } else {
-        // Single group - just list all names
-        result += data.players.map(p => p.name).join(", ") + "\n";
+        result += `GROUP ${this.groupToLabel(groups[0])} STANDINGS\n`;
+        result += "-".repeat(`GROUP ${this.groupToLabel(groups[0])} STANDINGS`.length) + "\n";
+        result += this.formatStandingsTable(groupStandings);
       }
-      result += "\n";
+    } else {
+      // No filter or multiple groups - show overall standings
+      const selectedGroups = groups && groups.length > 0 ? groups : undefined;
+      const standings = targetRound.standings(selectedGroups);
+      
+      if (standings.length === 0) {
+        result += "OVERALL STANDINGS\n";
+        result += "-".repeat("OVERALL STANDINGS".length) + "\n";
+        result += "No standings available\n";
+      } else {
+        result += "OVERALL STANDINGS\n";
+        result += "-".repeat("OVERALL STANDINGS".length) + "\n";
+        result += this.formatStandingsTable(standings);
+      }
     }
 
-    // Rounds
-    data.rounds.forEach((round) => {
-      result += `ROUND ${round.roundNumber}\n`;
-      result += "-".repeat(`ROUND ${round.roundNumber}`.length) + "\n";
+    return result;
+  }
 
-      if (round.matches.length > 0) {
-        // Calculate dynamic padding for this round
-        const matchCountPad = String(round.matches.length).length;
-
-        // Find longest player names in this round
-        let maxNameLength = 0;
-        round.matches.forEach((match) => {
-          maxNameLength = Math.max(
-            maxNameLength,
-            match.teamA.player1.length,
-            match.teamA.player2.length,
-            match.teamB.player1.length,
-            match.teamB.player2.length
-          );
-        });
-        const namePad = Math.max(maxNameLength, 8); // At least 8 chars
-
-        round.matches.forEach((match, idx) => {
-          const matchNum = String(idx + 1).padStart(matchCountPad, " ");
-          const p1 = match.teamA.player1.padEnd(namePad, " ");
-          const p2 = match.teamA.player2.padEnd(namePad, " ");
-          const p3 = match.teamB.player1.padEnd(namePad, " ");
-          const p4 = match.teamB.player2.padEnd(namePad, " ");
-
-          result += `Match ${matchNum}: ${p1} & ${p2} vs. ${p3} & ${p4}`;
-          if (match.score) {
-            result += ` - ${match.score[0]}:${match.score[1]}`;
-          }
-          result += "\n";
-        });
-      } else {
-        result += "No matches\n";
-      }
-
-      if (round.paused.length > 0) {
-        result += `Paused: ${round.paused.join(", ")}\n`;
-      } else {
-        result += "Paused: None\n";
-      }
-      result += "\n";
-    });
-
-    // Overall Standings
-    if (data.standings.overall.length > 0) {
-      result += `OVERALL STANDINGS (after Round ${data.metadata.roundCount})\n`;
-      result += "-".repeat(`OVERALL STANDINGS (after Round ${data.metadata.roundCount})`.length) + "\n";
-
-      // Calculate dynamic padding based on data
-      const maxRank = data.standings.overall.length;
-      const rankPad = String(maxRank).length;
-      const maxNameLength = Math.max(...data.standings.overall.map(p => p.name.length));
-      const namePad = Math.max(maxNameLength, 10); // At least 10 chars
-      const maxPlusMinus = Math.max(...data.standings.overall.map(p => Math.abs(p.plusMinus)));
-      const plusMinusPad = String(maxPlusMinus).length + 1; // +1 for sign
-      const maxPointsFor = Math.max(...data.standings.overall.map(p => p.pointsFor));
-      const maxPointsAgainst = Math.max(...data.standings.overall.map(p => p.pointsAgainst));
-      const pointsPad = Math.max(String(maxPointsFor).length, String(maxPointsAgainst).length);
-
-      data.standings.overall.forEach((ranked) => {
-        const reliabilityPercent = Math.round(ranked.reliability * 100);
-        const winRatioPercent = Math.round(ranked.winRatio * 100);
-        const plusMinus = ranked.plusMinus >= 0 ? `+${ranked.plusMinus}` : `${ranked.plusMinus}`;
-        const wdl = `(${ranked.wins}-${ranked.draws}-${ranked.losses})`;
-        const points = `(${String(ranked.pointsFor).padStart(pointsPad, " ")}-${String(ranked.pointsAgainst).padStart(pointsPad, " ")})`;
-        result += `${String(ranked.rank).padStart(rankPad, " ")}. ${ranked.name.padEnd(namePad, " ")} ${String(winRatioPercent).padStart(3, " ")}% ${wdl.padEnd(9, " ")} ${plusMinus.padStart(plusMinusPad, " ")} ${points} ${String(reliabilityPercent).padStart(3, " ")}%\n`;
-      });
-      result += "\n";
+  private formatStandingsTable(standings: { rank: number; player: ParticipatingPlayer }[]): string {
+    if (standings.length === 0) {
+      return "";
     }
 
-    // Per-Group Standings
-    Object.entries(data.standings.byGroup).forEach(([groupLabel, standings]) => {
-      if (standings.length > 0) {
-        result += `GROUP ${groupLabel} STANDINGS (after Round ${data.metadata.roundCount})\n`;
-        result += "-".repeat(`GROUP ${groupLabel} STANDINGS (after Round ${data.metadata.roundCount})`.length) + "\n";
+    let result = "";
+    const totalRounds = this.rounds.length;
 
-        // Calculate dynamic padding for this group
-        const maxRank = standings.length;
-        const rankPad = String(maxRank).length;
-        const maxNameLength = Math.max(...standings.map(p => p.name.length));
-        const namePad = Math.max(maxNameLength, 10); // At least 10 chars
-        const maxPlusMinus = Math.max(...standings.map(p => Math.abs(p.plusMinus)));
-        const plusMinusPad = String(maxPlusMinus).length + 1; // +1 for sign
-        const maxPointsFor = Math.max(...standings.map(p => p.pointsFor));
-        const maxPointsAgainst = Math.max(...standings.map(p => p.pointsAgainst));
-        const pointsPad = Math.max(String(maxPointsFor).length, String(maxPointsAgainst).length);
+    // Calculate dynamic padding based on data
+    const maxRank = standings.length;
+    const rankPad = String(maxRank).length;
+    const maxNameLength = Math.max(...standings.map(p => p.player.name.length));
+    const namePad = Math.max(maxNameLength, 10); // At least 10 chars
+    const maxPlusMinus = Math.max(...standings.map(p => Math.abs(p.player.plusMinus)));
+    const plusMinusPad = String(maxPlusMinus).length + 1; // +1 for sign
+    const maxPointsFor = Math.max(...standings.map(p => p.player.pointsFor));
+    const maxPointsAgainst = Math.max(...standings.map(p => p.player.pointsAgainst));
+    const pointsPad = Math.max(String(maxPointsFor).length, String(maxPointsAgainst).length);
 
-        standings.forEach((ranked) => {
-          const reliabilityPercent = Math.round(ranked.reliability * 100);
-          const winRatioPercent = Math.round(ranked.winRatio * 100);
-          const plusMinus = ranked.plusMinus >= 0 ? `+${ranked.plusMinus}` : `${ranked.plusMinus}`;
-          const wdl = `(${ranked.wins}-${ranked.draws}-${ranked.losses})`;
-          const points = `(${String(ranked.pointsFor).padStart(pointsPad, " ")}-${String(ranked.pointsAgainst).padStart(pointsPad, " ")})`;
-          result += `${String(ranked.rank).padStart(rankPad, " ")}. ${ranked.name.padEnd(namePad, " ")} ${String(winRatioPercent).padStart(3, " ")}% ${wdl.padEnd(9, " ")} ${plusMinus.padStart(plusMinusPad, " ")} ${points} ${String(reliabilityPercent).padStart(3, " ")}%\n`;
-        });
-        result += "\n";
-      }
+    standings.forEach((ranked) => {
+      const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
+      const reliabilityPercent = totalRounds > 0 ? Math.round((participationCount / totalRounds) * 100) : 0;
+      const winRatioPercent = Math.round(ranked.player.winRatio * 100);
+      const plusMinus = ranked.player.plusMinus >= 0 ? `+${ranked.player.plusMinus}` : `${ranked.player.plusMinus}`;
+      const wdl = `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`;
+      const points = `(${String(ranked.player.pointsFor).padStart(pointsPad, " ")}-${String(ranked.player.pointsAgainst).padStart(pointsPad, " ")})`;
+      result += `${String(ranked.rank).padStart(rankPad, " ")}. ${ranked.player.name.padEnd(namePad, " ")} ${String(winRatioPercent).padStart(3, " ")}% ${wdl.padEnd(9, " ")} ${plusMinus.padStart(plusMinusPad, " ")} ${points} ${String(reliabilityPercent).padStart(3, " ")}%\n`;
     });
 
     return result;
+  }
+
+  exportBackup(settings: Settings): string {
+    const backup: TournamentBackup = {
+      version: 1,
+      exportDate: new Date().toISOString(),
+      settings: {
+        courts: settings.courts,
+        matchingSpec: settings.matchingSpec,
+      },
+      players: this.players()
+        .map(p => ({
+          name: p.name,
+          group: p.group,
+          active: p.active,
+        }))
+        .sort((a, b) => {
+          if (a.group !== b.group) return a.group - b.group;
+          return a.name.localeCompare(b.name);
+        }),
+      rounds: this.rounds.map(round => ({
+        matches: round.matches.map(match => ({
+          teamA: [match.teamA.player1.name, match.teamA.player2.name],
+          teamB: [match.teamB.player1.name, match.teamB.player2.name],
+          score: match.score,
+        })),
+        paused: round.paused.map(p => p.name),
+        inactive: round.inactive.map(p => p.name),
+      })),
+    };
+
+    return JSON.stringify(backup, null, 2);
   }
 }

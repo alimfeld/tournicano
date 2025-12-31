@@ -59,16 +59,16 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
         title: "Settings", actions: [
           {
             icon: "↓",
-            label: "Download JSON",
+            label: "Export Tournament",
             onclick: () => {
-              const json = tournament.exportJSON();
+              const json = tournament.exportBackup(settings);
               const blob = new Blob([json], { type: "application/json" });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.style.display = "none";
               a.href = url;
               const date = new Date().toISOString().slice(0, 10);
-              a.download = `tournament-${date}.json`;
+              a.download = `tournicano-backup-${date}.json`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);

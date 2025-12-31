@@ -100,7 +100,7 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
         icon: "⤴",
         label: "Share Standings",
         onclick: async () => {
-          const text = tournament.exportText(roundIndex);
+          const text = tournament.exportStandingsText(roundIndex, selectedGroups);
 
           try {
             await navigator.share({ text });

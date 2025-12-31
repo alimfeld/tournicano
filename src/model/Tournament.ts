@@ -1,4 +1,5 @@
 import { MatchingSpec } from "./Tournament.matching";
+import { Settings } from "./Settings.ts";
 
 export type PlayerId = string;
 
@@ -103,8 +104,8 @@ export interface Tournament {
   reset(): void;
   serialize(): string;
   addListener(listener: TournamentListener): void;
-  exportJSON(roundIndex?: number): string;
-  exportText(roundIndex?: number): string;
+  exportStandingsText(roundIndex: number, groups?: number[]): string;
+  exportBackup(settings: Settings): string;
 }
 
 export interface TournamentFactory {

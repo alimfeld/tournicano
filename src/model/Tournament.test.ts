@@ -1,5 +1,6 @@
 import { expect, test as baseTest } from "vitest";
 import { tournamentFactory } from "./Tournament.impl.ts";
+import { settingsFactory } from "./Settings.impl.ts";
 import { Score } from "./Tournament.ts";
 import {
   Americano,
@@ -1140,502 +1141,213 @@ test("should return hasAllScoresSubmitted - mixed score states", ({ players }) =
 });
 
 // Tests for export functionality
-test("should export empty tournament as JSON", () => {
+
+test("should export standings text with no rounds", () => {
   const tournament = tournamentFactory.create();
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  expect(data.version).toBe(1);
-  expect(data.metadata.roundCount).toBe(0);
-  expect(data.metadata.playerCount).toBe(0);
-  expect(data.metadata.groups).toEqual([]);
-  expect(data.rounds).toEqual([]);
-  expect(data.standings.overall).toEqual([]);
-  expect(data.standings.byGroup).toEqual({});
-  expect(data.metadata.exportDate).toBeDefined();
+  tournament.addPlayers(["Alice", "Bob", "Charlie", "Dave"], 0);
+  
+  const text = tournament.exportStandingsText(0);
+  
+  expect(text).toContain("No standings available");
 });
 
-test("should export tournament with rounds as JSON", ({ players, scores }) => {
+test("should export standings text for specific round", ({ players, scores }) => {
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  expect(data.version).toBe(1);
-
-  expect(data.metadata.roundCount).toBe(1);
-  expect(data.metadata.playerCount).toBe(4);
-  expect(data.rounds).toHaveLength(1);
-  expect(data.rounds[0].roundNumber).toBe(1);
-  expect(data.rounds[0].matches).toHaveLength(1);
-  expect(data.rounds[0].matches[0].score).toBeDefined();
-  expect(data.standings.overall.length).toBeGreaterThan(0);
+  
+  const text = tournament.exportStandingsText(0);
+  
+  expect(text).toContain("STANDINGS - Round 1 of 1");
+  expect(text).toContain("Export Date:");
+  expect(text).toContain("OVERALL STANDINGS");
+  expect(text).not.toContain("ROUND 1"); // Should not include round details
+  expect(text).not.toContain("PLAYERS"); // Should not include player list
 });
 
-test("should export tournament with groups as JSON", () => {
+test("should export standings text with group filter", () => {
   const tournament = tournamentFactory.create();
   tournament.addPlayers(["Alice", "Bob"], 0);
   tournament.addPlayers(["Charlie", "Dave"], 1);
-
+  
   const round = tournament.createRound(Americano, 1);
   round.matches[0].submitScore([11, 5]);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  expect(data.metadata.groups).toEqual(["A", "B"]);
-  expect(data.standings.byGroup).toHaveProperty("A");
-  expect(data.standings.byGroup).toHaveProperty("B");
-
-  // Verify group labels are letters
-  data.standings.overall.forEach((player: any) => {
-    expect(player.group).toMatch(/^[A-Z]$/);
-  });
+  
+  // Export with single group filter
+  const textGroupA = tournament.exportStandingsText(0, [0]);
+  
+  expect(textGroupA).toContain("GROUP A STANDINGS");
+  expect(textGroupA).not.toContain("OVERALL STANDINGS");
+  expect(textGroupA).not.toContain("GROUP B");
 });
 
-test("should export player names without UUIDs in JSON", ({ players }) => {
+test("should export standings text with multiple group filter", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Charlie", "Dave"], 1);
+  tournament.addPlayers(["Eve", "Frank"], 2);
+  
+  const round = tournament.createRound(Americano, 1);
+  round.matches[0].submitScore([11, 5]);
+  
+  // Export with multiple groups filter
+  const text = tournament.exportStandingsText(0, [0, 1]);
+  
+  expect(text).toContain("OVERALL STANDINGS");
+  expect(text).not.toContain("GROUP A STANDINGS");
+  expect(text).not.toContain("GROUP B STANDINGS");
+});
+
+test("should export backup JSON with settings", ({ players }) => {
+  const settings = settingsFactory.create();
+  settings.setCourts(3);
+  settings.setMatchingSpec(Mexicano);
+  
   const tournament = runTournament(players.slice(0, 4));
-  const round = tournament.createRound(Americano, 1);
-  round.matches[0].submitScore([11, 5]);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  // Verify rounds use player names
-  data.rounds[0].matches.forEach((match: any) => {
-    expect(match.teamA.player1).toBe(match.teamA.player1.toString());
-    expect(match.teamA.player2).toBe(match.teamA.player2.toString());
-    expect(match.teamB.player1).toBe(match.teamB.player1.toString());
-    expect(match.teamB.player2).toBe(match.teamB.player2.toString());
-    // Verify they're actual player names, not UUIDs
-    expect(match.teamA.player1).not.toMatch(/^[0-9a-f-]{36}$/i);
-  });
-
-  // Verify standings use player names
-  data.standings.overall.forEach((player: any) => {
-    expect(player.name).toBe(player.name.toString());
-    expect(player.name).not.toMatch(/^[0-9a-f-]{36}$/i);
-  });
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  expect(backup.version).toBe(1);
+  expect(backup.exportDate).toBeDefined();
+  expect(backup.settings.courts).toBe(3);
+  expect(backup.settings.matchingSpec).toEqual(Mexicano);
 });
 
-test("should export specific round index as JSON", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0], scores[1], scores[2]]);
-
-  // Export only up to round 2 (index 1)
-  const json = tournament.exportJSON(1);
-  const data = JSON.parse(json);
-
-  expect(data.metadata.roundCount).toBe(2);
-  expect(data.rounds).toHaveLength(2);
-  expect(data.rounds[0].roundNumber).toBe(1);
-  expect(data.rounds[1].roundNumber).toBe(2);
+test("should export backup JSON with all players", ({ players }) => {
+  const settings = settingsFactory.create();
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers([players[0].name, players[1].name], 0);
+  tournament.addPlayers([players[2].name, players[3].name], 1);
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  expect(backup.players).toHaveLength(4);
+  expect(backup.players[0]).toHaveProperty("name");
+  expect(backup.players[0]).toHaveProperty("group");
+  expect(backup.players[0]).toHaveProperty("active");
+  expect(backup.players[0].group).toBe(0); // Numeric group, not "A"
+  expect(backup.players[2].group).toBe(1); // Numeric group, not "B"
 });
 
-test("should include reliability in JSON export", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 8), [scores[0], scores[1]]);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  data.standings.overall.forEach((player: any) => {
-    expect(player.reliability).toBeDefined();
-    expect(player.reliability).toBeGreaterThanOrEqual(0);
-    expect(player.reliability).toBeLessThanOrEqual(1);
-    // Reliability = (matchCount + pauseCount) / totalRounds
-    const participationCount = player.matchCount + player.pauseCount;
-    const expectedReliability = participationCount / 2; // 2 rounds
-    expect(player.reliability).toBeCloseTo(expectedReliability, 5);
+test("should export backup JSON without player IDs", ({ players }) => {
+  const settings = settingsFactory.create();
+  const tournament = runTournament(players.slice(0, 4));
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  backup.players.forEach((player: any) => {
+    expect(player).not.toHaveProperty("id");
+    expect(player).toHaveProperty("name");
   });
 });
 
-test("should export empty tournament as text", () => {
+test("should export backup JSON with rounds and matches", ({ players, scores }) => {
+  const settings = settingsFactory.create();
+  const tournament = runTournament(players.slice(0, 4), [scores[0], scores[1]]);
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  expect(backup.rounds).toHaveLength(2);
+  expect(backup.rounds[0].matches).toHaveLength(1);
+  expect(backup.rounds[0].matches[0].teamA).toHaveLength(2); // Array of 2 names
+  expect(backup.rounds[0].matches[0].teamB).toHaveLength(2);
+  expect(backup.rounds[0].matches[0].score).toBeDefined();
+});
+
+test("should export backup JSON with paused and inactive players", () => {
+  const settings = settingsFactory.create();
   const tournament = tournamentFactory.create();
-
-  const text = tournament.exportText();
-
-  expect(text).toContain("TOURNAMENT EXPORT");
-  expect(text).toContain("Rounds Completed: 0");
-  expect(text).toContain("Players: 0");
-  expect(text).not.toContain("ROUND 1");
-  expect(text).not.toContain("OVERALL STANDINGS");
-});
-
-test("should export tournament with rounds as text", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const text = tournament.exportText();
-
-  expect(text).toContain("TOURNAMENT EXPORT");
-  expect(text).toContain("Rounds Completed: 1");
-  expect(text).toContain("Players: 4");
-  expect(text).toContain("ROUND 1");
-  expect(text).toContain("Match 1:");
-  expect(text).toContain("vs.");
-  expect(text).toContain("OVERALL STANDINGS");
-  expect(text).toContain("(after Round 1)");
-});
-
-test("should export matches with scores in text format", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const text = tournament.exportText();
-
-  // Should show scores in "X:Y" format
-  expect(text).toMatch(/\d+:\d+/);
-  // Should show team names with "&" (now with dynamic padding/spaces)
-  expect(text).toMatch(/\w+\s+& \w+\s+vs\. \w+\s+& \w+/);
-});
-
-test("should export paused players in text format", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 5), [scores[0]]);
-
-  const text = tournament.exportText();
-
-  // With 5 players and Americano, one player should be paused
-  expect(text).toContain("Paused:");
-  expect(text).toMatch(/Paused: \w+/);
-});
-
-test("should export group standings with letter labels in text", () => {
-  const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Alice", "Bob"], 0);
-  tournament.addPlayers(["Charlie", "Dave"], 1);
-
-  const round = tournament.createRound(Americano, 1);
-  round.matches[0].submitScore([11, 5]);
-
-  const text = tournament.exportText();
-
-  expect(text).toContain("GROUP A STANDINGS");
-  expect(text).toContain("GROUP B STANDINGS");
-  expect(text).not.toContain("GROUP 0");
-  expect(text).not.toContain("GROUP 1");
-});
-
-test("should export full player names in text format", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const text = tournament.exportText();
-
-  // Player names should not be truncated (unlike the old format function)
-  players.slice(0, 4).forEach((player) => {
-    expect(text).toContain(player.name);
-  });
-});
-
-test("should export standings with win ratio and plus/minus in text", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const text = tournament.exportText();
-
-  // Should show percentages
-  expect(text).toMatch(/\d+%/);
-  // Should show plus/minus (e.g., "+5" or "-3")
-  expect(text).toMatch(/[+-]\d+/);
-  // Should show W-D-L record (e.g., "1-0-0")
-  expect(text).toMatch(/\(\d+-\d+-\d+\)/);
-});
-
-test("should export reliability percentage in text", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 8), [scores[0], scores[1]]);
-
-  const text = tournament.exportText();
-
-  // Reliability should be shown as percentage at the end of each line
-  // Most players should have 100% reliability (participated in all rounds)
-  expect(text).toContain("100%");
-});
-
-test("should use ISO 8601 date format in exports", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  // ISO 8601 format: YYYY-MM-DDTHH:mm:ss.sssZ
-  expect(data.metadata.exportDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-
-  const text = tournament.exportText();
-  // Text format should also contain ISO 8601 date
-  expect(text).toMatch(/Export Date: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
-});
-
-test("should not export per-group standings for single group tournament", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0]]);
+  tournament.addPlayers(["Alice", "Bob", "Charlie", "Dave", "Eve"], 0);
   
-  const text = tournament.exportText();
-  const json = JSON.parse(tournament.exportJSON());
-  
-  // Text export should not have per-group standings
-  expect(text).toContain("OVERALL STANDINGS");
-  expect(text).not.toContain("GROUP A STANDINGS");
-  expect(text).not.toContain("GROUP B STANDINGS");
-  
-  // JSON export should have empty byGroup
-  expect(json.standings.overall.length).toBe(4);
-  expect(Object.keys(json.standings.byGroup).length).toBe(0);
-  
-  // Metadata should show only one group
-  expect(json.metadata.groups).toEqual(["A"]);
-});
-
-test("should not export per-group standings when only one group has active players", () => {
-  const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Alice", "Bob", "Charlie", "Dave"], 0);
-  tournament.addPlayers(["Eve", "Frank"], 1);
-  
-  // Deactivate all Group B players
-  tournament.players().filter(p => p.group === 1).forEach(p => p.activate(false));
-  
-  const round = tournament.createRound(Americano, 1);
-  round.matches[0].submitScore([11, 5]);
-
-  const text = tournament.exportText();
-  const json = JSON.parse(tournament.exportJSON());
-
-  // Only Group A participated
-  expect(json.metadata.groups).toEqual(["A"]);
-  
-  // Should not show per-group standings (only 1 group participated)
-  expect(text).toContain("OVERALL STANDINGS");
-  expect(text).not.toContain("GROUP A STANDINGS");
-  expect(text).not.toContain("GROUP B STANDINGS");
-  
-  expect(Object.keys(json.standings.byGroup).length).toBe(0);
-});
-
-test("should export per-group standings in JSON when multiple groups participate", () => {
-  const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Alice", "Bob"], 0);
-  tournament.addPlayers(["Charlie", "Dave"], 1);
-
-  const round = tournament.createRound(Americano, 1);
-  round.matches[0].submitScore([11, 5]);
-
-  const json = JSON.parse(tournament.exportJSON());
-  
-  // Both groups participated
-  expect(json.metadata.groups).toEqual(["A", "B"]);
-  
-  // Should have byGroup with 2 groups
-  expect(Object.keys(json.standings.byGroup).length).toBe(2);
-  expect(json.standings.byGroup.A).toBeDefined();
-  expect(json.standings.byGroup.B).toBeDefined();
-  expect(json.standings.byGroup.A.length).toBeGreaterThan(0);
-  expect(json.standings.byGroup.B.length).toBeGreaterThan(0);
-});
-
-test("should export correct per-group standings for specific round when new group joins later", () => {
-  const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Alice", "Bob", "Charlie", "Dave"], 0);
-
-  // Round 1: Only Group A
+  // First round - all active, one will be paused (5 players, only 4 can play)
   const round1 = tournament.createRound(Americano, 1);
   round1.matches[0].submitScore([11, 5]);
   
-  // Add Group B after Round 1
-  tournament.addPlayers(["Eve", "Frank", "Grace", "Henry"], 1);
+  // Check who was paused in round 1
+  const pausedInRound1 = round1.paused.map(p => p.name);
+  expect(pausedInRound1).toHaveLength(1); // One player should be paused
   
-  // Round 2: Both groups participate
-  const round2 = tournament.createRound(Americano, 2);
-  round2.matches[0].submitScore([11, 5]);
-  round2.matches[1].submitScore([11, 7]);
-
-  // Export for Round 1 (index 0) - only Group A participated
-  const round1Text = tournament.exportText(0);
-  const round1Json = JSON.parse(tournament.exportJSON(0));
+  // Deactivate the player who was paused
+  const pausedPlayer = tournament.players().find(p => p.name === pausedInRound1[0])!;
+  pausedPlayer.activate(false);
   
-  expect(round1Json.metadata.roundCount).toBe(1);
-  expect(round1Json.metadata.groups).toEqual(["A"]);
-  expect(round1Text).toContain("OVERALL STANDINGS (after Round 1)");
-  expect(round1Text).not.toContain("GROUP A STANDINGS");
-  expect(Object.keys(round1Json.standings.byGroup).length).toBe(0);
-
-  // Export for Round 2 (index 1) - both groups participated
-  const round2Text = tournament.exportText(1);
-  const round2Json = JSON.parse(tournament.exportJSON(1));
+  // Second round - previously paused player is now inactive
+  tournament.createRound(Americano, 1);
   
-  expect(round2Json.metadata.roundCount).toBe(2);
-  expect(round2Json.metadata.groups).toEqual(["A", "B"]);
-  expect(round2Text).toContain("OVERALL STANDINGS (after Round 2)");
-  expect(round2Text).toContain("GROUP A STANDINGS (after Round 2)");
-  expect(round2Text).toContain("GROUP B STANDINGS (after Round 2)");
-  expect(Object.keys(round2Json.standings.byGroup).length).toBe(2);
-
-  // Export latest (default) - should be same as Round 2
-  const latestJson = JSON.parse(tournament.exportJSON());
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
   
-  expect(latestJson.metadata.roundCount).toBe(2);
-  expect(latestJson.metadata.groups).toEqual(["A", "B"]);
-  expect(Object.keys(latestJson.standings.byGroup).length).toBe(2);
+  expect(backup.rounds[0].paused).toContain(pausedInRound1[0]); // Was paused in first round
+  expect(backup.rounds[1].inactive).toContain(pausedInRound1[0]); // Is inactive in second round
 });
 
-test("should export correct standings data structure", ({ players, scores }) => {
+test("should export backup JSON without computed standings", ({ players, scores }) => {
+  const settings = settingsFactory.create();
   const tournament = runTournament(players.slice(0, 4), [scores[0]]);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  // Verify overall standings structure
-  expect(data.standings.overall.length).toBeGreaterThan(0);
-  const player = data.standings.overall[0];
-  expect(player).toHaveProperty("rank");
-  expect(player).toHaveProperty("name");
-  expect(player).toHaveProperty("group");
-  expect(player).toHaveProperty("wins");
-  expect(player).toHaveProperty("draws");
-  expect(player).toHaveProperty("losses");
-  expect(player).toHaveProperty("winRatio");
-  expect(player).toHaveProperty("plusMinus");
-  expect(player).toHaveProperty("pointsFor");
-  expect(player).toHaveProperty("pointsAgainst");
-  expect(player).toHaveProperty("matchCount");
-  expect(player).toHaveProperty("pauseCount");
-  expect(player).toHaveProperty("reliability");
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  // Should not have standings data
+  expect(backup).not.toHaveProperty("standings");
+  expect(backup).not.toHaveProperty("metadata");
+  
+  // Should have essential data only
+  expect(backup).toHaveProperty("settings");
+  expect(backup).toHaveProperty("players");
+  expect(backup).toHaveProperty("rounds");
+  expect(backup).toHaveProperty("version");
+  expect(backup).toHaveProperty("exportDate");
 });
 
-test("should handle roundIndex bounds in export", ({ players, scores }) => {
-  const tournament = runTournament(players.slice(0, 4), [scores[0], scores[1]]);
-
-  // Export with negative index (should default to 0)
-  const json1 = tournament.exportJSON(-1);
-  const data1 = JSON.parse(json1);
-  expect(data1.metadata.roundCount).toBe(1);
-
-  // Export with index beyond rounds (should use last round)
-  const json2 = tournament.exportJSON(999);
-  const data2 = JSON.parse(json2);
-  expect(data2.metadata.roundCount).toBe(2);
-
-  // Export without index (should use last round)
-  const json3 = tournament.exportJSON();
-  const data3 = JSON.parse(json3);
-  expect(data3.metadata.roundCount).toBe(2);
-});
-
-test("should include players list in JSON export", ({ players }) => {
+test("should export backup JSON without UI preferences", ({ players }) => {
+  const settings = settingsFactory.create();
+  settings.setTheme("dark");
+  settings.enableWakeLock(true);
+  
   const tournament = runTournament(players.slice(0, 4));
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  expect(data.players).toBeDefined();
-  expect(data.players).toHaveLength(4);
-
-  // Verify each player has name and group
-  data.players.forEach((player: any) => {
-    expect(player).toHaveProperty("name");
-    expect(player).toHaveProperty("group");
-    expect(typeof player.name).toBe("string");
-    expect(typeof player.group).toBe("string");
-  });
-
-  // Verify all player names are present
-  const exportedNames = data.players.map((p: any) => p.name);
-  players.slice(0, 4).forEach((player) => {
-    expect(exportedNames).toContain(player.name);
-  });
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  // Should not include theme or wakeLock
+  expect(backup.settings).not.toHaveProperty("theme");
+  expect(backup.settings).not.toHaveProperty("wakeLock");
+  
+  // Should only include tournament-relevant settings
+  expect(backup.settings).toHaveProperty("courts");
+  expect(backup.settings).toHaveProperty("matchingSpec");
 });
 
-test("should sort players by group then name in JSON export", () => {
+test("should export backup JSON with inactive players tracked", ({ players }) => {
+  const settings = settingsFactory.create();
   const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Charlie", "Alice"], 0);
-  tournament.addPlayers(["Dave", "Bob"], 1);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  // Verify sorting: first by group (A, B), then by name
-  expect(data.players).toHaveLength(4);
-  expect(data.players[0].name).toBe("Alice");
-  expect(data.players[0].group).toBe("A");
-  expect(data.players[1].name).toBe("Charlie");
-  expect(data.players[1].group).toBe("A");
-  expect(data.players[2].name).toBe("Bob");
-  expect(data.players[2].group).toBe("B");
-  expect(data.players[3].name).toBe("Dave");
-  expect(data.players[3].group).toBe("B");
-});
-
-test("should use group letters in players list", () => {
-  const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Alice"], 0);
-  tournament.addPlayers(["Bob"], 1);
-  tournament.addPlayers(["Charlie"], 2);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  expect(data.players[0].group).toBe("A");
-  expect(data.players[1].group).toBe("B");
-  expect(data.players[2].group).toBe("C");
-});
-
-test("should include players section in text export", ({ players }) => {
-  const tournament = runTournament(players.slice(0, 4));
-
-  const text = tournament.exportText();
-
-  expect(text).toContain("PLAYERS");
-  expect(text).toContain("-------");
-
-  // All player names should be present
-  players.slice(0, 4).forEach((player) => {
-    expect(text).toContain(player.name);
-  });
-});
-
-test("should format players by group in text export with multiple groups", () => {
-  const tournament = tournamentFactory.create();
-  tournament.addPlayers(["Alice", "Bob"], 0);
-  tournament.addPlayers(["Charlie", "Dave"], 1);
-
-  const text = tournament.exportText();
-
-  expect(text).toContain("PLAYERS");
-  expect(text).toContain("Group A:");
-  expect(text).toContain("Group B:");
-  expect(text).toContain("Alice");
-  expect(text).toContain("Bob");
-  expect(text).toContain("Charlie");
-  expect(text).toContain("Dave");
-});
-
-test("should format players without group labels in text export with single group", ({ players }) => {
-  const tournament = runTournament(players.slice(0, 4));
-
-  const text = tournament.exportText();
-
-  expect(text).toContain("PLAYERS");
-  // Should NOT contain "Group A:" when there's only one group
-  expect(text).not.toContain("Group A:");
-
-  // But all player names should be present
-  players.slice(0, 4).forEach((player) => {
-    expect(text).toContain(player.name);
-  });
-});
-
-test("should not include active/inactive status in players list", ({ players }) => {
-  const tournament = runTournament(players.slice(0, 4));
-
-  // Deactivate a player
-  tournament.players()[0].activate(false);
-
-  const json = tournament.exportJSON();
-  const data = JSON.parse(json);
-
-  // Verify players list doesn't have active/inactive fields
-  data.players.forEach((player: any) => {
-    expect(player).not.toHaveProperty("active");
-    expect(player).not.toHaveProperty("inactive");
-    expect(player).not.toHaveProperty("isActive");
-  });
-
-  // But the player should still be in the list
-  const exportedNames = data.players.map((p: any) => p.name);
-  expect(exportedNames).toContain(players[0].name);
+  tournament.addPlayers([players[0].name, players[1].name, players[2].name, players[3].name], 0);
+  
+  // All players active for first round
+  const round1 = tournament.createRound(Americano, 1);
+  round1.matches[0].submitScore([11, 5]);
+  
+  // Deactivate one player before second round
+  tournament.players().find(p => p.name === players[0].name)!.activate(false);
+  
+  tournament.createRound(Americano, 1);
+  
+  const backupJson = tournament.exportBackup(settings);
+  const backup = JSON.parse(backupJson);
+  
+  // First round should not have inactive players
+  expect(backup.rounds[0].inactive).toHaveLength(0);
+  
+  // Second round should track the inactive player
+  expect(backup.rounds[1].inactive).toContain(players[0].name);
+  
+  // Players list should still include the inactive player
+  const inactivePlayers = backup.players.filter((p: any) => p.name === players[0].name);
+  expect(inactivePlayers).toHaveLength(1);
+  expect(inactivePlayers[0].active).toBe(false);
 });
 
 
