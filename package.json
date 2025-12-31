@@ -7,7 +7,9 @@
     "prebuild": "node scripts/generate-version.js",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "typecheck": "tsc",
+    "typecheck:watch": "tsc --watch"
   },
   "dependencies": {
     "@dicebear/collection": "^9.2.4",

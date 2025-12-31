@@ -67,7 +67,6 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
     const allStandings = selectedGroups && selectedGroups.length > 0
       ? (round ? round.standings(undefined) : [])
       : standings;
-    const totalRounds = roundIndex + 1; // rounds are 0-indexed
     const [
       groupWins,
       groupLosses,
@@ -187,7 +186,6 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
               : null,
             // Player rows
             ...standings.map((ranked) => {
-              const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
               return m("div.standings-row",
                 // Cell 1: Rank (right-aligned)
                 m("div.standings-cell.rank-cell",

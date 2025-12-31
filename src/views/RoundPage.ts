@@ -340,7 +340,6 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
         disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
-          const newRoundNumber = roundCount + 1;
           if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0) {
             showToast(`Missing scores`, "error");
           }

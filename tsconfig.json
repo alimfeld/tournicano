@@ -13,6 +13,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "jsx": "preserve",
-    "rewriteRelativeImportExtensions": true
-  }
+    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "vite.config.ts", "scripts/**/*"]
 }

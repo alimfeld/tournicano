@@ -1464,7 +1464,6 @@ test("should export correct per-group standings for specific round when new grou
   expect(Object.keys(round2Json.standings.byGroup).length).toBe(2);
 
   // Export latest (default) - should be same as Round 2
-  const latestText = tournament.exportText();
   const latestJson = JSON.parse(tournament.exportJSON());
   
   expect(latestJson.metadata.roundCount).toBe(2);
@@ -1721,7 +1720,6 @@ test("should prevent cross-pair violations over multiple rounds with 4 groups", 
     matches.forEach((match) => {
       match.forEach((team) => {
         team.forEach((player) => {
-          player.matchCount++;
           // Track partners
           const partner = team[0].id === player.id ? team[1] : team[0];
           const partnerRounds = player.partners.get(partner.id) || [];
@@ -1745,15 +1743,15 @@ test("matchingSpecEquals should return true for identical specs", () => {
     teamUp: {
       varietyFactor: 1,
       performanceFactor: 0.5,
-      performanceMode: "rank" as TeamUpPerformanceMode,
+      performanceMode: "rank" as unknown as TeamUpPerformanceMode,
       groupFactor: 0,
-      groupMode: "none" as TeamUpGroupMode,
+      groupMode: "none" as unknown as TeamUpGroupMode,
     },
     matchUp: {
       varietyFactor: 1,
       performanceFactor: 0.5,
       groupFactor: 0,
-      groupMode: "none" as MatchUpGroupMode,
+      groupMode: "none" as unknown as MatchUpGroupMode,
     },
   };
 
@@ -1761,15 +1759,15 @@ test("matchingSpecEquals should return true for identical specs", () => {
     teamUp: {
       varietyFactor: 1,
       performanceFactor: 0.5,
-      performanceMode: "rank" as TeamUpPerformanceMode,
+      performanceMode: "rank" as unknown as TeamUpPerformanceMode,
       groupFactor: 0,
-      groupMode: "none" as TeamUpGroupMode,
+      groupMode: "none" as unknown as TeamUpGroupMode,
     },
     matchUp: {
       varietyFactor: 1,
       performanceFactor: 0.5,
       groupFactor: 0,
-      groupMode: "none" as MatchUpGroupMode,
+      groupMode: "none" as unknown as MatchUpGroupMode,
     },
   };
 
@@ -1809,7 +1807,7 @@ test("matchingSpecEquals should return false when teamUp.performanceMode differs
   const spec1: MatchingSpec = { ...Mexicano };
   const spec2: MatchingSpec = {
     ...Mexicano,
-    teamUp: { ...Mexicano.teamUp, performanceMode: "rank" as TeamUpPerformanceMode },
+    teamUp: { ...Mexicano.teamUp, performanceMode: "rank" as unknown as TeamUpPerformanceMode },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -1827,7 +1825,7 @@ test("matchingSpecEquals should return false when teamUp.groupMode differs", () 
   const spec1: MatchingSpec = { ...AmericanoMixed };
   const spec2: MatchingSpec = {
     ...AmericanoMixed,
-    teamUp: { ...AmericanoMixed.teamUp, groupMode: "same" as TeamUpGroupMode },
+    teamUp: { ...AmericanoMixed.teamUp, groupMode: "same" as unknown as TeamUpGroupMode },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -1863,7 +1861,7 @@ test("matchingSpecEquals should return false when matchUp.groupMode differs", ()
   const spec1: MatchingSpec = { ...GroupBattle };
   const spec2: MatchingSpec = {
     ...GroupBattle,
-    matchUp: { ...GroupBattle.matchUp, groupMode: "mixed" as MatchUpGroupMode },
+    matchUp: { ...GroupBattle.matchUp, groupMode: "mixed" as unknown as MatchUpGroupMode },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -1892,7 +1890,7 @@ test("should balance 2 groups evenly", ({ players }) => {
   for (let i = 0; i < 4; i++) players[i].group = 0;
   for (let i = 4; i < 8; i++) players[i].group = 1;
 
-  const [matches, paused] = matching(players.slice(0, 8), spec, 2);
+  const [matches, _paused] = matching(players.slice(0, 8), spec, 2);
 
   expect(matches).toHaveLength(2);
   // Count players per group in competing
@@ -1944,7 +1942,7 @@ test("should balance 3 groups with multiple of 4", ({ players }) => {
   expect(paused).toHaveLength(24); // All players paused
 });
 
-test("should balance 4 groups", ({ players }) => {
+test("should balance 4 groups", ({ players: _players }) => {
   const allPlayers = [];
   for (let i = 0; i < 16; i++) {
     const p = new Player(`${i}`, `Player${i}`);
@@ -1953,7 +1951,7 @@ test("should balance 4 groups", ({ players }) => {
   }
 
   const spec: MatchingSpec = { ...Americano, balanceGroups: true };
-  const [matches, paused] = matching(allPlayers, spec, 4);
+  const [matches, _paused] = matching(allPlayers, spec, 4);
 
   expect(matches).toHaveLength(4);
   // Each group should have 4 competing
@@ -1970,7 +1968,7 @@ test("should respect maxMatches constraint with balancing", ({ players }) => {
 
   // With 8 players and 2 groups, could do 2 matches
   // But limit to 1 match
-  const [matches, paused] = matching(players.slice(0, 8), spec, 1);
+  const [matches, _paused] = matching(players.slice(0, 8), spec, 1);
 
   expect(matches).toHaveLength(1);
   const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
@@ -2007,7 +2005,7 @@ test("should select by playRatio within each group", ({ players }) => {
   players[6].matchCount = 0; // Lower ratio - should play
   players[7].matchCount = 1;
 
-  const [matches, paused] = matching(players.slice(0, 8), spec, 1);
+  const [matches, _paused] = matching(players.slice(0, 8), spec, 1);
 
   const competing = matches.flatMap(m => m.flat());
   // Should include players with lower playRatio
@@ -2022,7 +2020,7 @@ test("should handle non-sequential group numbers", ({ players }) => {
   for (let i = 0; i < 4; i++) players[i].group = 1; // Group 1
   for (let i = 4; i < 8; i++) players[i].group = 5; // Group 5
 
-  const [matches, paused] = matching(players.slice(0, 8), spec, 2);
+  const [matches, _paused] = matching(players.slice(0, 8), spec, 2);
 
   expect(matches).toHaveLength(2);
   const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);
@@ -2035,7 +2033,7 @@ test("GroupBattle mode should balance groups", ({ players }) => {
   for (let i = 0; i < 5; i++) players[i].group = 0;
   for (let i = 5; i < 10; i++) players[i].group = 1;
 
-  const [matches, paused] = matching(players, GroupBattle, 2);
+  const [matches, _paused] = matching(players, GroupBattle, 2);
 
   // Should balance despite uneven group sizes
   const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
@@ -2064,7 +2062,7 @@ test("AmericanoMixedBalanced should balance groups in practice", ({ players }) =
   for (let i = 0; i < 6; i++) players[i].group = 0;
   for (let i = 6; i < 10; i++) players[i].group = 1;
 
-  const [matches, paused] = matching(players, AmericanoMixedBalanced, 2);
+  const [matches, _paused] = matching(players, AmericanoMixedBalanced, 2);
 
   const competingGroup0 = matches.flatMap(m => m.flat()).filter(p => p.group === 0);
   const competingGroup1 = matches.flatMap(m => m.flat()).filter(p => p.group === 1);

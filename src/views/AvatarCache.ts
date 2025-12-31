@@ -22,7 +22,7 @@ export const getAvatar = (playerName: string): string => {
   if (!avatarCache.has(playerName)) {
     // Evict oldest entry if cache is at capacity
     if (avatarCache.size >= MAX_CACHE_SIZE) {
-      const firstKey = avatarCache.keys().next().value;
+      const firstKey = avatarCache.keys().next().value as string;
       avatarCache.delete(firstKey);
     }
     
