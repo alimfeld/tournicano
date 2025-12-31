@@ -645,3 +645,136 @@ test("should use singular form for 1 player and 1 round", () => {
   expect(result.success).toBe(true);
   expect(result.summary).toBe("Imported 1 player and 0 rounds");
 });
+
+// ==========================================
+// 6. ACCUMULATED STATS TESTS
+// ==========================================
+
+test("STATS: should preserve matchCount across multiple rounds", ({ players, scores }) => {
+  const settings1 = settingsFactory.create();
+  const tournament1 = runTournament(players.slice(0, 4), [scores[0], scores[1]], Americano);
+
+  // Verify matchCount in original tournament
+  const lastRound1 = tournament1.rounds[tournament1.rounds.length - 1];
+  const player1 = lastRound1.matches[0].teamA.player1;
+  expect(player1.matchCount).toBe(2); // Played in 2 rounds
+
+  // Export and import
+  const export1 = tournament1.exportBackup(settings1);
+  const tournament2 = tournamentFactory.create();
+  const settings2 = settingsFactory.create();
+  tournament2.importBackup(export1, settings2);
+
+  // Verify matchCount is preserved after import
+  const lastRound2 = tournament2.rounds[tournament2.rounds.length - 1];
+  const player2 = lastRound2.matches[0].teamA.player1;
+  expect(player2.matchCount).toBe(2); // Should still be 2
+});
+
+test("STATS: should preserve pauseCount across multiple rounds", ({ players }) => {
+  const settings1 = settingsFactory.create();
+  const tournament1 = tournamentFactory.create();
+  
+  // Add 5 players so someone gets paused
+  tournament1.addPlayers(players.slice(0, 5).map(p => p.name), 0);
+  
+  // Create 3 rounds (with 1 court, 4 players play, 1 pauses each round)
+  const round1 = tournament1.createRound(Americano, 1);
+  const round2 = tournament1.createRound(Americano, 1);
+  const round3 = tournament1.createRound(Americano, 1);
+  
+  round1.matches[0].submitScore([11, 0]);
+  round2.matches[0].submitScore([11, 0]);
+  // Round 3 has no scores yet
+  
+  // Find a player who paused
+  const pausedPlayer1 = round3.paused[0];
+  
+  if (pausedPlayer1 && pausedPlayer1.pauseCount > 0) {
+    const originalPauseCount = pausedPlayer1.pauseCount;
+    
+    // Export and import
+    const export1 = tournament1.exportBackup(settings1);
+    const tournament2 = tournamentFactory.create();
+    const settings2 = settingsFactory.create();
+    tournament2.importBackup(export1, settings2);
+    
+    // Find the same player after import
+    const round3Import = tournament2.rounds[2];
+    const pausedPlayer2 = round3Import.paused.find(p => p.name === pausedPlayer1.name);
+    
+    expect(pausedPlayer2?.pauseCount).toBe(originalPauseCount);
+  }
+});
+
+test("STATS: should preserve partner history across rounds", ({ players, scores }) => {
+  const settings1 = settingsFactory.create();
+  const tournament1 = runTournament(players.slice(0, 4), [scores[0], scores[1]], Americano);
+
+  // Get partner history from original tournament
+  const lastRound1 = tournament1.rounds[tournament1.rounds.length - 1];
+  const player1 = lastRound1.matches[0].teamA.player1;
+  const partnerCount1 = player1.partners.size;
+  
+  expect(partnerCount1).toBeGreaterThan(0); // Should have partners
+
+  // Export and import
+  const export1 = tournament1.exportBackup(settings1);
+  const tournament2 = tournamentFactory.create();
+  const settings2 = settingsFactory.create();
+  tournament2.importBackup(export1, settings2);
+
+  // Verify partner history is preserved
+  const lastRound2 = tournament2.rounds[tournament2.rounds.length - 1];
+  const player2 = lastRound2.matches[0].teamA.player1;
+  expect(player2.partners.size).toBe(partnerCount1);
+});
+
+test("STATS: should preserve opponent history across rounds", ({ players, scores }) => {
+  const settings1 = settingsFactory.create();
+  const tournament1 = runTournament(players.slice(0, 4), [scores[0], scores[1]], Americano);
+
+  // Get opponent history from original tournament
+  const lastRound1 = tournament1.rounds[tournament1.rounds.length - 1];
+  const player1 = lastRound1.matches[0].teamA.player1;
+  const opponentCount1 = player1.opponents.size;
+  
+  expect(opponentCount1).toBeGreaterThan(0); // Should have opponents
+
+  // Export and import
+  const export1 = tournament1.exportBackup(settings1);
+  const tournament2 = tournamentFactory.create();
+  const settings2 = settingsFactory.create();
+  tournament2.importBackup(export1, settings2);
+
+  // Verify opponent history is preserved
+  const lastRound2 = tournament2.rounds[tournament2.rounds.length - 1];
+  const player2 = lastRound2.matches[0].teamA.player1;
+  expect(player2.opponents.size).toBe(opponentCount1);
+});
+
+test("STATS: should accumulate stats when last round has no scores", ({ players, scores }) => {
+  const settings1 = settingsFactory.create();
+  const tournament1 = runTournament(players.slice(0, 4), [scores[0]], Americano);
+  
+  // Create another round WITHOUT scoring it
+  tournament1.createRound(Americano);
+  
+  // Get stats from original tournament's last round
+  const lastRound1 = tournament1.rounds[tournament1.rounds.length - 1];
+  const player1 = lastRound1.matches[0].teamA.player1;
+  expect(player1.matchCount).toBe(2); // Played in both rounds
+
+  // Export and import
+  const export1 = tournament1.exportBackup(settings1);
+  const tournament2 = tournamentFactory.create();
+  const settings2 = settingsFactory.create();
+  tournament2.importBackup(export1, settings2);
+
+  // Verify stats are accumulated even though last round has no scores
+  const lastRound2 = tournament2.rounds[tournament2.rounds.length - 1];
+  const player2 = lastRound2.matches[0].teamA.player1;
+  expect(player2.matchCount).toBe(2); // Should have accumulated matchCount from both rounds
+  expect(player2.partners.size).toBeGreaterThan(0); // Should have partner history
+  expect(player2.opponents.size).toBeGreaterThan(0); // Should have opponent history
+});

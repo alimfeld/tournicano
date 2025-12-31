@@ -925,7 +925,14 @@ class TournamentImpl implements Mutable<Tournament> {
     for (let roundIndex = 0; roundIndex < backup.rounds.length; roundIndex++) {
       const roundData = backup.rounds[roundIndex];
 
-      // Build list of all participating players for this round
+      // Get participating players from previous round (with accumulated stats)
+      // This is critical for preserving matchCount, pauseCount, partners, opponents
+      const previousRound = this.rounds[roundIndex - 1];
+      const participating: ParticipatingPlayerImpl[] = previousRound
+        ? Array.from(previousRound.playerMap.values())
+        : [];
+
+      // Build set of all participating player IDs for this round
       const participatingIds = new Set<PlayerId>();
       for (const matchData of roundData.matches) {
         participatingIds.add(playerNameToId.get(matchData.teamA[0])!);
@@ -940,10 +947,12 @@ class TournamentImpl implements Mutable<Tournament> {
         participatingIds.add(playerNameToId.get(playerName)!);
       }
 
-      // Create ParticipatingPlayerImpl instances for all participating players
-      const participating = Array.from(participatingIds).map(
-        id => new ParticipatingPlayerImpl(this, id)
-      );
+      // Add any new players appearing in this round for the first time
+      for (const id of participatingIds) {
+        if (!participating.find(p => p.id === id)) {
+          participating.push(new ParticipatingPlayerImpl(this, id));
+        }
+      }
 
       // Build matched pairs
       const matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][] = roundData.matches.map(matchData => [
