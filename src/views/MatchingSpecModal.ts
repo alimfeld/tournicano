@@ -308,6 +308,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
             m("label",
               m("input", {
                 type: "checkbox",
+                id: "balance-groups",
                 name: "balance-groups",
                 checked: state.balanceGroups,
                 onchange: (e: Event) => {

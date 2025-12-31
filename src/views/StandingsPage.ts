@@ -95,10 +95,11 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
     };
 
     // Build actions for header overflow menu
-    const actions: HeaderAction[] = tournament.rounds.length > 0 ? [
+    const actions: HeaderAction[] = [
       {
         icon: "⤴",
         label: "Share Standings",
+        disabled: standings.length === 0,
         onclick: async () => {
           const text = tournament.exportStandingsText(roundIndex, selectedGroups);
 
@@ -117,7 +118,7 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
           }
         },
       },
-    ] : [];
+    ];
 
     return [
       m(Header, {

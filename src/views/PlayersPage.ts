@@ -258,6 +258,8 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
                 m("input", {
                   type: "checkbox",
                   role: "switch",
+                  id: "select-all-players",
+                  name: "select-all-players",
                   checked: sortedPlayers.every(p => p.active),
                   oncreate: (vnode: m.VnodeDOM) => {
                     const filteredActiveCount = sortedPlayers.filter(p => p.active).length;

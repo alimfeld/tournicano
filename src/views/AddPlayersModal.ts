@@ -120,6 +120,8 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
 
         m("form", { onsubmit: (e: SubmitEvent) => e.preventDefault() },
           m("textarea", {
+            id: "add-players-textarea",
+            name: "players",
             rows: 6,
             placeholder: "Alice, Beth, Carol\nDave, Eric, Frank",
             autocapitalize: "words",

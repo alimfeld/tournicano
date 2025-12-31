@@ -52,12 +52,9 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
       state.openConfirmationActionId = null;
     };
 
-    // Filter out disabled actions
-    const enabledActions = hasActions ? actions.filter((action) => !action.disabled) : [];
-
     return [
       // Confirmation dialogs (conditionally rendered)
-      ...enabledActions
+      ...(hasActions ? actions : [])
         .map((action) => {
           if (!action.confirmation) return null;
 
@@ -109,7 +106,7 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
         m("h1", title),
         hasActions
           ? m("div.actions",
-            enabledActions.map((action) => {
+            actions.map((action) => {
               return m("button.secondary", {
                 class: action.pressed ? "pressed" : "outline",
                 "aria-label": action.label,

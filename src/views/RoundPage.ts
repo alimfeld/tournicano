@@ -334,7 +334,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                 }
           )],
       ),
-      tournament.rounds.length > 0 ? m(FAB, {
+      m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
@@ -346,8 +346,8 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);
         },
-      }) : null,
-      tournament.rounds.length > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
+      }),
+      m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }),
       !fullscreen ? m(Nav, { nav, currentPage }) : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {

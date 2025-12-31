@@ -81,6 +81,7 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
         m("h2", "Courts"),
         m("input.courts", {
           type: "number",
+          id: "courts",
           name: "courts",
           inputmode: "numeric",
           value: settings.courts,
