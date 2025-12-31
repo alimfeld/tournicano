@@ -15,6 +15,7 @@ body>header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-block: calc(var(--pico-block-spacing-vertical) / 2);
 }
 
 /* Heading always left-aligned */
