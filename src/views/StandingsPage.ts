@@ -158,7 +158,7 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
             })
           )
           : null,
-        standings.length > 0
+        allStandings.length > 0
           ? m("div.standings-grid", [
             // Group total row (if filtered)
             showGroupFilter && standingsFilters.groups.length > 0

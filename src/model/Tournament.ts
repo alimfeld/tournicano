@@ -106,6 +106,7 @@ export interface Tournament {
   addListener(listener: TournamentListener): void;
   exportStandingsText(roundIndex: number, groups?: number[]): string;
   exportBackup(settings: Settings): string;
+  importBackup(backupJson: string, settings: Settings): { success: boolean; error?: string; summary?: string };
 }
 
 export interface TournamentFactory {

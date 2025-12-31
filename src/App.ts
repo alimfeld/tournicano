@@ -283,6 +283,7 @@ export const App = () => {
             checkingForUpdates: state.pwa.checkingForUpdates,
             nav,
             currentPage: state.page,
+            changeRound,
           });
           break;
         }

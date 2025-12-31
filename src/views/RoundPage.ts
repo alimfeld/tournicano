@@ -183,7 +183,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
           confirmation: {
             title: `🚨 Delete Round ${roundCount}?`,
             description: [
-              "This will delete the last round ${roundCount} and all its matches.",
+              `This will delete the last round (round ${roundCount}) and all its matches.`,
               "This action cannot be undone!"
             ],
             confirmButtonText: "Delete"
