@@ -196,7 +196,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
           showToast("Tournament restarted", "success");
         },
         confirmation: {
-          title: "🚨 Restart the Tournament?",
+          title: "🚨 Restart Tournament?",
           description: [
             "This will delete all rounds, but keep all players.",
             "This action cannot be undone!"
