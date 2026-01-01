@@ -53,7 +53,7 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
     const toggleParticipatingFilter = () => {
       changePlayerFilters({
         ...playerFilters,
-        participating: !playerFilters.participating
+        participating: playerFilters.participating ? undefined : true
       });
     };
 
