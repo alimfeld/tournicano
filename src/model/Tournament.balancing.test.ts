@@ -7,10 +7,9 @@ import {
   MatchingSpec,
   MatchUpGroupMode,
   TeamUpGroupMode,
-  matching,
-  partitionPlayers,
   matchingSpecEquals,
-} from "./Tournament.matching.ts";
+} from "./MatchingSpec.ts";
+import { matching, partitionPlayers } from "./Tournament.matching.ts";
 
 test("should balance groups with single group", ({ players }) => {
   const spec: MatchingSpec = { ...Americano, balanceGroups: true };

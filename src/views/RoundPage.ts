@@ -6,7 +6,7 @@ import { Settings } from "../model/Settings.ts";
 import { MatchSection } from "./MatchSection.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
-import { getMatchingSpecName } from "../model/Tournament.matching.ts";
+import { getMatchingSpecName } from "../model/MatchingSpec.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
 import { ToggleFullscreenButton } from "./ToggleFullscreenButton.ts";

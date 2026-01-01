@@ -14,7 +14,7 @@ import {
   GroupBattle,
   GroupBattleMixed,
   AmericanoMixed,
-} from "./Tournament.matching.ts";
+} from "./MatchingSpec.ts";
 
 test("should serialize tournament", ({ players, scores }) => {
   const tournament = runTournament(players, scores);

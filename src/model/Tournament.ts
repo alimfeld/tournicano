@@ -1,4 +1,4 @@
-import { MatchingSpec } from "./Tournament.matching";
+import { MatchingSpec } from "./MatchingSpec.ts";
 import { Settings } from "./Settings.ts";
 import { OperationResult } from "./OperationResult.ts";
 

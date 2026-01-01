@@ -1,4 +1,4 @@
-import { MatchingSpec } from "./Tournament.matching";
+import { MatchingSpec } from "./MatchingSpec.ts";
 
 export type Theme = "auto" | "dark" | "light";
 

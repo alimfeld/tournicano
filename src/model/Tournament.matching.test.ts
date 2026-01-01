@@ -11,8 +11,8 @@ import {
   TeamUpGroupMode,
   TeamUpPerformanceMode,
   Tournicano,
-  matching,
-} from "./Tournament.matching.ts";
+} from "./MatchingSpec.ts";
+import { matching } from "./Tournament.matching.ts";
 
 test("should honor play ratio for paused", ({ players }) => {
   players[3].matchCount = 1;

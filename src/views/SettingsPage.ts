@@ -11,7 +11,7 @@ import {
   Mexicano,
   Tournicano,
   isMatchingSpecMode,
-} from "../model/Tournament.matching.ts";
+} from "../model/MatchingSpec.ts";
 import { MatchingSpecModal } from "./MatchingSpecModal.ts";
 import { BUILD_VERSION } from "../version.ts";
 import { Header } from "./Header.ts";

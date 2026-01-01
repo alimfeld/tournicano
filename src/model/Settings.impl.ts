@@ -6,7 +6,7 @@ import {
   SettingsListener,
   Theme,
 } from "./Settings";
-import { Americano, MatchingSpec } from "./Tournament.matching";
+import { Americano, MatchingSpec } from "./MatchingSpec.ts";
 
 export const settingsFactory: SettingsFactory = {
   create(serialized?: string) {

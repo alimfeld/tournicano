@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
 import { test as fixtureTest } from "./Tournament.test.helpers.ts";
 import { validatePlayerName, Tournament } from "./Tournament.ts";
-import { AmericanoMixed, Mexicano, Americano } from "./Tournament.matching.ts";
+import { AmericanoMixed, Mexicano, Americano } from "./MatchingSpec.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
 
 // Tests for validatePlayerName function
