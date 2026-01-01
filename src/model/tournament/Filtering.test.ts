@@ -69,8 +69,12 @@ test("getFilteredPlayers with active filter", () => {
   expect(inactive).toHaveLength(1);
   expect(inactive.every(p => !p.active)).toBe(true);
   
-  const both = tournament.getFilteredPlayers({ active: "both" });
-  expect(both).toHaveLength(3);
+  const all = tournament.getFilteredPlayers({ active: undefined });
+  expect(all).toHaveLength(3);
+  
+  // Also test with empty filter object
+  const allWithEmptyFilter = tournament.getFilteredPlayers({});
+  expect(allWithEmptyFilter).toHaveLength(3);
 });
 
 test("getFilteredPlayers with combined filters", () => {

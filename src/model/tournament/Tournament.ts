@@ -91,7 +91,7 @@ export interface PlayerFilter {
   search?: string;
   participating?: boolean;
   groups?: number[];
-  active?: "active" | "inactive" | "both";
+  active?: "active" | "inactive";  // undefined means show all players
 }
 
 export type PlayerSortBy = "name" | "group";

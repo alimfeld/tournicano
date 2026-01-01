@@ -5,7 +5,7 @@ import { SettingsPage } from "./views/SettingsPage.ts";
 import { PlayersPage } from "./views/PlayersPage.ts";
 import { RoundPage } from "./views/RoundPage.ts";
 import { StandingsPage } from "./views/StandingsPage.ts";
-import { Tournament, TournamentListener } from "./model/tournament/Tournament.ts";
+import { Tournament, TournamentListener, PlayerFilter } from "./model/tournament/Tournament.ts";
 import { Settings, SettingsListener, Theme } from "./model/settings/Settings.ts";
 import { tournamentFactory } from "./model/tournament/Tournament.impl.ts";
 import { settingsFactory } from "./model/settings/Settings.impl.ts";
@@ -25,13 +25,6 @@ export enum Page {
   PLAYERS,
   ROUNDS,
   STANDINGS,
-}
-
-export interface PlayerFilters {
-  search: string;
-  participatingOnly: boolean;
-  groups: number[]; // empty array means all groups
-  activeFilter?: "active" | "inactive"; // undefined means show all
 }
 
 export interface StandingsFilters {
@@ -59,7 +52,7 @@ interface State {
   // === Session Filters (in-memory, resets on app restart) ===
   filters: {
     standings: StandingsFilters;
-    players: PlayerFilters;
+    players: PlayerFilter;
   };
 
   // === UI State (ephemeral) ===
@@ -100,12 +93,7 @@ const createState: () => State = () => {
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
     filters: {
       standings: { groups: [] },
-      players: {
-        search: "",
-        participatingOnly: false,
-        groups: [],
-        activeFilter: undefined
-      }
+      players: {}
     },
     toast: {
       message: null,
@@ -261,7 +249,7 @@ export const App = () => {
   const changeStandingsFilters = (filters: StandingsFilters) => {
     state.filters.standings = filters;
   };
-  const changePlayerFilters = (filters: PlayerFilters) => {
+  const changePlayerFilters = (filters: PlayerFilter) => {
     state.filters.players = filters;
   };
 

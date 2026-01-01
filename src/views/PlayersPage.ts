@@ -2,7 +2,6 @@ import m from "mithril";
 import "./PlayersPage.css";
 import { Tournament, Player, PlayerFilter } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
-import { PlayerFilters } from "../App.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header } from "./Header.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
@@ -16,8 +15,8 @@ import { AddPlayersModal } from "./AddPlayersModal.ts";
 export interface PlayersAttrs {
   tournament: Tournament;
   showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
-  playerFilters: PlayerFilters;
-  changePlayerFilters: (filters: PlayerFilters) => void;
+  playerFilters: PlayerFilter;
+  changePlayerFilters: (filters: PlayerFilter) => void;
   nav: (page: Page) => void;
   currentPage: Page;
 }
@@ -40,16 +39,8 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
       state.playerView = undefined;
     };
 
-    // Convert app PlayerFilters to model PlayerFilter
-    const modelFilter: PlayerFilter = {
-      search: playerFilters.search || undefined,
-      participating: playerFilters.participatingOnly ? true : undefined,
-      groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
-      active: playerFilters.activeFilter || "both",
-    };
-
     // Get filtered and sorted players from model
-    const sortedPlayers = tournament.getFilteredPlayers(modelFilter, "name");
+    const sortedPlayers = tournament.getFilteredPlayers(playerFilters, "name");
 
     // Get all counts from model
     const allCounts = tournament.getPlayerCounts();
@@ -63,14 +54,14 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     // Count active filters
     const activeFilterCount =
       (playerFilters.search ? 1 : 0) +
-      (playerFilters.participatingOnly ? 1 : 0) +
-      (playerFilters.activeFilter ? 1 : 0) +
-      playerFilters.groups.length;
+      (playerFilters.participating ? 1 : 0) +
+      (playerFilters.active ? 1 : 0) +
+      (playerFilters.groups?.length || 0);
 
     const toggleParticipatingFilter = () => {
       changePlayerFilters({
         ...playerFilters,
-        participatingOnly: !playerFilters.participatingOnly
+        participating: !playerFilters.participating
       });
     };
 
@@ -114,7 +105,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     // Delete all players action
     const deleteAllPlayersAction = () => {
       tournament.reset();
-      changePlayerFilters({ search: "", participatingOnly: false, groups: [], activeFilter: undefined });
+      changePlayerFilters({});
       showToast("All players deleted", "success");
     };
 
@@ -159,7 +150,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
             id: "player-search",
             name: "player-search",
             placeholder: "Search players...",
-            value: playerFilters.search,
+            value: playerFilters.search || "",
             oninput: (e: Event) => {
               changePlayerFilters({
                 ...playerFilters,
@@ -173,34 +164,34 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
             // Group filter (first)
             tournament.groups.length > 1 ? m(GroupFilter, {
               groups: tournament.groups,
-              selectedGroups: playerFilters.groups,
+              selectedGroups: playerFilters.groups || [],
               onGroupsChange: (groups) => changePlayerFilters({ ...playerFilters, groups }),
               compact: true,
               getGroupCount: (g) => {
                 const groupFilter: PlayerFilter = {
                   groups: [g],
-                  participating: playerFilters.participatingOnly ? true : undefined,
-                  active: playerFilters.activeFilter || "both",
+                  participating: playerFilters.participating,
+                  active: playerFilters.active,
                 };
                 return tournament.getPlayerCounts(groupFilter).total;
               }
             }) : null,
             // Active/Inactive filter (second)
             m(ActiveFilter, {
-              selectedFilter: playerFilters.activeFilter,
-              onFilterChange: (filter) => changePlayerFilters({ ...playerFilters, activeFilter: filter }),
+              selectedFilter: playerFilters.active,
+              onFilterChange: (filter) => changePlayerFilters({ ...playerFilters, active: filter }),
               getActiveCount: () => {
                 const activeFilter: PlayerFilter = {
-                  groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
-                  participating: playerFilters.participatingOnly ? true : undefined,
+                  groups: playerFilters.groups,
+                  participating: playerFilters.participating,
                   active: "active",
                 };
                 return tournament.getPlayerCounts(activeFilter).total;
               },
               getInactiveCount: () => {
                 const inactiveFilter: PlayerFilter = {
-                  groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
-                  participating: playerFilters.participatingOnly ? true : undefined,
+                  groups: playerFilters.groups,
+                  participating: playerFilters.participating,
                   active: "inactive",
                 };
                 return tournament.getPlayerCounts(inactiveFilter).total;
@@ -208,11 +199,11 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
             }),
             // Participating filter (third) - only show if there are both participating and non-participating players
             participatingCount > 0 && participatingCount < totalPlayers ? m("button", {
-              class: playerFilters.participatingOnly ? "" : "outline",
+              class: playerFilters.participating ? "" : "outline",
               onclick: toggleParticipatingFilter
             }, `🚀 (${tournament.getPlayerCounts({
-              groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
-              active: playerFilters.activeFilter || "both",
+              groups: playerFilters.groups,
+              active: playerFilters.active,
               participating: true,
             }).total})`) : null
           )
@@ -296,7 +287,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
               message: m("p", "Try different filters or search terms, or clear all filters to see everyone."),
               action: {
                 label: "Clear All Filters",
-                onclick: () => changePlayerFilters({ search: "", participatingOnly: false, groups: [], activeFilter: undefined })
+                onclick: () => changePlayerFilters({})
               }
             })
             : m(HelpCard, {

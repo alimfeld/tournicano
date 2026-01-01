@@ -218,7 +218,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
           return false;
         }
 
-        // Active filter
+        // Active filter (undefined means show all)
         if (filter.active === "active" && !player.active) return false;
         if (filter.active === "inactive" && player.active) return false;
 
