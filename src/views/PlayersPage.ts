@@ -7,6 +7,7 @@ import { HelpCard } from "./HelpCard.ts";
 import { Header } from "./Header.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { GroupFilter } from "./GroupFilter.ts";
+import { ActiveFilter } from "./ActiveFilter.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
 import { PlayerModal } from "./PlayerModal.ts";
@@ -66,6 +67,10 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
         return false;
       }
 
+      // Active filter
+      if (playerFilters.activeFilter === "active" && !player.active) return false;
+      if (playerFilters.activeFilter === "inactive" && player.active) return false;
+
       return true;
     });
 
@@ -88,6 +93,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     const activeFilterCount =
       (playerFilters.search ? 1 : 0) +
       (playerFilters.participatingOnly ? 1 : 0) +
+      (playerFilters.activeFilter ? 1 : 0) +
       playerFilters.groups.length;
 
     const toggleParticipatingFilter = () => {
@@ -161,7 +167,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
     // Delete all players action
     const deleteAllPlayersAction = () => {
       tournament.reset();
-      changePlayerFilters({ search: "", participatingOnly: false, groups: [] });
+      changePlayerFilters({ search: "", participatingOnly: false, groups: [], activeFilter: undefined });
       showToast("All players deleted", "success");
     };
 
@@ -217,7 +223,54 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
 
           // Filter pills
           m("section.filter-section",
-            // Only show participating filter if there are both participating and non-participating players
+            // Group filter (first)
+            tournament.groups.length > 1 ? m(GroupFilter, {
+              groups: tournament.groups,
+              selectedGroups: playerFilters.groups,
+              onGroupsChange: (groups) => changePlayerFilters({ ...playerFilters, groups }),
+              compact: true,
+              getGroupCount: (g) => {
+                const groupPlayers = tournament.players(g);
+                return groupPlayers.filter(p => {
+                  // Apply participating filter if active
+                  if (playerFilters.participatingOnly && !p.inAnyRound()) {
+                    return false;
+                  }
+                  // Apply active filter if active
+                  if (playerFilters.activeFilter === "active" && !p.active) return false;
+                  if (playerFilters.activeFilter === "inactive" && p.active) return false;
+                  return true;
+                }).length;
+              }
+            }) : null,
+            // Active/Inactive filter (second)
+            m(ActiveFilter, {
+              selectedFilter: playerFilters.activeFilter,
+              onFilterChange: (filter) => changePlayerFilters({ ...playerFilters, activeFilter: filter }),
+              getActiveCount: () => allPlayers.filter(p => {
+                // Apply group filters if active
+                if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(p.group)) {
+                  return false;
+                }
+                // Apply participating filter if active
+                if (playerFilters.participatingOnly && !p.inAnyRound()) {
+                  return false;
+                }
+                return p.active;
+              }).length,
+              getInactiveCount: () => allPlayers.filter(p => {
+                // Apply group filters if active
+                if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(p.group)) {
+                  return false;
+                }
+                // Apply participating filter if active
+                if (playerFilters.participatingOnly && !p.inAnyRound()) {
+                  return false;
+                }
+                return !p.active;
+              }).length
+            }),
+            // Participating filter (third) - only show if there are both participating and non-participating players
             participatingCount > 0 && participatingCount < totalPlayers ? m("button", {
               class: playerFilters.participatingOnly ? "" : "outline",
               onclick: toggleParticipatingFilter
@@ -226,23 +279,11 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
               if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(p.group)) {
                 return false;
               }
+              // Apply active filter if active
+              if (playerFilters.activeFilter === "active" && !p.active) return false;
+              if (playerFilters.activeFilter === "inactive" && p.active) return false;
               return p.inAnyRound();
-            }).length})`) : null,
-            tournament.groups.length > 1 ? m(GroupFilter, {
-              groups: tournament.groups,
-              selectedGroups: playerFilters.groups,
-              onGroupsChange: (groups) => changePlayerFilters({ ...playerFilters, groups }),
-              getGroupCount: (g) => {
-                const groupPlayers = tournament.players(g);
-                return groupPlayers.filter(p => {
-                  // Apply participating filter if active
-                  if (playerFilters.participatingOnly && !p.inAnyRound()) {
-                    return false;
-                  }
-                  return true;
-                }).length;
-              }
-            }) : null
+            }).length})`) : null
           )
         ] : null,
 
@@ -324,7 +365,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
               message: m("p", "Try different filters or search terms, or clear all filters to see everyone."),
               action: {
                 label: "Clear All Filters",
-                onclick: () => changePlayerFilters({ search: "", participatingOnly: false, groups: [] })
+                onclick: () => changePlayerFilters({ search: "", participatingOnly: false, groups: [], activeFilter: undefined })
               }
             })
             : m(HelpCard, {

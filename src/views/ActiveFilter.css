@@ -1,0 +1,9 @@
+/* Active filter button group - overrides for Pico CSS [role="group"] */
+div.active-filter {
+  width: auto;
+  margin-bottom: 0;
+}
+
+div.active-filter button {
+  --pico-form-element-spacing-horizontal: var(--pico-spacing);
+}

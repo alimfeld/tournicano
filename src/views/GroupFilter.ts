@@ -7,6 +7,7 @@ export interface GroupFilterAttrs {
   selectedGroups: number[];
   onGroupsChange: (groups: number[]) => void;
   getGroupCount: (group: number) => number;
+  compact?: boolean; // If true, show only symbols without letters (A, B, C, D)
 }
 
 export const GroupFilter: m.Component<GroupFilterAttrs> = {
@@ -54,7 +55,7 @@ export const GroupFilter: m.Component<GroupFilterAttrs> = {
           class: selectedGroups.includes(g) ? "" : "outline",
           onclick: () => toggleGroup(g)
         }, [
-          m(GroupSymbol, { group: g, neutral: true }),
+          m(GroupSymbol, { group: g, neutral: true, compact: attrs.compact }),
           ` (${getGroupCount(g)})`
         ])
       )

@@ -31,6 +31,7 @@ export interface PlayerFilters {
   search: string;
   participatingOnly: boolean;
   groups: number[]; // empty array means all groups
+  activeFilter?: "active" | "inactive"; // undefined means show all
 }
 
 export interface StandingsFilters {
@@ -102,7 +103,8 @@ const createState: () => State = () => {
       players: {
         search: "",
         participatingOnly: false,
-        groups: []
+        groups: [],
+        activeFilter: undefined
       }
     },
     toast: {

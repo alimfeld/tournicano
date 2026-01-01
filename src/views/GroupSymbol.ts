@@ -4,6 +4,7 @@ import "./GroupSymbol.css";
 export interface GroupSymbolAttrs {
   group: number; // 0-3 (maps to ♠♥♦♣)
   neutral?: boolean; // If true, inherit color from parent instead of using suit colors
+  compact?: boolean; // If true, show only symbol without letter (A, B, C, D)
 }
 
 export const getGroupSymbol = (index: number): string => {
@@ -19,12 +20,11 @@ const getGroupColor = (index: number): string => {
 };
 
 export const GroupSymbol: m.Component<GroupSymbolAttrs> = {
-  view: ({ attrs: { group, neutral } }) => {
+  view: ({ attrs: { group, neutral, compact } }) => {
     const colorClass = neutral ? '' : `.${getGroupColor(group)}`;
     return m("span.group-badge",
       m(`span.group-symbol${colorClass}`, getGroupSymbol(group)),
-      " ",
-      getGroupLetter(group)
+      compact ? null : [" ", getGroupLetter(group)]
     );
   },
 };
