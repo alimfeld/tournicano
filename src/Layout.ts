@@ -14,8 +14,6 @@ export const Layout: m.Component<LayoutAttrs> = {
   view: ({ children }) => {
     const { 
       state, 
-      needRefresh, 
-      isUpdating, 
       dismissUpdate, 
       applyUpdate, 
       dismissToast 
@@ -23,7 +21,7 @@ export const Layout: m.Component<LayoutAttrs> = {
 
     return [
       // PWA update dialog
-      needRefresh ? m("dialog[open]", [
+      state.needRefresh ? m("dialog[open]", [
         m("article", [
           m("header",
             m("button[aria-label=Close][rel=prev]", {
@@ -40,13 +38,13 @@ export const Layout: m.Component<LayoutAttrs> = {
           m("footer", [
             m("button.secondary", {
               onclick: dismissUpdate,
-              disabled: isUpdating
+              disabled: state.isUpdating
             }, "Later"),
             m("button", {
               onclick: applyUpdate,
-              disabled: isUpdating,
-              "aria-busy": isUpdating ? "true" : "false",
-            }, isUpdating ? "Updating..." : "Update Now")
+              disabled: state.isUpdating,
+              "aria-busy": state.isUpdating ? "true" : "false",
+            }, state.isUpdating ? "Updating..." : "Update Now")
           ])
         ])
       ]) : null,

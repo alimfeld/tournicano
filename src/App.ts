@@ -44,6 +44,8 @@ interface State {
 
   // === PWA State (runtime flags) ===
   pwa: PWAState;
+  needRefresh: boolean;
+  isUpdating: boolean;
 }
 
 const syncTheme = (theme: Theme) => {
@@ -87,7 +89,9 @@ const createState: () => State = () => {
     pwa: {
       checkingForUpdates: false,
       serviceWorkerRegistered: false
-    }
+    },
+    needRefresh: false,
+    isUpdating: false
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
@@ -146,12 +150,9 @@ export const App = () => {
   };
 
   // PWA update handling
-  let needRefresh = false;
-  let isUpdating = false;
-
   const updateServiceWorker = registerSW({
     onNeedRefresh() {
-      needRefresh = true;
+      state.needRefresh = true;
       m.redraw();
     },
     onOfflineReady() {
@@ -168,12 +169,12 @@ export const App = () => {
   });
 
   const dismissUpdate = () => {
-    needRefresh = false;
+    state.needRefresh = false;
     m.redraw();
   };
 
   const applyUpdate = async () => {
-    isUpdating = true;
+    state.isUpdating = true;
     m.redraw();
     await updateServiceWorker();
     // The updateServiceWorker will trigger a page reload after the new SW is activated
@@ -196,7 +197,7 @@ export const App = () => {
 
       // Check if there's already a waiting service worker
       if (registration.waiting) {
-        needRefresh = true;
+        state.needRefresh = true;
         state.pwa.checkingForUpdates = false;
         m.redraw();
         return;
@@ -207,7 +208,7 @@ export const App = () => {
       // Wait a bit to see if an update was found
       setTimeout(() => {
         state.pwa.checkingForUpdates = false;
-        if (!needRefresh) {
+        if (!state.needRefresh) {
           showToast("You're already running the latest version", "success");
         }
         m.redraw();
@@ -240,14 +241,11 @@ export const App = () => {
   return {
     state,
     showToast,
-    checkForUpdates: state.pwa.serviceWorkerRegistered ? checkForUpdates : undefined,
-    checkingForUpdates: state.pwa.checkingForUpdates,
+    checkForUpdates,
     changeRound,
     changeStandingsFilters,
     changePlayerFilters,
     toggleFullscreen,
-    needRefresh,
-    isUpdating,
     dismissUpdate,
     applyUpdate,
     dismissToast,

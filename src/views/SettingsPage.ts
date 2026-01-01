@@ -30,7 +30,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
   },
 
   view: ({ state }) => {
-    const { state: appState, showToast, checkForUpdates, checkingForUpdates, changeRound } = appContext;
+    const { state: appState, showToast, checkForUpdates, changeRound } = appContext;
     const { settings, tournament } = appState;
     const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
     const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
@@ -288,16 +288,16 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             rel: "noopener noreferrer"
           }, "View changes")
         ),
-        checkForUpdates
+        appState.pwa.serviceWorkerRegistered
           ? m(
             "button",
             {
               type: "button",
               onclick: checkForUpdates,
-              disabled: checkingForUpdates,
-              "aria-busy": checkingForUpdates ? "true" : "false",
+              disabled: appState.pwa.checkingForUpdates,
+              "aria-busy": appState.pwa.checkingForUpdates ? "true" : "false",
             },
-            checkingForUpdates ? "Checking for updates..." : "Check for Updates",
+            appState.pwa.checkingForUpdates ? "Checking for updates..." : "Check for Updates",
           )
           : null,
         // Hidden file input for import
