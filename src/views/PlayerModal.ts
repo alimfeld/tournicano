@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./PlayerModal.css";
-import { Player, validatePlayerName } from "../model/Tournament.ts";
+import { Player, validatePlayerName } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol, getGroupSymbol, getGroupLetter } from "./GroupSymbol.ts";
 import { Modal } from "./Modal.ts";

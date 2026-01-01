@@ -1,4 +1,4 @@
-import { Mutable } from "./Mutable.ts";
+import { Mutable } from "../core/Mutable.ts";
 import {
   PlayerId,
   Player,
@@ -11,23 +11,23 @@ import {
   TournamentListener,
   ConfigurationWarning,
 } from "./Tournament.ts";
-import { Americano, MatchingSpec } from "./MatchingSpec.ts";
-import { matching, partitionPlayers } from "./Tournament.matching.ts";
-import { shuffle } from "./Util.ts";
-import { Settings } from "./Settings.ts";
+import { Americano, MatchingSpec } from "../matching/MatchingSpec.ts";
+import { matching, partitionPlayers } from "../matching/Matching.ts";
+import { shuffle } from "../core/Util.ts";
+import { Settings } from "../settings/Settings.ts";
 import {
   OperationResult,
   createSuccessResult,
   createErrorResult,
   createInfoResult,
   pluralize,
-} from "./OperationResult.ts";
-import { TournamentContext } from "./Tournament.context.ts";
-import { PlayerImpl, ParticipatingPlayerImpl } from "./Tournament.players.impl.ts";
-import { RoundImpl } from "./Tournament.rounds.impl.ts";
-import { serializeTournament, deserializeTournament } from "./Tournament.serialization.ts";
-import { exportStandingsText, exportPlayersText, exportBackup } from "./Tournament.export.ts";
-import { importBackup as importBackupFunction } from "./Tournament.import.ts";
+} from "../core/OperationResult.ts";
+import { TournamentContext } from "./Context.ts";
+import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
+import { RoundImpl } from "./Rounds.impl.ts";
+import { serializeTournament, deserializeTournament } from "./Serialization.ts";
+import { exportStandingsText, exportPlayersText, exportBackup } from "./Export.ts";
+import { importBackup as importBackupFunction } from "./Import.ts";
 
 export const tournamentFactory: TournamentFactory = {
   create(serialized?: string) {

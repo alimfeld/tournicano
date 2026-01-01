@@ -1,5 +1,5 @@
 import m from "mithril";
-import { Tournament } from "../model/Tournament.ts";
+import { Tournament } from "../model/tournament/Tournament.ts";
 import { Modal } from "./Modal.ts";
 
 export interface AddPlayersModalAttrs {

@@ -1,12 +1,12 @@
 import m from "mithril";
 import "./RoundPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Tournament, Match, ParticipatingPlayer } from "../model/Tournament.ts";
-import { Settings } from "../model/Settings.ts";
+import { Tournament, Match, ParticipatingPlayer } from "../model/tournament/Tournament.ts";
+import { Settings } from "../model/settings/Settings.ts";
 import { MatchSection } from "./MatchSection.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
-import { getMatchingSpecName } from "../model/MatchingSpec.ts";
+import { getMatchingSpecName } from "../model/matching/MatchingSpec.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
 import { ToggleFullscreenButton } from "./ToggleFullscreenButton.ts";

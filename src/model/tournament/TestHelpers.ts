@@ -1,7 +1,7 @@
 import { test as baseTest } from "vitest";
 import { Score } from "./Tournament.ts";
-import { Match } from "./Tournament.matching.ts";
-import { MatchingSpec } from "./MatchingSpec.ts";
+import { Match } from "../matching/Matching.ts";
+import { MatchingSpec } from "../matching/MatchingSpec.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
 
 export class Player {

@@ -1,12 +1,12 @@
-import { Mutable } from "./Mutable";
+import { Mutable } from "../core/Mutable.ts";
 import {
   Settings,
   SettingsData,
   SettingsFactory,
   SettingsListener,
   Theme,
-} from "./Settings";
-import { Americano, MatchingSpec } from "./MatchingSpec.ts";
+} from "./Settings.ts";
+import { Americano, MatchingSpec } from "../matching/MatchingSpec.ts";
 
 export const settingsFactory: SettingsFactory = {
   create(serialized?: string) {

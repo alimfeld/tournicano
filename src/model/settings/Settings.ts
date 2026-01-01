@@ -1,4 +1,4 @@
-import { MatchingSpec } from "./MatchingSpec.ts";
+import { MatchingSpec } from "../matching/MatchingSpec.ts";
 
 export type Theme = "auto" | "dark" | "light";
 

@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./MatchSection.css";
-import { Match, ParticipatingPlayer, Team } from "../model/Tournament.ts";
+import { Match, ParticipatingPlayer, Team } from "../model/tournament/Tournament.ts";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
 
 export interface MatchSectionAttrs {

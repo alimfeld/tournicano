@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { test, runTournament } from "./Tournament.test.helpers.ts";
+import { test, runTournament } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
 import {
   Americano,
@@ -14,7 +14,7 @@ import {
   GroupBattle,
   GroupBattleMixed,
   AmericanoMixed,
-} from "./MatchingSpec.ts";
+} from "../matching/MatchingSpec.ts";
 
 test("should serialize tournament", ({ players, scores }) => {
   const tournament = runTournament(players, scores);

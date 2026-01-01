@@ -1,8 +1,8 @@
 import { expect } from "vitest";
-import { test, runTournament } from "./Tournament.test.helpers.ts";
+import { test, runTournament } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
-import { settingsFactory } from "./Settings.impl.ts";
-import { Americano, Mexicano } from "./MatchingSpec.ts";
+import { settingsFactory } from "../settings/Settings.impl.ts";
+import { Americano, Mexicano } from "../matching/MatchingSpec.ts";
 
 test("should export standings text with no rounds", () => {
   const tournament = tournamentFactory.create();

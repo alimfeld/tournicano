@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { test, runTournament } from "./Tournament.test.helpers.ts";
+import { test, runTournament } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
 
 test("should create empty tournament", () => {

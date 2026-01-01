@@ -7,11 +7,11 @@
  */
 
 import { PlayerId, Score } from "./Tournament.ts";
-import { Settings } from "./Settings.ts";
-import { TournamentBackup } from "./Tournament.export.ts";
-import { TournamentContext } from "./Tournament.context.ts";
-import { PlayerImpl, ParticipatingPlayerImpl } from "./Tournament.players.impl.ts";
-import { RoundImpl } from "./Tournament.rounds.impl.ts";
+import { Settings } from "../settings/Settings.ts";
+import { TournamentBackup } from "./Export.ts";
+import { TournamentContext } from "./Context.ts";
+import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
+import { RoundImpl } from "./Rounds.impl.ts";
 
 /**
  * Import tournament from backup JSON

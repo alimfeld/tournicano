@@ -1,8 +1,8 @@
 import { expect } from "vitest";
-import { test, runTournament } from "./Tournament.test.helpers.ts";
+import { test, runTournament } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
-import { settingsFactory } from "./Settings.impl.ts";
-import { Americano, Mexicano, AmericanoMixed, Tournicano } from "./MatchingSpec.ts";
+import { settingsFactory } from "../settings/Settings.impl.ts";
+import { Americano, Mexicano, AmericanoMixed, Tournicano } from "../matching/MatchingSpec.ts";
 
 // ==========================================
 // 1. VERSION COMPATIBILITY TESTS

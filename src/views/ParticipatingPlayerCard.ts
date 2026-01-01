@@ -1,7 +1,7 @@
 import m from "mithril";
-import { ParticipatingPlayer } from "../model/Tournament";
+import { ParticipatingPlayer } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
-import { getPerformanceBadge } from "../model/Display.ts";
+import { getPerformanceBadge } from "../model/tournament/Display.ts";
 import "./ParticipatingPlayerCard.css";
 
 export interface ParticipatingPlayerCardAttrs {

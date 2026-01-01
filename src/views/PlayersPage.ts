@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { Tournament, Player, PlayerFilter } from "../model/Tournament.ts";
+import { Tournament, Player, PlayerFilter } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { PlayerFilters } from "../App.ts";
 import { HelpCard } from "./HelpCard.ts";

@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { test, Player } from "./Tournament.test.helpers.ts";
+import { test, Player } from "./TestHelpers.ts";
 import {
   Americano,
   AmericanoMixedBalanced,
@@ -8,8 +8,8 @@ import {
   MatchUpGroupMode,
   TeamUpGroupMode,
   matchingSpecEquals,
-} from "./MatchingSpec.ts";
-import { matching, partitionPlayers } from "./Tournament.matching.ts";
+} from "../matching/MatchingSpec.ts";
+import { matching, partitionPlayers } from "../matching/Matching.ts";
 
 test("should balance groups with single group", ({ players }) => {
   const spec: MatchingSpec = { ...Americano, balanceGroups: true };

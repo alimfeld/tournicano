@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./StandingsPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Tournament, ParticipatingPlayer } from "../model/Tournament.ts";
+import { Tournament, ParticipatingPlayer } from "../model/tournament/Tournament.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";

@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { test, Player, serialize } from "./Tournament.test.helpers.ts";
+import { test, Player, serialize } from "../tournament/TestHelpers.ts";
 import {
   Americano,
   AmericanoMixed,
@@ -12,7 +12,7 @@ import {
   TeamUpPerformanceMode,
   Tournicano,
 } from "./MatchingSpec.ts";
-import { matching } from "./Tournament.matching.ts";
+import { matching } from "./Matching.ts";
 
 test("should honor play ratio for paused", ({ players }) => {
   players[3].matchCount = 1;

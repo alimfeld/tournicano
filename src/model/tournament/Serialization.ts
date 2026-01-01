@@ -6,9 +6,9 @@
  */
 
 import { PlayerId, Score, Player, Round } from "./Tournament.ts";
-import { TournamentContext } from "./Tournament.context.ts";
-import { PlayerImpl, ParticipatingPlayerImpl } from "./Tournament.players.impl.ts";
-import { RoundImpl } from "./Tournament.rounds.impl.ts";
+import { TournamentContext } from "./Context.ts";
+import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
+import { RoundImpl } from "./Rounds.impl.ts";
 
 // Compact serialization format
 type CompactPlayer = [PlayerId, string, number, boolean]; // id, name, group, active

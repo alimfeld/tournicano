@@ -6,7 +6,7 @@
  * Use the public Tournament interface from Tournament.ts instead.
  */
 
-import { Mutable } from "./Mutable.ts";
+import { Mutable } from "../core/Mutable.ts";
 import {
   Match,
   PlayerId,
@@ -15,8 +15,8 @@ import {
   Score,
   Team,
 } from "./Tournament.ts";
-import { TournamentContext, RoundContext } from "./Tournament.context.ts";
-import { ParticipatingPlayerImpl, PerformanceImpl } from "./Tournament.players.impl.ts";
+import { TournamentContext, RoundContext } from "./Context.ts";
+import { ParticipatingPlayerImpl, PerformanceImpl } from "./Players.impl.ts";
 
 /**
  * @internal - Implementation class, not part of public API

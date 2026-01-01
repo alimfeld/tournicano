@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./ParticipatingPlayerModal.css";
-import { ParticipatingPlayer } from "../model/Tournament.ts";
+import { ParticipatingPlayer } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { Modal } from "./Modal.ts";

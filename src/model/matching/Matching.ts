@@ -3,7 +3,7 @@ import {
   weight as maximumMatching,
   // @ts-ignore
 } from "@graph-algorithm/maximum-matching";
-import { shuffle } from "./Util.ts";
+import { shuffle } from "../core/Util.ts";
 import {
   MatchingSpec,
   TeamUpGroupMode,

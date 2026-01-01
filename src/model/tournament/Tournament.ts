@@ -1,6 +1,6 @@
-import { MatchingSpec } from "./MatchingSpec.ts";
-import { Settings } from "./Settings.ts";
-import { OperationResult } from "./OperationResult.ts";
+import { MatchingSpec } from "../matching/MatchingSpec.ts";
+import { Settings } from "../settings/Settings.ts";
+import { OperationResult } from "../core/OperationResult.ts";
 
 export type PlayerId = string;
 

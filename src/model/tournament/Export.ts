@@ -7,8 +7,8 @@
  */
 
 import { PlayerFilter, ParticipatingPlayer, Player, Score, Round } from "./Tournament.ts";
-import { Settings } from "./Settings.ts";
-import { MatchingSpec } from "./MatchingSpec.ts";
+import { Settings } from "../settings/Settings.ts";
+import { MatchingSpec } from "../matching/MatchingSpec.ts";
 
 // Export data structure for backups
 export interface TournamentBackup {

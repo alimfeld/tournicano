@@ -5,13 +5,13 @@ import { SettingsPage } from "./views/SettingsPage.ts";
 import { PlayersPage } from "./views/PlayersPage.ts";
 import { RoundPage } from "./views/RoundPage.ts";
 import { StandingsPage } from "./views/StandingsPage.ts";
-import { Tournament, TournamentListener } from "./model/Tournament.ts";
-import { Settings, SettingsListener, Theme } from "./model/Settings.ts";
-import { tournamentFactory } from "./model/Tournament.impl.ts";
-import { settingsFactory } from "./model/Settings.impl.ts";
+import { Tournament, TournamentListener } from "./model/tournament/Tournament.ts";
+import { Settings, SettingsListener, Theme } from "./model/settings/Settings.ts";
+import { tournamentFactory } from "./model/tournament/Tournament.impl.ts";
+import { settingsFactory } from "./model/settings/Settings.impl.ts";
 import { HomePage } from "./views/HomePage.ts";
 import { ToastCard } from "./views/ToastCard.ts";
-import { debounce } from "./model/Util.ts";
+import { debounce } from "./model/core/Util.ts";
 import { registerSW } from "virtual:pwa-register";
 
 const PAGE_KEY = "page";

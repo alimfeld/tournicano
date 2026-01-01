@@ -2,14 +2,14 @@ import m from "mithril";
 import "./ScoreEntryModal.css";
 import "./MatchSection.css";
 import { MatchSection } from "./MatchSection.ts";
-import { Match, Score } from "../model/Tournament.ts";
+import { Match, Score } from "../model/tournament/Tournament.ts";
 import { Modal } from "./Modal.ts";
 import {
   parseScore as parseScoreFromInput,
   validateScoreInput,
   addDigitToScore,
   formatScoreDisplay,
-} from "../model/Score.ts";
+} from "../model/tournament/Score.ts";
 
 export interface ScoreEntryModalAttrs {
   roundIndex: number;

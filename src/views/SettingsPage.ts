@@ -1,6 +1,6 @@
 import m from "mithril";
-import { Settings } from "../model/Settings.ts";
-import { Tournament } from "../model/Tournament.ts";
+import { Settings } from "../model/settings/Settings.ts";
+import { Tournament } from "../model/tournament/Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
@@ -11,7 +11,7 @@ import {
   Mexicano,
   Tournicano,
   isMatchingSpecMode,
-} from "../model/MatchingSpec.ts";
+} from "../model/matching/MatchingSpec.ts";
 import { MatchingSpecModal } from "./MatchingSpecModal.ts";
 import { BUILD_VERSION } from "../version.ts";
 import { Header } from "./Header.ts";

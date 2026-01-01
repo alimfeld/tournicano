@@ -5,7 +5,7 @@ import {
   MatchUpGroupMode,
   TeamUpGroupMode,
   TeamUpPerformanceMode,
-} from "../model/MatchingSpec.ts";
+} from "../model/matching/MatchingSpec.ts";
 import "./MatchingSpecModal.css";
 import { Modal } from "./Modal.ts";
 
