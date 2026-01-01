@@ -1,8 +1,18 @@
 # Tournicano
 
-Tournicano is a (web) app for running ad-hoc _-icano_ (e.g., Americano,
-Mexicano, or similar) doubles tournaments.
+Organize doubles tournaments with automatic player pairing and fair rotation. Perfect for padel, pickleball, tennis, or any doubles sport.
 
-Visit the [GitHub Pages site](https://alimfeld.github.io/tournicano/) to get
-started. You can install it to your device’s home screen for quick and easy
-access.
+**[Launch App →](https://alimfeld.github.io/tournicano/)**
+
+Install it to your device's home screen for offline use and quick access.
+
+## Development
+
+```bash
+npm install      # Install dependencies
+npm run dev      # Start development server
+npm test         # Run tests
+npm run build    # Build for production
+```
+
+Built with [TypeScript](https://www.typescriptlang.org/), [Mithril.js](https://mithril.js.org/), [Pico CSS](https://picocss.com/), and [Vite](https://vite.dev/).
