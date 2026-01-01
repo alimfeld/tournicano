@@ -18,8 +18,9 @@ const createRoute = (component: m.Component) => ({
       // Save non-root routes for PWA restart recovery
       localStorage.setItem(LAST_ROUTE_KEY, requestedPath);
     }
+    return component;
   },
-  render: () => m(Layout, m(component)),
+  render: (vnode: m.Vnode) => m(Layout, vnode),
 });
 
 const mountNode = document.querySelector("#app");
