@@ -83,6 +83,9 @@ export interface TournamentListener {
 export interface RoundInfo {
   matchCount: number;
   activePlayerCount: number;
+  competingPlayerCount: number;
+  pausedPlayerCount: number;
+  matchingSpecName: string;
   groupDistribution: Map<number, { total: number; competing: number; paused: number }>;
   balancingEnabled: boolean;
 }

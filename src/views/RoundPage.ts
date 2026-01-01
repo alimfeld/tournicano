@@ -6,7 +6,6 @@ import { Settings } from "../model/settings/Settings.ts";
 import { MatchSection } from "./MatchSection.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
-import { getMatchingSpecName } from "../model/matching/MatchingSpec.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
 import { ToggleFullscreenButton } from "./ToggleFullscreenButton.ts";
@@ -198,7 +197,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       },
     ];
 
-    const renderSetup = () => {
+    const renderNextRoundInfo = () => {
       return [
         m("ul", [
           m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}`),
@@ -214,8 +213,16 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                 ])
             ])
             : null,
-          m("li", `${getMatchingSpecName(settings.matchingSpec)} mode`),
+          m("li", `${nextRoundInfo.matchingSpecName} mode${nextRoundInfo.balancingEnabled ? ' (balancing groups)' : ''}`),
           m("li", `${settings.courts} available court${settings.courts !== 1 ? 's' : ''}`),
+          // Show match count only if matches will be created
+          nextRoundInfo.matchCount > 0
+            ? m("li", `${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''} will be created`)
+            : null,
+          // Show player participation only if there are matches AND paused players
+          nextRoundInfo.matchCount > 0 && nextRoundInfo.pausedPlayerCount > 0
+            ? m("li", `${nextRoundInfo.competingPlayerCount} players competing, ${nextRoundInfo.pausedPlayerCount} paused`)
+            : null,
         ])
       ]
     };
@@ -285,7 +292,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                   title: "⚠️ Check yor Setup",
                   message: [
                     m("p", "Your current setup does not result in any matches."),
-                    renderSetup(),
+                    renderNextRoundInfo(),
                   ],
                   action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
                 }
@@ -293,8 +300,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                 : {
                   title: "🚀 Ready to play?",
                   message: [
-                    renderSetup(),
-                    m("p", `${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''} will be created.`),
+                    renderNextRoundInfo(),
                     groupMismatchWarning ? m("small", m("mark", groupMismatchWarning)) : null
                   ],
                   action: {

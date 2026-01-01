@@ -11,7 +11,7 @@ import {
   TournamentListener,
   ConfigurationWarning,
 } from "./Tournament.ts";
-import { Americano, MatchingSpec } from "../matching/MatchingSpec.ts";
+import { Americano, MatchingSpec, getMatchingSpecName } from "../matching/MatchingSpec.ts";
 import { matching, partitionPlayers } from "../matching/Matching.ts";
 import { shuffle } from "../core/Util.ts";
 import { Settings } from "../settings/Settings.ts";
@@ -431,9 +431,20 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     
     const { competing, groupDistribution } = partitionPlayers(active, effectiveSpec, maxMatches);
     
+    // Calculate competing and paused counts
+    let competingPlayerCount = 0;
+    let pausedPlayerCount = 0;
+    groupDistribution.forEach(counts => {
+      competingPlayerCount += counts.competing;
+      pausedPlayerCount += counts.paused;
+    });
+    
     return {
       matchCount: Math.floor(competing.length / 4),
       activePlayerCount: active.length,
+      competingPlayerCount,
+      pausedPlayerCount,
+      matchingSpecName: getMatchingSpecName(effectiveSpec),
       groupDistribution,
       balancingEnabled: effectiveSpec.balanceGroups || false,
     };
