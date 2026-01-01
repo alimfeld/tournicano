@@ -14,6 +14,7 @@ import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
+import { pluralizeWithCount } from "../model/core/Util.ts";
 
 export interface RoundAttrs {
   settings: Settings;
@@ -200,7 +201,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
     const renderNextRoundInfo = () => {
       return [
         m("ul", [
-          m("li", `${tournament.activePlayerCount} active player${tournament.activePlayerCount !== 1 ? 's' : ''}`),
+          m("li", `${pluralizeWithCount(tournament.activePlayerCount, "player")} active`),
           // Show group distribution if multiple groups exist
           nextRoundInfo.groupDistribution.size > 1
             ? m("li", [
@@ -214,14 +215,19 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
             ])
             : null,
           m("li", `${nextRoundInfo.matchingSpecName} mode${nextRoundInfo.balancingEnabled ? ' (balancing groups)' : ''}`),
-          m("li", `${settings.courts} available court${settings.courts !== 1 ? 's' : ''}`),
+          m("li", `${pluralizeWithCount(settings.courts, "court")} available`),
           // Show match count only if matches will be created
           nextRoundInfo.matchCount > 0
-            ? m("li", `${nextRoundInfo.matchCount} match${nextRoundInfo.matchCount !== 1 ? 'es' : ''} will be created`)
+            ? m("li", `${pluralizeWithCount(nextRoundInfo.matchCount, "match", "matches")} will be created`)
             : null,
-          // Show player participation only if there are matches AND paused players
-          nextRoundInfo.matchCount > 0 && nextRoundInfo.pausedPlayerCount > 0
-            ? m("li", `${nextRoundInfo.competingPlayerCount} players competing, ${nextRoundInfo.pausedPlayerCount} paused`)
+          // Show competing players when there are matches, add paused players in parens if any
+          nextRoundInfo.matchCount > 0
+            ? m("li", [
+                `${pluralizeWithCount(nextRoundInfo.competingPlayerCount, "player")} competing`,
+                nextRoundInfo.pausedPlayerCount > 0
+                  ? ` (${nextRoundInfo.pausedPlayerCount} paused)`
+                  : ""
+              ])
             : null,
         ])
       ]

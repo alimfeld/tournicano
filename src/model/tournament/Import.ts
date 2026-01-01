@@ -12,6 +12,7 @@ import { TournamentBackup } from "./Export.ts";
 import { TournamentContext } from "./Context.ts";
 import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
 import { RoundImpl } from "./Rounds.impl.ts";
+import { pluralizeWithCount } from "../core/Util.ts";
 
 /**
  * Import tournament from backup JSON
@@ -242,7 +243,7 @@ export function importBackup(
 
   const playerCount = backup.players.length;
   const roundCount = backup.rounds.length;
-  const summary = `Imported ${playerCount} player${playerCount !== 1 ? 's' : ''} and ${roundCount} round${roundCount !== 1 ? 's' : ''}`;
+  const summary = `Imported ${pluralizeWithCount(playerCount, "player")} and ${pluralizeWithCount(roundCount, "round")}`;
 
   return {
     success: true,

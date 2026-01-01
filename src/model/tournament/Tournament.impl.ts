@@ -13,14 +13,13 @@ import {
 } from "./Tournament.ts";
 import { Americano, MatchingSpec, getMatchingSpecName } from "../matching/MatchingSpec.ts";
 import { matching, partitionPlayers } from "../matching/Matching.ts";
-import { shuffle } from "../core/Util.ts";
+import { shuffle, pluralizeWithCount } from "../core/Util.ts";
 import { Settings } from "../settings/Settings.ts";
 import {
   OperationResult,
   createSuccessResult,
   createErrorResult,
   createInfoResult,
-  pluralize,
 } from "../core/OperationResult.ts";
 import { TournamentContext } from "./Context.ts";
 import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
@@ -148,30 +147,30 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     } else if (addedCount === 0 && hasErrors) {
       const errorParts: string[] = [];
       if (duplicateCount > 0) {
-        errorParts.push(`${duplicateCount} ${pluralize(duplicateCount, "duplicate")}`);
+        errorParts.push(pluralizeWithCount(duplicateCount, "duplicate"));
       }
       if (ignoredGroupsCount > 0) {
-        errorParts.push(`${ignoredGroupsCount} ${pluralize(ignoredGroupsCount, "group")}`);
+        errorParts.push(pluralizeWithCount(ignoredGroupsCount, "group"));
       }
       return createErrorResult(`No players added - ${errorParts.join(" and ")} ignored`, {
         duplicates: duplicateCount,
         ignored: ignoredGroupsCount,
       });
     } else if (hasErrors) {
-      let message = `Added ${addedCount} ${pluralize(addedCount, "player")}`;
+      let message = `Added ${pluralizeWithCount(addedCount, "player")}`;
 
       if (groupCount > 1) {
-        message += ` in ${groupCount} ${pluralize(groupCount, "group")}`;
+        message += ` in ${pluralizeWithCount(groupCount, "group")}`;
       }
 
       message += " - ";
 
       const errorParts: string[] = [];
       if (duplicateCount > 0) {
-        errorParts.push(`${duplicateCount} ${pluralize(duplicateCount, "duplicate")}`);
+        errorParts.push(pluralizeWithCount(duplicateCount, "duplicate"));
       }
       if (ignoredGroupsCount > 0) {
-        errorParts.push(`${ignoredGroupsCount} ${pluralize(ignoredGroupsCount, "group")}`);
+        errorParts.push(pluralizeWithCount(ignoredGroupsCount, "group"));
       }
 
       message += errorParts.join(" and ") + " ignored";
@@ -183,10 +182,10 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
         groups: groupCount,
       });
     } else {
-      let message = `Added ${addedCount} ${pluralize(addedCount, "player")}`;
+      let message = `Added ${pluralizeWithCount(addedCount, "player")}`;
 
       if (groupCount > 1) {
-        message += ` in ${groupCount} groups`;
+        message += ` in ${pluralizeWithCount(groupCount, "group")}`;
       }
 
       message += " to the tournament";
@@ -340,24 +339,24 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     // Count active players in the set
     const activeCount = players.filter(p => p.active).length;
     const shouldActivate = activeCount < players.length;
-    
+
     // Count how many will actually change
     const affectedCount = shouldActivate
       ? players.length - activeCount  // Count of inactive players
       : activeCount;                  // Count of active players
-    
+
     // Toggle all players
     players.forEach(player => {
       (player as PlayerImpl).activate(shouldActivate, false);
     });
-    
+
     if (affectedCount > 0) {
       this.notifyChange();
     }
-    
+
     const action = shouldActivate ? "activated" : "deactivated";
     return createSuccessResult(
-      `${affectedCount} ${pluralize(affectedCount, "player")} ${action}`
+      `${pluralizeWithCount(affectedCount, "player")} ${action}`
     );
   }
 
@@ -404,7 +403,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
         return p.active && !p.inAnyRound();
       })
       .map((p) => new ParticipatingPlayerImpl(this, p.id));
-    
+
     participating.push(
       ...(shouldShuffle ? shuffle(newPlayers) : newPlayers)
     );
@@ -428,9 +427,9 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
   getNextRoundInfo(spec?: MatchingSpec, maxMatches?: number): RoundInfo {
     const { active } = this.getPlayersForNextRound(false); // no shuffle needed for info
     const effectiveSpec = spec || Americano;
-    
+
     const { competing, groupDistribution } = partitionPlayers(active, effectiveSpec, maxMatches);
-    
+
     // Calculate competing and paused counts
     let competingPlayerCount = 0;
     let pausedPlayerCount = 0;
@@ -438,7 +437,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       competingPlayerCount += counts.competing;
       pausedPlayerCount += counts.paused;
     });
-    
+
     return {
       matchCount: Math.floor(competing.length / 4),
       activePlayerCount: active.length,
@@ -454,34 +453,34 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     const warnings: ConfigurationWarning[] = [];
     const roundInfo = this.getNextRoundInfo(spec, maxMatches);
     const effectiveSpec = spec || Americano;
-    
+
     // Check for insufficient players
     if (roundInfo.activePlayerCount < 4) {
       // This is handled elsewhere (can't create round), not a configuration warning
       // but we could add it if needed
     }
-    
+
     // Check for group configuration mismatch
-    const specUsesGroups = effectiveSpec.teamUp.groupFactor > 0 || 
-                          effectiveSpec.matchUp.groupFactor > 0;
+    const specUsesGroups = effectiveSpec.teamUp.groupFactor > 0 ||
+      effectiveSpec.matchUp.groupFactor > 0;
     const groupCount = roundInfo.groupDistribution.size;
-    
+
     // Case A: Mode uses groups, but all active players are in one group
     if (specUsesGroups && groupCount === 1 && roundInfo.activePlayerCount >= 4) {
       warnings.push({
         type: "groupMismatch",
-        message: "Mode uses groups but all active players are in one group - consider organizing players into groups or switch tournament mode"
+        message: "Mode uses groups but all active players are in one group - consider organizing players into groups or switch tournament mode."
       });
     }
-    
+
     // Case B: Active players in multiple groups, but mode doesn't use groups
     if (!specUsesGroups && groupCount > 1) {
       warnings.push({
         type: "groupMismatch",
-        message: "Active players are in multiple groups but mode ignores them"
+        message: "Active players are in multiple groups but mode ignores them."
       });
     }
-    
+
     return warnings;
   }
 

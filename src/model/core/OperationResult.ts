@@ -15,20 +15,6 @@ export interface OperationResult {
 }
 
 /**
- * Pluralizes a word based on count
- * @param count - The count to check
- * @param singular - The singular form of the word
- * @param plural - Optional plural form (defaults to singular + 's')
- * @returns The word in correct plural form
- */
-export function pluralize(count: number, singular: string, plural?: string): string {
-  if (count === 1) {
-    return singular;
-  }
-  return plural ?? `${singular}s`;
-}
-
-/**
  * Creates a formatted operation result message
  * @param result - The operation result to format
  * @returns A formatted message string

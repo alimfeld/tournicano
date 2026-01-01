@@ -11,6 +11,7 @@ import { StandingsFilters } from "../App.ts";
 import { Nav } from "./Nav.ts";
 import { Page } from "../App.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
+import { pluralizeWithCount } from "../model/core/Util.ts";
 
 export interface StandingsAttrs {
   tournament: Tournament;
@@ -172,7 +173,7 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
                     : m("div.group-symbols",
                       standingsFilters.groups.map(g => m(GroupSymbol, { group: g }))
                     ),
-                  m("small", `${standings.length} player${standings.length === 1 ? '' : 's'}`)
+                  m("small", pluralizeWithCount(standings.length, "player"))
                 ),
                 // Cell 3: All stats combined (left-aligned, 2 lines)
                 m("div.standings-cell.stats-cell",
