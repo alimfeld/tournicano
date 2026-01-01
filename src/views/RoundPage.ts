@@ -1,8 +1,7 @@
 import m from "mithril";
 import "./RoundPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Tournament, Match, ParticipatingPlayer } from "../model/tournament/Tournament.ts";
-import { Settings } from "../model/settings/Settings.ts";
+import { Match, ParticipatingPlayer } from "../model/tournament/Tournament.ts";
 import { MatchSection } from "./MatchSection.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
@@ -12,19 +11,8 @@ import { ToggleFullscreenButton } from "./ToggleFullscreenButton.ts";
 import { ScoreEntryModal } from "./ScoreEntryModal.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
-import { Nav } from "./Nav.ts";
-import { Page } from "../App.ts";
 import { pluralizeWithCount } from "../model/core/Util.ts";
-
-export interface RoundAttrs {
-  settings: Settings;
-  tournament: Tournament;
-  roundIndex: number;
-  changeRound: (index: number) => void;
-  showToast: (message: string, type?: "success" | "error" | "info") => void;
-  nav: (page: Page) => void;
-  currentPage: Page;
-}
+import { appContext } from "../Layout.ts";
 
 interface RoundState {
   scoreEntryMatch?: {
@@ -38,15 +26,16 @@ interface RoundState {
   wakeLockListener?: { onchange: () => Promise<void> };
 }
 
-export const RoundPage: m.Component<RoundAttrs, RoundState> = {
-  oninit: async ({ attrs, state }) => {
+export const RoundPage: m.Component<{}, RoundState> = {
+  oninit: async ({ state }) => {
+    const { state: appState } = appContext;
     state.scoreEntryMatch = undefined;
     state.selectedPlayer = undefined;
     state.fullscreen = false;
     state.wakeLock = null;
 
     // Request wake lock if enabled and supported
-    if (attrs.settings.wakeLock && "wakeLock" in navigator) {
+    if (appState.settings.wakeLock && "wakeLock" in navigator) {
       try {
         state.wakeLock = await navigator.wakeLock.request("screen");
       } catch (err) {
@@ -54,11 +43,12 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       }
     }
   },
-  oncreate: ({ attrs, state }) => {
+  oncreate: ({ state }) => {
+    const { state: appState } = appContext;
     // Listen to settings changes for wake lock toggle
     state.wakeLockListener = {
       onchange: async () => {
-        if (attrs.settings.wakeLock && "wakeLock" in navigator) {
+        if (appState.settings.wakeLock && "wakeLock" in navigator) {
           // Enable wake lock
           if (state.wakeLock === null) {
             try {
@@ -78,12 +68,13 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         }
       }
     };
-    attrs.settings.addListener(state.wakeLockListener);
+    appState.settings.addListener(state.wakeLockListener);
   },
-  onremove: async ({ attrs, state }) => {
+  onremove: async ({ state }) => {
+    const { state: appState } = appContext;
     // Clean up settings listener
     if (state.wakeLockListener) {
-      attrs.settings.removeListener(state.wakeLockListener);
+      appState.settings.removeListener(state.wakeLockListener);
     }
 
     // Release wake lock when leaving page
@@ -92,10 +83,9 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       state.wakeLock = null;
     }
   },
-  view: ({
-    attrs: { settings, tournament, roundIndex, changeRound, showToast, nav, currentPage },
-    state
-  }) => {
+  view: ({ state }) => {
+    const { state: appState, showToast, changeRound } = appContext;
+    const { settings, tournament, roundIndex } = appState;
     const nextRoundInfo = tournament.getNextRoundInfo(
       settings.matchingSpec,
       settings.courts
@@ -290,7 +280,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
               ? {
                 title: "🤖 Add Players",
                 message: m("p", "Add at least 4 players to start a tournament."),
-                action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+                action: { label: "Go to Players", onclick: () => m.route.set("/players") }
               }
               // No matches
               : nextRoundInfo.matchCount === 0
@@ -300,7 +290,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
                     m("p", "Your current setup does not result in any matches."),
                     renderNextRoundInfo(),
                   ],
-                  action: { label: "Go to Players", onclick: () => nav(Page.PLAYERS) }
+                  action: { label: "Go to Players", onclick: () => m.route.set("/players") }
                 }
                 // Ready to play (matches can be created)
                 : {
@@ -332,7 +322,7 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         },
       }),
       m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }),
-      !fullscreen ? m(Nav, { nav, currentPage }) : null,
+      !fullscreen ? null : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {
         roundIndex: state.scoreEntryMatch.roundIndex,

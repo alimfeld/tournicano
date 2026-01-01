@@ -1,37 +1,38 @@
 import m from "mithril";
 import "./Nav.css";
-import { Page } from "../App.ts";
 
-export interface NavAttrs {
-  nav: (page: Page) => void;
-  currentPage: Page;
-}
-
-export const Nav: m.Component<NavAttrs> = {
-  view: ({ attrs: { nav, currentPage } }) => {
+export const Nav: m.Component = {
+  view: () => {
+    const currentRoute = m.route.get();
+    
     return m(
       "nav",
       m(
         "ul",
-        m("li", {
-          class: currentPage === Page.HOME ? "active" : "",
-          onclick: () => nav(Page.HOME)
+        m(m.route.Link, {
+          href: "/",
+          selector: "li",
+          class: currentRoute === "/" ? "active" : "",
         }, "🏠"),
-        m("li", {
-          class: currentPage === Page.SETTINGS ? "active" : "",
-          onclick: () => nav(Page.SETTINGS)
+        m(m.route.Link, {
+          href: "/settings",
+          selector: "li",
+          class: currentRoute === "/settings" ? "active" : "",
         }, "⚙️"),
-        m("li", {
-          class: currentPage === Page.PLAYERS ? "active" : "",
-          onclick: () => nav(Page.PLAYERS)
+        m(m.route.Link, {
+          href: "/players",
+          selector: "li",
+          class: currentRoute === "/players" ? "active" : "",
         }, "🤖"),
-        m("li", {
-          class: currentPage === Page.ROUNDS ? "active" : "",
-          onclick: () => nav(Page.ROUNDS)
+        m(m.route.Link, {
+          href: "/rounds",
+          selector: "li",
+          class: currentRoute === "/rounds" ? "active" : "",
         }, "🚀"),
-        m("li", {
-          class: currentPage === Page.STANDINGS ? "active" : "",
-          onclick: () => nav(Page.STANDINGS)
+        m(m.route.Link, {
+          href: "/standings",
+          selector: "li",
+          class: currentRoute === "/standings" ? "active" : "",
         }, "🏆"),
       ),
     );

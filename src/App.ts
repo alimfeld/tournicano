@@ -1,31 +1,15 @@
 import m from "mithril";
 import "./App.css";
-import "./views/PlayersPage.ts";
-import { SettingsPage } from "./views/SettingsPage.ts";
-import { PlayersPage } from "./views/PlayersPage.ts";
-import { RoundPage } from "./views/RoundPage.ts";
-import { StandingsPage } from "./views/StandingsPage.ts";
 import { Tournament, TournamentListener, PlayerFilter } from "./model/tournament/Tournament.ts";
 import { Settings, SettingsListener, Theme } from "./model/settings/Settings.ts";
 import { tournamentFactory } from "./model/tournament/Tournament.impl.ts";
 import { settingsFactory } from "./model/settings/Settings.impl.ts";
-import { HomePage } from "./views/HomePage.ts";
-import { ToastCard } from "./views/ToastCard.ts";
 import { debounce } from "./model/core/Util.ts";
 import { registerSW } from "virtual:pwa-register";
 
-const PAGE_KEY = "page";
 const SETTINGS_KEY = "settings";
 const ROUND_KEY = "round";
 const TOURNAMENT_KEY = "tournament";
-
-export enum Page {
-  HOME,
-  SETTINGS,
-  PLAYERS,
-  ROUNDS,
-  STANDINGS,
-}
 
 export interface StandingsFilters {
   groups: number[]; // empty array means all groups
@@ -46,7 +30,6 @@ interface State {
   // === Core State (persisted to localStorage) ===
   readonly tournament: Tournament;
   readonly settings: Settings;
-  page: Page;
   roundIndex: number;
 
   // === Session Filters (in-memory, resets on app restart) ===
@@ -89,7 +72,6 @@ const createState: () => State = () => {
     settings: settingsFactory.create(
       localStorage.getItem(SETTINGS_KEY) || undefined,
     ),
-    page: parseInt(localStorage.getItem(PAGE_KEY) || `${Page.HOME}`),
     roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
     filters: {
       standings: { groups: [] },
@@ -236,11 +218,6 @@ export const App = () => {
     }
   };
 
-  const nav = (page: Page) => {
-    state.page = page;
-    localStorage.setItem(PAGE_KEY, `${page}`);
-    window.scrollTo(0, 0);
-  };
   const changeRound = (index: number) => {
     state.roundIndex = index;
     localStorage.setItem(ROUND_KEY, `${index}`);
@@ -254,99 +231,17 @@ export const App = () => {
   };
 
   return {
-    view: () => {
-      let pageContent;
-      switch (state.page) {
-        case Page.HOME: {
-          pageContent = m(HomePage, {
-            nav,
-            currentPage: state.page,
-          });
-          break;
-        }
-        case Page.SETTINGS: {
-          pageContent = m(SettingsPage, {
-            settings: state.settings,
-            tournament: state.tournament,
-            showToast,
-            checkForUpdates: state.pwa.serviceWorkerRegistered ? checkForUpdates : undefined,
-            checkingForUpdates: state.pwa.checkingForUpdates,
-            nav,
-            currentPage: state.page,
-            changeRound,
-          });
-          break;
-        }
-        case Page.PLAYERS: {
-          pageContent = m(PlayersPage, {
-            tournament: state.tournament,
-            showToast,
-            playerFilters: state.filters.players,
-            changePlayerFilters,
-            nav,
-            currentPage: state.page,
-          });
-          break;
-        }
-        case Page.ROUNDS: {
-          pageContent = m(RoundPage, {
-            settings: state.settings,
-            tournament: state.tournament,
-            roundIndex: state.roundIndex,
-            changeRound,
-            showToast,
-            nav,
-            currentPage: state.page,
-          });
-          break;
-        }
-        case Page.STANDINGS: {
-          pageContent = m(StandingsPage, {
-            tournament: state.tournament,
-            roundIndex: state.roundIndex,
-            standingsFilters: state.filters.standings,
-            changeRound,
-            changeStandingsFilters,
-            showToast,
-            nav,
-            currentPage: state.page,
-          });
-          break;
-        }
-      }
-
-      return [
-        // PWA update dialog
-        needRefresh ? m("dialog[open]", [
-          m("article", [
-            m("header",
-              m("button[aria-label=Close][rel=prev]", {
-                onclick: dismissUpdate,
-              }),
-              m("p", m("strong", "🔄 Update Available")),
-            ),
-            m("p", "A new version of Tournicano is ready. Update now to get the latest features and improvements."),
-            m("p", m("a", {
-              href: "https://github.com/alimfeld/tournicano/commits/main/",
-              target: "_blank",
-              rel: "noopener noreferrer"
-            }, "View changes")),
-            m("footer", [
-              m("button.secondary", {
-                onclick: dismissUpdate,
-                disabled: isUpdating
-              }, "Later"),
-              m("button", {
-                onclick: applyUpdate,
-                disabled: isUpdating,
-                "aria-busy": isUpdating ? "true" : "false",
-              }, isUpdating ? "Updating..." : "Update Now")
-            ])
-          ])
-        ]) : null,
-        pageContent,
-        m(ToastCard, { message: state.toast.message, type: state.toast.type, onDismiss: dismissToast }),
-      ];
-    },
+    state,
+    showToast,
+    checkForUpdates: state.pwa.serviceWorkerRegistered ? checkForUpdates : undefined,
+    checkingForUpdates: state.pwa.checkingForUpdates,
+    changeRound,
+    changeStandingsFilters,
+    changePlayerFilters,
+    needRefresh,
+    isUpdating,
+    dismissUpdate,
+    applyUpdate,
+    dismissToast,
   };
 };

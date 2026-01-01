@@ -1,6 +1,4 @@
 import m from "mithril";
-import { Settings } from "../model/settings/Settings.ts";
-import { Tournament } from "../model/tournament/Tournament.ts";
 import {
   Americano,
   AmericanoMixed,
@@ -15,20 +13,8 @@ import {
 import { MatchingSpecModal } from "./MatchingSpecModal.ts";
 import { BUILD_VERSION } from "../version.ts";
 import { Header } from "./Header.ts";
-import { Nav } from "./Nav.ts";
-import { Page } from "../App.ts";
+import { appContext } from "../Layout.ts";
 import "./SettingsPage.css";
-
-export interface SettingsAttrs {
-  settings: Settings;
-  tournament: Tournament;
-  showToast?: (message: string, type?: "success" | "error" | "info") => void;
-  checkForUpdates?: () => void;
-  checkingForUpdates?: boolean;
-  nav: (page: Page) => void;
-  currentPage: Page;
-  changeRound: (index: number) => void;
-}
 
 interface SettingsPageState {
   showMatchingSpecModal: boolean;
@@ -36,14 +22,16 @@ interface SettingsPageState {
   pendingImportFile: File | null;
 }
 
-export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
+export const SettingsPage: m.Component<{}, SettingsPageState> = {
   oninit: ({ state }) => {
     state.showMatchingSpecModal = false;
     state.showImportConfirmModal = false;
     state.pendingImportFile = null;
   },
 
-  view: ({ attrs: { settings, tournament, showToast, checkForUpdates, checkingForUpdates, nav, currentPage, changeRound }, state }) => {
+  view: ({ state }) => {
+    const { state: appState, showToast, checkForUpdates, checkingForUpdates, changeRound } = appContext;
+    const { settings, tournament } = appState;
     const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
     const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
     const isAmericanoMixedBalanced = isMatchingSpecMode(settings.matchingSpec, AmericanoMixedBalanced);
@@ -334,7 +322,6 @@ export const SettingsPage: m.Component<SettingsAttrs, SettingsPageState> = {
           }
         }),
       ),
-      m(Nav, { nav, currentPage }),
 
       // Import confirmation modal
       state.showImportConfirmModal ? m("dialog[open]", [

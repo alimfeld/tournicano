@@ -1,25 +1,15 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { Tournament, Player, PlayerFilter } from "../model/tournament/Tournament.ts";
+import { Player, PlayerFilter } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header } from "./Header.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { GroupFilter } from "./GroupFilter.ts";
 import { ActiveFilter } from "./ActiveFilter.ts";
-import { Nav } from "./Nav.ts";
-import { Page } from "../App.ts";
 import { PlayerModal } from "./PlayerModal.ts";
 import { AddPlayersModal } from "./AddPlayersModal.ts";
-
-export interface PlayersAttrs {
-  tournament: Tournament;
-  showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
-  playerFilters: PlayerFilter;
-  changePlayerFilters: (filters: PlayerFilter) => void;
-  nav: (page: Page) => void;
-  currentPage: Page;
-}
+import { appContext } from "../Layout.ts";
 
 interface PlayersState {
   showAddPlayersModal: boolean;
@@ -28,13 +18,15 @@ interface PlayersState {
   };
 }
 
-export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
+export const PlayersPage: m.Component<{}, PlayersState> = {
   oninit: ({ state }) => {
     state.showAddPlayersModal = false;
     state.playerView = undefined;
   },
 
-  view: ({ attrs: { tournament, showToast, playerFilters, changePlayerFilters, nav, currentPage }, state }) => {
+  view: ({ state }) => {
+    const { state: appState, showToast, changePlayerFilters } = appContext;
+    const { tournament, filters: { players: playerFilters } } = appState;
     const closePlayerView = () => {
       state.playerView = undefined;
     };
@@ -300,7 +292,6 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
               action: { label: "Add Your First Players", onclick: openAddPlayersModal }
             }),
       ),
-      m(Nav, { nav, currentPage }),
 
       // Player modal (conditionally rendered)
       state.playerView ? m(PlayerModal, {

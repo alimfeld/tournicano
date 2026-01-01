@@ -1,15 +1,8 @@
 import m from "mithril";
 import { Header } from "./Header.ts";
-import { Nav } from "./Nav.ts";
-import { Page } from "../App.ts";
 
-export interface HomeAttrs {
-  nav: (page: Page) => void;
-  currentPage: Page;
-}
-
-export const HomePage: m.Component<HomeAttrs> = {
-  view: ({ attrs: { nav, currentPage } }) => {
+export const HomePage: m.Component = {
+  view: () => {
     return [
       m(Header, { 
         title: "Tournicano",
@@ -90,7 +83,6 @@ export const HomePage: m.Component<HomeAttrs> = {
           "Install Tournicano on any device for offline use. Updates are detected automatically when online and can be applied when convenient."
         ),
       ),
-      m(Nav, { nav, currentPage }),
     ];
   },
 };

@@ -1,41 +1,27 @@
 import m from "mithril";
 import "./StandingsPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Tournament, ParticipatingPlayer } from "../model/tournament/Tournament.ts";
+import { ParticipatingPlayer } from "../model/tournament/Tournament.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { HelpCard } from "./HelpCard.ts";
 import { Header, HeaderAction } from "./Header.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { GroupFilter } from "./GroupFilter.ts";
-import { StandingsFilters } from "../App.ts";
-import { Nav } from "./Nav.ts";
-import { Page } from "../App.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
 import { pluralizeWithCount } from "../model/core/Util.ts";
-
-export interface StandingsAttrs {
-  tournament: Tournament;
-  roundIndex: number;
-  standingsFilters: StandingsFilters;
-  changeRound: (index: number) => void;
-  changeStandingsFilters: (filters: StandingsFilters) => void;
-  showToast: (message: string, type?: "success" | "error" | "info", duration?: number) => void;
-  nav: (page: Page) => void;
-  currentPage: Page;
-}
+import { appContext } from "../Layout.ts";
 
 interface StandingsState {
   selectedPlayer?: ParticipatingPlayer;
 }
 
-export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
+export const StandingsPage: m.Component<{}, StandingsState> = {
   oninit: ({ state }) => {
     state.selectedPlayer = undefined;
   },
-  view: ({
-    attrs: { tournament, roundIndex, standingsFilters, changeRound, changeStandingsFilters, showToast, nav, currentPage },
-    state
-  }) => {
+  view: ({ state }) => {
+    const { state: appState, showToast, changeRound, changeStandingsFilters } = appContext;
+    const { tournament, roundIndex, filters: { standings: standingsFilters } } = appState;
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
@@ -224,11 +210,10 @@ export const StandingsPage: m.Component<StandingsAttrs, StandingsState> = {
               : m("p", "Enter match scores to see standings!"),
             action: {
               label: "Go to Rounds",
-              onclick: () => nav(Page.ROUNDS)
+              onclick: () => m.route.set("/rounds")
             }
           }),
       ),
-      m(Nav, { nav, currentPage }),
       // Player stats modal (conditionally rendered)
       state.selectedPlayer ? m(ParticipatingPlayerModal, {
         player: state.selectedPlayer,
