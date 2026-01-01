@@ -6,6 +6,8 @@ Organize doubles tournaments with automatic player pairing and fair rotation. Pe
 
 Install it to your device's home screen for offline use and quick access.
 
+See **[FAQ.md](FAQ.md)** for installation guides, data management, and how the matching algorithm works.
+
 ## Development
 
 ```bash
