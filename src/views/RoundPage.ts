@@ -110,33 +110,12 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
       state.fullscreen = !state.fullscreen;
     };
 
-    // Computed wake lock state
+    // Compute wake lock state
     const isWakeLockActive = settings.wakeLock && "wakeLock" in navigator;
 
-    // Detect group configuration mismatch and return warning message if any
-    const getGroupMismatchWarning = (): string | null => {
-      // Skip check if not enough players (other warning takes precedence)
-      if (nextRoundInfo.activePlayerCount < 4) {
-        return null;
-      }
-
-      const specUsesGroups = settings.matchingSpec.teamUp.groupFactor > 0 ||
-        settings.matchingSpec.matchUp.groupFactor > 0;
-      const groupCount = nextRoundInfo.groupDistribution.size;
-
-      // Case A: Mode uses groups, but all active players are in one group
-      if (specUsesGroups && groupCount === 1) {
-        return "Mode uses groups but all active players are in one group - consider organizing players into groups or switch tournament mode";
-      }
-
-      // Case B: Active players in multiple groups, but mode doesn't use groups
-      if (!specUsesGroups && groupCount > 1) {
-        return "Active players are in multiple groups but mode ignores them";
-      }
-
-      // No mismatch detected
-      return null;
-    };
+    // Get configuration warnings from the model
+    const configurationWarnings = tournament.validateConfiguration(settings.matchingSpec);
+    const groupMismatchWarning = configurationWarnings.find(w => w.type === "groupMismatch")?.message || null;
 
     // Score entry handlers
     const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
@@ -218,9 +197,6 @@ export const RoundPage: m.Component<RoundAttrs, RoundState> = {
         disabled: !("wakeLock" in navigator),
       },
     ];
-
-    // Check for group configuration mismatch
-    const groupMismatchWarning = getGroupMismatchWarning();
 
     const renderSetup = () => {
       return [

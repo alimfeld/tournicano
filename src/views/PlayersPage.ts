@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./PlayersPage.css";
-import { Tournament, Player } from "../model/Tournament.ts";
+import { Tournament, Player, PlayerFilter } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { PlayerFilters } from "../App.ts";
 import { HelpCard } from "./HelpCard.ts";
@@ -49,41 +49,21 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
       });
     };
 
-    // Get all players from all groups
-    const allPlayers = tournament.groups.flatMap(group => tournament.players(group));
+    // Convert app PlayerFilters to model PlayerFilter
+    const modelFilter: PlayerFilter = {
+      search: playerFilters.search || undefined,
+      participating: playerFilters.participatingOnly ? true : undefined,
+      groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
+      active: playerFilters.activeFilter || "both",
+    };
 
-    // Apply filters
-    const filteredPlayers = allPlayers.filter(player => {
-      // Search filter
-      if (playerFilters.search && !player.name.toLowerCase().includes(playerFilters.search.toLowerCase())) {
-        return false;
-      }
+    // Get filtered and sorted players from model
+    const sortedPlayers = tournament.getFilteredPlayers(modelFilter, "name");
 
-      // Participating filter
-      if (playerFilters.participatingOnly && !player.inAnyRound()) return false;
-
-      // Group filter
-      if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(player.group)) {
-        return false;
-      }
-
-      // Active filter
-      if (playerFilters.activeFilter === "active" && !player.active) return false;
-      if (playerFilters.activeFilter === "inactive" && player.active) return false;
-
-      return true;
-    });
-
-    // Sort alphabetically by name
-    const sortedPlayers = filteredPlayers.toSorted((a, b) =>
-      a.name.toLowerCase() < b.name.toLowerCase() ? -1 :
-        a.name.toLowerCase() > b.name.toLowerCase() ? 1 : 0
-    );
-
-    // Calculate counts (independent of any active filters)
-    const totalPlayers = allPlayers.length;
-    const participatingPlayers = allPlayers.filter(p => p.inAnyRound());
-    const participatingCount = participatingPlayers.length;
+    // Get all counts from model
+    const allCounts = tournament.getPlayerCounts();
+    const totalPlayers = allCounts.total;
+    const participatingCount = allCounts.participating;
     const activePlayerCount = tournament.activePlayerCount;
     const headerTitle = totalPlayers === 0 ? "Players" : activePlayerCount === totalPlayers
       ? `Players (${totalPlayers})`
@@ -120,15 +100,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
 
     // Share players action
     const sharePlayersAction = async () => {
-      const text = tournament.groups
-        .map((group) =>
-          tournament
-            .players(group)
-            .map((player) => player.name)
-            .toSorted((p, q) => p < q ? -1 : p > q ? 1 : 0)
-            .join(", "),
-        )
-        .join("\n");
+      const text = tournament.exportPlayersText();
 
       try {
         await navigator.share({ text });
@@ -145,23 +117,8 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
 
     // Toggle all filtered players
     const toggleAllFiltered = () => {
-      // Count active players in filtered set
-      const filteredActiveCount = sortedPlayers.filter(p => p.active).length;
-      const shouldActivate = filteredActiveCount < sortedPlayers.length;
-
-      // Count how many will actually change
-      const affectedCount = shouldActivate
-        ? sortedPlayers.length - filteredActiveCount  // Count of inactive players
-        : filteredActiveCount;                         // Count of active players
-
-      // Toggle all filtered players
-      sortedPlayers.forEach(player => {
-        player.activate(shouldActivate);
-      });
-
-      // Show accurate toast
-      const action = shouldActivate ? "activated" : "deactivated";
-      showToast(`${affectedCount} player${affectedCount !== 1 ? 's' : ''} ${action}`, "success");
+      const result = tournament.toggleActivePlayers(sortedPlayers);
+      showToast(result.message, result.success ? "success" : "error");
     };
 
     // Delete all players action
@@ -230,60 +187,44 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
               onGroupsChange: (groups) => changePlayerFilters({ ...playerFilters, groups }),
               compact: true,
               getGroupCount: (g) => {
-                const groupPlayers = tournament.players(g);
-                return groupPlayers.filter(p => {
-                  // Apply participating filter if active
-                  if (playerFilters.participatingOnly && !p.inAnyRound()) {
-                    return false;
-                  }
-                  // Apply active filter if active
-                  if (playerFilters.activeFilter === "active" && !p.active) return false;
-                  if (playerFilters.activeFilter === "inactive" && p.active) return false;
-                  return true;
-                }).length;
+                const groupFilter: PlayerFilter = {
+                  groups: [g],
+                  participating: playerFilters.participatingOnly ? true : undefined,
+                  active: playerFilters.activeFilter || "both",
+                };
+                return tournament.getPlayerCounts(groupFilter).total;
               }
             }) : null,
             // Active/Inactive filter (second)
             m(ActiveFilter, {
               selectedFilter: playerFilters.activeFilter,
               onFilterChange: (filter) => changePlayerFilters({ ...playerFilters, activeFilter: filter }),
-              getActiveCount: () => allPlayers.filter(p => {
-                // Apply group filters if active
-                if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(p.group)) {
-                  return false;
-                }
-                // Apply participating filter if active
-                if (playerFilters.participatingOnly && !p.inAnyRound()) {
-                  return false;
-                }
-                return p.active;
-              }).length,
-              getInactiveCount: () => allPlayers.filter(p => {
-                // Apply group filters if active
-                if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(p.group)) {
-                  return false;
-                }
-                // Apply participating filter if active
-                if (playerFilters.participatingOnly && !p.inAnyRound()) {
-                  return false;
-                }
-                return !p.active;
-              }).length
+              getActiveCount: () => {
+                const activeFilter: PlayerFilter = {
+                  groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
+                  participating: playerFilters.participatingOnly ? true : undefined,
+                  active: "active",
+                };
+                return tournament.getPlayerCounts(activeFilter).total;
+              },
+              getInactiveCount: () => {
+                const inactiveFilter: PlayerFilter = {
+                  groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
+                  participating: playerFilters.participatingOnly ? true : undefined,
+                  active: "inactive",
+                };
+                return tournament.getPlayerCounts(inactiveFilter).total;
+              }
             }),
             // Participating filter (third) - only show if there are both participating and non-participating players
             participatingCount > 0 && participatingCount < totalPlayers ? m("button", {
               class: playerFilters.participatingOnly ? "" : "outline",
               onclick: toggleParticipatingFilter
-            }, `🚀 (${allPlayers.filter(p => {
-              // Apply group filters if active
-              if (playerFilters.groups.length > 0 && !playerFilters.groups.includes(p.group)) {
-                return false;
-              }
-              // Apply active filter if active
-              if (playerFilters.activeFilter === "active" && !p.active) return false;
-              if (playerFilters.activeFilter === "inactive" && p.active) return false;
-              return p.inAnyRound();
-            }).length})`) : null
+            }, `🚀 (${tournament.getPlayerCounts({
+              groups: playerFilters.groups.length > 0 ? playerFilters.groups : undefined,
+              active: playerFilters.activeFilter || "both",
+              participating: true,
+            }).total})`) : null
           )
         ] : null,
 

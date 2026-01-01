@@ -1,6 +1,6 @@
 import m from "mithril";
 import "./PlayerModal.css";
-import { Player } from "../model/Tournament.ts";
+import { Player, validatePlayerName } from "../model/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol, getGroupSymbol, getGroupLetter } from "./GroupSymbol.ts";
 import { Modal } from "./Modal.ts";
@@ -37,15 +37,14 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       player.active !== state.editActive;
 
     const validateEditName = (name: string): string => {
-      const trimmed = name.trim();
-      if (!trimmed) return "Name is required";
-
-      // Check for illegal characters (periods and commas are used as separators)
-      if (/[,.]/.test(trimmed)) {
-        return "Name cannot contain commas or periods";
+      // Use the model's validation function
+      const result = validatePlayerName(name);
+      if (!result.valid) {
+        return result.error || "Invalid name";
       }
 
-      if (!player.canRenameTo(trimmed)) {
+      // Check for duplicates
+      if (!player.canRenameTo(name.trim())) {
         return "Name already exists";
       }
 

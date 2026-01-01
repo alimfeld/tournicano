@@ -1,6 +1,7 @@
 import m from "mithril";
 import { ParticipatingPlayer } from "../model/Tournament";
 import { getAvatar } from "./AvatarCache.ts";
+import { getPerformanceBadge } from "../model/Display.ts";
 import "./ParticipatingPlayerCard.css";
 
 export interface ParticipatingPlayerCardAttrs {
@@ -8,21 +9,6 @@ export interface ParticipatingPlayerCardAttrs {
   badge?: string;
   onClick?: () => void;
 }
-
-const getPerformanceBadge = (player: ParticipatingPlayer): string | undefined => {
-  // Don't show badge if no matches played
-  const totalGames = player.wins + player.losses + player.draws;
-  if (totalGames === 0) return undefined;
-
-  // 100% win rate → 💯
-  if (player.winRatio === 1.0) return "💯";
-
-  // >= 75% win rate → 🔥
-  if (player.winRatio >= 0.75) return "🔥";
-
-  // < 75% → no badge
-  return undefined;
-};
 
 export const ParticipatingPlayerCard: m.Component<ParticipatingPlayerCardAttrs> = {
   view: (vnode) => {

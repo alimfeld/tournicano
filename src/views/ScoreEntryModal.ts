@@ -4,6 +4,12 @@ import "./MatchSection.css";
 import { MatchSection } from "./MatchSection.ts";
 import { Match, Score } from "../model/Tournament.ts";
 import { Modal } from "./Modal.ts";
+import {
+  parseScore as parseScoreFromInput,
+  validateScoreInput,
+  addDigitToScore,
+  formatScoreDisplay,
+} from "../model/Score.ts";
 
 export interface ScoreEntryModalAttrs {
   roundIndex: number;
@@ -29,38 +35,14 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
 
   view: ({ attrs: { roundIndex, matchIndex, match, onClose }, state }) => {
     const addDigit = (digit: string) => {
-      const parts = state.scoreInput.split(":");
-
-      if (parts.length === 1) {
-        // Before colon - entering team A score
-        if (parts[0].length < 2) {
-          state.scoreInput += digit;
-        }
-        // Auto-add colon after 2 digits
-        if (state.scoreInput.length === 2) {
-          state.scoreInput += ":";
-        }
-      } else if (parts.length === 2) {
-        // After colon - entering team B score
-        if (parts[1].length < 2) {
-          state.scoreInput += digit;
-        }
-      }
+      state.scoreInput = addDigitToScore(state.scoreInput, digit);
     };
 
     const addColon = () => {
-      // If there's already a colon, do nothing
-      if (state.scoreInput.includes(":")) {
-        return;
+      const validation = validateScoreInput(state.scoreInput);
+      if (validation.canAddColon) {
+        state.scoreInput += ":";
       }
-
-      // If empty, do nothing (colon should be disabled)
-      if (state.scoreInput.length === 0) {
-        return;
-      }
-
-      // Just add colon
-      state.scoreInput += ":";
     };
 
     const backspace = () => {
@@ -74,28 +56,10 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
       }
     };
 
-    // Validate and parse score
+    // Parse score using Score module
     const parseScore = (): Score | null => {
-      if (!state.scoreInput.includes(":")) {
-        return null;
-      }
-      const parts = state.scoreInput.split(":");
-      if (parts.length !== 2) {
-        return null;
-      }
-
-      // Both parts must have at least one digit
-      if (parts[0] === "" || parts[1] === "") {
-        return null;
-      }
-
-      const scoreA = parseInt(parts[0]);
-      const scoreB = parseInt(parts[1]);
-
-      if (isNaN(scoreA) || isNaN(scoreB) || scoreA < 0 || scoreB < 0) {
-        return null;
-      }
-      return [scoreA, scoreB];
+      const result = parseScoreFromInput(state.scoreInput);
+      return result.success && result.score ? result.score : null;
     };
 
     const accept = () => {
@@ -114,23 +78,15 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
       onClose();
     };
 
-    // Format score display
-    const formatScore = () => {
-      if (state.scoreInput.length === 0) {
-        return "--:--";
-      }
-      return state.scoreInput;
-    };
+    // Format score display using Score module
+    const formatScore = () => formatScoreDisplay(state.scoreInput);
 
-    // Submit is valid only if there's a valid score OR empty input (to clear)
+    // Determine button states using validation
+    const validation = validateScoreInput(state.scoreInput);
     const isValid = parseScore() !== null || state.scoreInput.length === 0;
-    const isColonDisabled = state.scoreInput.length === 0 || state.scoreInput.includes(":");
+    const isColonDisabled = !validation.canAddColon;
     const isBackspaceDisabled = state.scoreInput.length === 0;
-    // Disable numbers if current input position is full (2 digits on either side)
-    const parts = state.scoreInput.split(":");
-    const areNumbersDisabled = parts.length === 1
-      ? parts[0].length >= 2  // Before colon: disable if 2+ digits
-      : parts[1].length >= 2; // After colon: disable if 2+ digits on right side
+    const areNumbersDisabled = !validation.canAddDigit;
 
     return m(Modal, { onClose, className: 'score-entry-modal' },
       m("article",

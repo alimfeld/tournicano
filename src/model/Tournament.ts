@@ -1,5 +1,6 @@
 import { MatchingSpec } from "./Tournament.matching";
 import { Settings } from "./Settings.ts";
+import { OperationResult } from "./OperationResult.ts";
 
 export type PlayerId = string;
 
@@ -86,16 +87,63 @@ export interface RoundInfo {
   balancingEnabled: boolean;
 }
 
+export interface PlayerFilter {
+  search?: string;
+  participating?: boolean;
+  groups?: number[];
+  active?: "active" | "inactive" | "both";
+}
+
+export type PlayerSortBy = "name" | "group";
+
+export interface PlayerCounts {
+  total: number;
+  active: number;
+  inactive: number;
+  participating: number;
+  byGroup: Map<number, {
+    total: number;
+    active: number;
+    inactive: number;
+    participating: number;
+  }>;
+}
+
+/**
+ * Result of player name validation
+ */
+export interface NameValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+/**
+ * Type of configuration warning
+ */
+export type ConfigurationWarningType = "groupMismatch" | "insufficientPlayers";
+
+/**
+ * Configuration warning for tournament setup
+ */
+export interface ConfigurationWarning {
+  type: ConfigurationWarningType;
+  message: string;
+}
+
 export interface Tournament {
   readonly rounds: Round[];
   readonly groups: number[];
   readonly activePlayerCount: number;
   readonly hasAllScoresSubmitted: boolean;
   players(group?: number): Player[];
+  getFilteredPlayers(filter?: PlayerFilter, sortBy?: PlayerSortBy): Player[];
+  getPlayerCounts(filter?: PlayerFilter): PlayerCounts;
   addPlayers(names: string[], group?: number): { added: string[], duplicates: string[] };
+  addPlayersFromInput(input: string, maxGroups?: number): OperationResult;
   activateAll(active: boolean): void;
   activateGroup(group: number, active: boolean): void;
   activatePlayers(players: Player[], active: boolean): number;
+  toggleActivePlayers(players: Player[]): OperationResult;
   movePlayers(players: Player[], group: number): number;
   deletePlayers(players: Player[]): number;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
@@ -105,8 +153,28 @@ export interface Tournament {
   serialize(): string;
   addListener(listener: TournamentListener): void;
   exportStandingsText(roundIndex: number, groups?: number[]): string;
+  exportPlayersText(filter?: PlayerFilter): string;
   exportBackup(settings: Settings): string;
   importBackup(backupJson: string, settings: Settings): { success: boolean; error?: string; summary?: string };
+  validateConfiguration(spec: MatchingSpec, maxMatches?: number): ConfigurationWarning[];
+}
+
+/**
+ * Validate a player name for illegal characters and emptiness
+ */
+export function validatePlayerName(name: string): NameValidationResult {
+  const trimmed = name.trim();
+  
+  if (!trimmed) {
+    return { valid: false, error: "Name is required" };
+  }
+  
+  // Check for illegal characters (periods and commas are used as separators)
+  if (/[,.]/.test(trimmed)) {
+    return { valid: false, error: "Name cannot contain commas or periods" };
+  }
+  
+  return { valid: true };
 }
 
 export interface TournamentFactory {
