@@ -21,7 +21,6 @@ interface RoundState {
     match: Match;
   };
   selectedPlayer?: ParticipatingPlayer;
-  fullscreen: boolean;
   wakeLock: WakeLockSentinel | null;
   wakeLockListener?: { onchange: () => Promise<void> };
 }
@@ -31,7 +30,6 @@ export const RoundPage: m.Component<{}, RoundState> = {
     const { state: appState } = appContext;
     state.scoreEntryMatch = undefined;
     state.selectedPlayer = undefined;
-    state.fullscreen = false;
     state.wakeLock = null;
 
     // Request wake lock if enabled and supported
@@ -84,7 +82,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
     }
   },
   view: ({ state }) => {
-    const { state: appState, showToast, changeRound } = appContext;
+    const { state: appState, showToast, changeRound, toggleFullscreen } = appContext;
     const { settings, tournament, roundIndex } = appState;
     const nextRoundInfo = tournament.getNextRoundInfo(
       settings.matchingSpec,
@@ -94,11 +92,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
 
-    // Local fullscreen state
-    const fullscreen = state.fullscreen;
-    const toggleFullscreen = () => {
-      state.fullscreen = !state.fullscreen;
-    };
+    // Get fullscreen state from app context
+    const fullscreen = appState.fullscreen;
 
     // Compute wake lock state
     const isWakeLockActive = settings.wakeLock && "wakeLock" in navigator;

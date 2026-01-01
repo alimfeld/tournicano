@@ -40,6 +40,7 @@ interface State {
 
   // === UI State (ephemeral) ===
   toast: ToastState;
+  fullscreen: boolean;
 
   // === PWA State (runtime flags) ===
   pwa: PWAState;
@@ -82,6 +83,7 @@ const createState: () => State = () => {
       type: "info" as "success" | "error" | "info",
       timeout: null
     },
+    fullscreen: false,
     pwa: {
       checkingForUpdates: false,
       serviceWorkerRegistered: false
@@ -230,6 +232,11 @@ export const App = () => {
     state.filters.players = filters;
   };
 
+  const toggleFullscreen = () => {
+    state.fullscreen = !state.fullscreen;
+    m.redraw();
+  };
+
   return {
     state,
     showToast,
@@ -238,6 +245,7 @@ export const App = () => {
     changeRound,
     changeStandingsFilters,
     changePlayerFilters,
+    toggleFullscreen,
     needRefresh,
     isUpdating,
     dismissUpdate,

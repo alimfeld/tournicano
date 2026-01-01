@@ -54,8 +54,8 @@ export const Layout: m.Component<LayoutAttrs> = {
       children,
       // Toast notifications
       m(ToastCard, { message: state.toast.message, type: state.toast.type, onDismiss: dismissToast }),
-      // Navigation
-      m(Nav),
+      // Navigation (hidden in fullscreen mode)
+      !state.fullscreen ? m(Nav) : null,
     ];
   },
 };
