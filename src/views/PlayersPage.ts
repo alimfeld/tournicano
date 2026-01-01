@@ -26,7 +26,6 @@ interface PlayersState {
   showAddPlayersModal: boolean;
   playerView?: {
     player: Player;
-    scrollPosition: number;
   };
 }
 
@@ -38,15 +37,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
 
   view: ({ attrs: { tournament, showToast, playerFilters, changePlayerFilters, nav, currentPage }, state }) => {
     const closePlayerView = () => {
-      const scrollY = state.playerView?.scrollPosition ?? 0;
       state.playerView = undefined;
-
-      // Restore parent scroll after DOM updates (double RAF)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollY);
-        });
-      });
     };
 
     // Convert app PlayerFilters to model PlayerFilter
@@ -93,8 +84,7 @@ export const PlayersPage: m.Component<PlayersAttrs, PlayersState> = {
 
     const openPlayerView = (player: Player) => {
       state.playerView = {
-        player,
-        scrollPosition: window.scrollY
+        player
       };
     };
 
