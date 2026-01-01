@@ -18,6 +18,8 @@ const createRoute = (component: m.Component) => ({
       // Save non-root routes for PWA restart recovery
       localStorage.setItem(LAST_ROUTE_KEY, requestedPath);
     }
+    // Reset scroll position on navigation
+    window.scrollTo(0, 0);
     return component;
   },
   render: (vnode: m.Vnode) => m(Layout, vnode),
