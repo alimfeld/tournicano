@@ -25,7 +25,7 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
   },
 
   view: ({ state }) => {
-    const { state: appState, showToast, changePlayerFilters } = appContext;
+    const { state: appState, showToast, changePlayerFilters, changeRound, resetFilters } = appContext;
     const { tournament, filters: { players: playerFilters } } = appState;
     const closePlayerView = () => {
       state.playerView = undefined;
@@ -97,7 +97,8 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
     // Delete all players action
     const deleteAllPlayersAction = () => {
       tournament.reset();
-      changePlayerFilters({});
+      resetFilters();
+      changeRound(-1);
       showToast("All players deleted", "success");
     };
 

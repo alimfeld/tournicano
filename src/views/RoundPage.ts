@@ -82,7 +82,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
     }
   },
   view: ({ state }) => {
-    const { state: appState, showToast, changeRound, toggleFullscreen } = appContext;
+    const { state: appState, showToast, changeRound, toggleFullscreen, resetFilters } = appContext;
     const { settings, tournament, roundIndex } = appState;
     const nextRoundInfo = tournament.getNextRoundInfo(
       settings.matchingSpec,
@@ -157,6 +157,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
         disabled: tournament.rounds.length === 0,
         onclick: () => {
           tournament.restart();
+          changeRound(-1);
+          resetFilters();
           showToast("Tournament restarted", "success");
         },
         confirmation: {

@@ -30,7 +30,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
   },
 
   view: ({ state }) => {
-    const { state: appState, showToast, checkForUpdates, changeRound } = appContext;
+    const { state: appState, showToast, checkForUpdates, changeRound, resetFilters } = appContext;
     const { settings, tournament } = appState;
     const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
     const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
@@ -57,6 +57,9 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
           // Reset roundIndex to last round (or -1 if no rounds)
           const newRoundIndex = tournament.rounds.length - 1;
           changeRound(newRoundIndex);
+          
+          // Reset all filters - imported tournament is completely new
+          resetFilters();
 
           showToast?.(result.summary || "Tournament imported successfully", "success");
         } else {

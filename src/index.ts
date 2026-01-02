@@ -6,18 +6,9 @@ import { PlayersPage } from "./views/PlayersPage.ts";
 import { RoundPage } from "./views/RoundPage.ts";
 import { StandingsPage } from "./views/StandingsPage.ts";
 
-const LAST_ROUTE_KEY = "lastRoute";
-
-// Helper to create route resolvers that save route to localStorage
+// Helper to create route resolvers
 const createRoute = (component: m.Component) => ({
-  onmatch: (_args: unknown, requestedPath: string) => {
-    if (requestedPath === "/") {
-      // Clear saved route when navigating to home
-      localStorage.removeItem(LAST_ROUTE_KEY);
-    } else {
-      // Save non-root routes for PWA restart recovery
-      localStorage.setItem(LAST_ROUTE_KEY, requestedPath);
-    }
+  onmatch: () => {
     // Reset scroll position on navigation
     window.scrollTo(0, 0);
     return component;
@@ -27,10 +18,7 @@ const createRoute = (component: m.Component) => ({
 
 const mountNode = document.querySelector("#app");
 if (mountNode) {
-  // Use last saved route as default, falling back to home
-  const defaultRoute = localStorage.getItem(LAST_ROUTE_KEY) || "/";
-  
-  m.route(mountNode, defaultRoute, {
+  m.route(mountNode, "/", {
     "/": createRoute(HomePage),
     "/settings": createRoute(SettingsPage),
     "/players": createRoute(PlayersPage),

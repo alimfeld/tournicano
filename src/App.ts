@@ -8,7 +8,6 @@ import { debounce } from "./model/core/Util.ts";
 import { registerSW } from "virtual:pwa-register";
 
 const SETTINGS_KEY = "settings";
-const ROUND_KEY = "round";
 const TOURNAMENT_KEY = "tournament";
 
 export interface StandingsFilters {
@@ -27,22 +26,18 @@ interface PWAState {
 }
 
 interface State {
-  // === Core State (persisted to localStorage) ===
+  // === Persisted (localStorage) ===
   readonly tournament: Tournament;
   readonly settings: Settings;
-  roundIndex: number;
 
-  // === Session Filters (in-memory, resets on app restart) ===
+  // === In-Memory (resets on page refresh) ===
   filters: {
     standings: StandingsFilters;
     players: PlayerFilter;
   };
-
-  // === UI State (ephemeral) ===
+  roundIndex: number;
   toast: ToastState;
   fullscreen: boolean;
-
-  // === PWA State (runtime flags) ===
   pwa: PWAState;
   needRefresh: boolean;
   isUpdating: boolean;
@@ -68,18 +63,22 @@ const syncTheme = (theme: Theme) => {
 };
 
 const createState: () => State = () => {
+  const tournament = tournamentFactory.create(
+    localStorage.getItem(TOURNAMENT_KEY) || undefined,
+  );
+  const settings = settingsFactory.create(
+    localStorage.getItem(SETTINGS_KEY) || undefined,
+  );
+
   const state = {
-    tournament: tournamentFactory.create(
-      localStorage.getItem(TOURNAMENT_KEY) || undefined,
-    ),
-    settings: settingsFactory.create(
-      localStorage.getItem(SETTINGS_KEY) || undefined,
-    ),
-    roundIndex: parseInt(localStorage.getItem(ROUND_KEY) || "-1"),
+    tournament,
+    settings,
     filters: {
       standings: { groups: [] },
       players: {}
     },
+    // Default to last round if tournament has rounds, otherwise -1
+    roundIndex: tournament.rounds.length > 0 ? tournament.rounds.length - 1 : -1,
     toast: {
       message: null,
       type: "info" as "success" | "error" | "info",
@@ -223,7 +222,6 @@ export const App = () => {
 
   const changeRound = (index: number) => {
     state.roundIndex = index;
-    localStorage.setItem(ROUND_KEY, `${index}`);
     window.scrollTo(0, 0);
   };
   const changeStandingsFilters = (filters: StandingsFilters) => {
@@ -231,6 +229,11 @@ export const App = () => {
   };
   const changePlayerFilters = (filters: PlayerFilter) => {
     state.filters.players = filters;
+  };
+
+  const resetFilters = () => {
+    state.filters.standings = { groups: [] };
+    state.filters.players = {};
   };
 
   const toggleFullscreen = () => {
@@ -245,6 +248,7 @@ export const App = () => {
     changeRound,
     changeStandingsFilters,
     changePlayerFilters,
+    resetFilters,
     toggleFullscreen,
     dismissUpdate,
     applyUpdate,
