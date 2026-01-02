@@ -8,6 +8,10 @@ button.fab {
   height: var(--fab-height);
   font-size: var(--fab-font-size);
   border-radius: 50%;
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
 }
 
