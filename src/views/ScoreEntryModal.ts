@@ -89,47 +89,42 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
     const areNumbersDisabled = !validation.canAddDigit;
 
     return m(Modal, { onClose, className: 'score-entry-modal' },
-      m("article", {
-        tabindex: 0,
-        onkeydown: (e: KeyboardEvent) => {
-          // Handle numeric keys 0-9
-          if (/^[0-9]$/.test(e.key)) {
-            e.preventDefault();
-            addDigit(e.key);
-          }
-          // Handle colon (also allow spacebar as alternative)
-          else if (e.key === ':' || e.key === ' ') {
-            e.preventDefault();
-            addColon();
-          }
-          // Handle backspace
-          else if (e.key === 'Backspace') {
-            e.preventDefault();
-            backspace();
-          }
-          // Handle Enter to submit
-          else if (e.key === 'Enter' && isValid) {
-            e.preventDefault();
-            accept();
-          }
-          // Handle Escape to cancel
-          else if (e.key === 'Escape') {
-            e.preventDefault();
-            cancel();
-          }
-        },
-        oncreate: (vnode) => {
-          // Auto-focus the article when modal opens so keyboard input works immediately
-          (vnode.dom as HTMLElement).focus();
-        }
-      },
+      m("article",
         m(MatchSection, {
           roundIndex,
           match,
           matchIndex,
           mode: "display",
           showRoundIndex: true,
-          displayScore: formatScore()
+          displayScore: formatScore(),
+          autoFocus: true,
+          onKeyDown: (e: KeyboardEvent) => {
+            // Handle numeric keys 0-9
+            if (/^[0-9]$/.test(e.key)) {
+              e.preventDefault();
+              addDigit(e.key);
+            }
+            // Handle colon or spacebar
+            else if (e.key === ':' || e.key === ' ') {
+              e.preventDefault();
+              addColon();
+            }
+            // Handle backspace
+            else if (e.key === 'Backspace') {
+              e.preventDefault();
+              backspace();
+            }
+            // Handle Enter to submit
+            else if (e.key === 'Enter' && isValid) {
+              e.preventDefault();
+              accept();
+            }
+            // Handle Escape to cancel
+            else if (e.key === 'Escape') {
+              e.preventDefault();
+              cancel();
+            }
+          }
         }),
 
         m("section.keyboard", [

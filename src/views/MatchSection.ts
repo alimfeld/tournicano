@@ -18,10 +18,12 @@ export interface MatchSectionAttrs {
 
   // Display mode only
   displayScore?: string;  // Override score text in display mode
+  autoFocus?: boolean;  // Auto-focus the score display when mounted
+  onKeyDown?: (e: KeyboardEvent) => void;  // Keyboard event handler
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore, autoFocus, onKeyDown } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : "";
@@ -51,7 +53,13 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
               m("h2.match", `M ${roundIndex + 1}-${matchIndex + 1}`) :
               m("h2.match", `M ${matchIndex + 1}`),
             mode === "display" ?
-              m("div.score-text", displayScore ?? scoreString ?? "--:--") :
+              m("div.score-text", {
+                tabindex: autoFocus ? 0 : undefined,
+                onkeydown: onKeyDown,
+                oncreate: autoFocus ? (vnode) => {
+                  (vnode.dom as HTMLElement).focus();
+                } : undefined
+              }, displayScore ?? scoreString ?? "--:--") :
               m("button.outline.score", {
                 class: isValid ? "valid" : "invalid",
                 onclick: () => openScoreEntry!(roundIndex, matchIndex, match),
