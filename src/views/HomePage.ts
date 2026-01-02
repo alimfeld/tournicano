@@ -4,7 +4,7 @@ import { Header } from "./Header.ts";
 export const HomePage: m.Component = {
   view: () => {
     return [
-      m(Header, { 
+      m(Header, {
         title: "Tournicano",
         actions: [
           {
@@ -20,7 +20,7 @@ export const HomePage: m.Component = {
         "main.home.container",
         m(
           "p",
-          "Organize doubles tournaments with automatic player pairing and fair rotation. Perfect for padel, pickleball, tennis, or any doubles sport. Set up in minutes, no tournament management experience required."
+          "Organize doubles tournaments with automatic player pairing and fair rotation in minutes. Perfect for padel, pickleball, tennis, or any doubles sport. Supports Americano, Mexicano, and other formats."
         ),
         m("h2", "✨ Key Features"),
         m(
