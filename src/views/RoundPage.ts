@@ -202,21 +202,16 @@ export const RoundPage: m.Component<{}, RoundState> = {
             ])
             : null,
           m("li", `${nextRoundInfo.matchingSpecName} mode${nextRoundInfo.balancingEnabled ? ' (balancing groups)' : ''}`),
-          m("li", `${pluralizeWithCount(settings.courts, "court")} available`),
-          // Show match count only if matches will be created
-          nextRoundInfo.matchCount > 0
-            ? m("li", `${pluralizeWithCount(nextRoundInfo.matchCount, "match", "matches")} will be created`)
-            : null,
-          // Show competing players when there are matches, add paused players in parens if any
-          nextRoundInfo.matchCount > 0
-            ? m("li", [
-                `${pluralizeWithCount(nextRoundInfo.competingPlayerCount, "player")} competing`,
-                nextRoundInfo.pausedPlayerCount > 0
-                  ? ` (${nextRoundInfo.pausedPlayerCount} paused)`
-                  : ""
-              ])
-            : null,
-        ])
+          m("li", `${pluralizeWithCount(settings.courts, "court")} available`)
+        ]),
+        // Show match count, competing/paused players only if matches can be created
+        nextRoundInfo.matchCount > 0 ? m("p", [
+          `${pluralizeWithCount(nextRoundInfo.matchCount, "match", "matches")} will be created with ${pluralizeWithCount(nextRoundInfo.competingPlayerCount, "player")} competing`,
+          nextRoundInfo.pausedPlayerCount > 0
+            ? ` (${nextRoundInfo.pausedPlayerCount} paused)`
+            : "",
+          "."
+        ]) : null,
       ]
     };
 

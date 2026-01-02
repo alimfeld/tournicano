@@ -156,7 +156,6 @@ export interface Tournament {
   serialize(): string;
   addListener(listener: TournamentListener): void;
   exportStandingsText(roundIndex: number, groups?: number[]): string;
-  exportPlayersText(filter?: PlayerFilter): string;
   exportBackup(settings: Settings): string;
   importBackup(backupJson: string, settings: Settings): { success: boolean; error?: string; summary?: string };
   validateConfiguration(spec: MatchingSpec, maxMatches?: number): ConfigurationWarning[];
@@ -170,11 +169,6 @@ export function validatePlayerName(name: string): NameValidationResult {
   
   if (!trimmed) {
     return { valid: false, error: "Name is required" };
-  }
-  
-  // Check for illegal characters (periods and commas are used as separators)
-  if (/[,.]/.test(trimmed)) {
-    return { valid: false, error: "Name cannot contain commas or periods" };
   }
   
   return { valid: true };

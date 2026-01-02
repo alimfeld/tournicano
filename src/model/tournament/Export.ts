@@ -3,10 +3,10 @@
  * 
  * WARNING: This file contains internal implementation details.
  * DO NOT import from this file outside of src/model/Tournament*.ts files.
- * Use the exportStandingsText/exportPlayersText/exportBackup methods on the Tournament interface instead.
+ * Use the exportStandingsText/exportBackup methods on the Tournament interface instead.
  */
 
-import { PlayerFilter, ParticipatingPlayer, Player, Score, Round } from "./Tournament.ts";
+import { ParticipatingPlayer, Player, Score, Round } from "./Tournament.ts";
 import { Settings } from "../settings/Settings.ts";
 import { MatchingSpec } from "../matching/MatchingSpec.ts";
 
@@ -131,32 +131,6 @@ export function exportStandingsText(
   }
 
   return result;
-}
-
-/**
- * Export players as text (comma-separated or organized by group)
- */
-export function exportPlayersText(
-  groups: number[],
-  getPlayers: (group?: number) => Player[],
-  getFilteredPlayers: (filter?: PlayerFilter) => Player[],
-  filter?: PlayerFilter
-): string {
-  // If filter is provided, export filtered players as comma-separated list
-  if (filter) {
-    const players = getFilteredPlayers(filter);
-    return players.map(p => p.name).join(", ");
-  }
-  
-  // No filter: export all players organized by group
-  return groups
-    .map((group) =>
-      getPlayers(group)
-        .map((player) => player.name)
-        .toSorted((p, q) => p < q ? -1 : p > q ? 1 : 0)
-        .join(", ")
-    )
-    .join("\n");
 }
 
 /**

@@ -28,16 +28,14 @@ test("validatePlayerName rejects empty names", () => {
   });
 });
 
-test("validatePlayerName rejects commas", () => {
-  const result = validatePlayerName("Alice, Bob");
-  expect(result.valid).toBe(false);
-  expect(result.error).toBe("Name cannot contain commas or periods");
+test("validatePlayerName allows commas", () => {
+  const result = validatePlayerName("Smith, John");
+  expect(result.valid).toBe(true);
 });
 
-test("validatePlayerName rejects periods", () => {
-  const result = validatePlayerName("Alice.Bob");
-  expect(result.valid).toBe(false);
-  expect(result.error).toBe("Name cannot contain commas or periods");
+test("validatePlayerName allows periods", () => {
+  const result = validatePlayerName("J.R. Smith");
+  expect(result.valid).toBe(true);
 });
 
 // Tests for Tournament.validateConfiguration

@@ -73,14 +73,17 @@ Friday, some both).
 - Before each session, toggle who's active
 - Start new tournament (keeps players, clears rounds)
 
-**Option 2: Save & Paste Player Lists** (For distinct player sets)
+**Option 2: Export & Import Tournament Templates** (For distinct player sets)
 
-Best when you have completely separate sets.
+Best when you have completely separate player sets.
 
-- Share each player list, and save the text
-- Before each session, delete all players and paste the relevant list
+- Create tournaments with different player lists and settings
+- Export each as a template file (Settings → Export Tournament)
+- Before each session, import the relevant template
+- Start new tournament to clear old rounds (keeps players and settings)
 
-Player lists are comma-separated names, one group per line.
+**Tip:** Export templates after adding players but before creating rounds, or use
+"Start New Tournament" after import to reset rounds while keeping player lists.
 
 **Recommendation:**
 - Overlapping players → **Option 1**

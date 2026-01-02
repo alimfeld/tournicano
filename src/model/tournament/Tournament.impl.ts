@@ -25,7 +25,7 @@ import { TournamentContext } from "./Context.ts";
 import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
 import { RoundImpl } from "./Rounds.impl.ts";
 import { serializeTournament, deserializeTournament } from "./Serialization.ts";
-import { exportStandingsText, exportPlayersText, exportBackup } from "./Export.ts";
+import { exportStandingsText, exportBackup } from "./Export.ts";
 import { importBackup as importBackupFunction } from "./Import.ts";
 
 export const tournamentFactory: TournamentFactory = {
@@ -110,37 +110,36 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     let allAdded: string[] = [];
     let allDuplicates: string[] = [];
     const groupsUsed = new Set<number>();
-    let ignoredGroupsCount = 0;
-
-    lines.forEach((line, i) => {
-      if (i < maxGroups) {
-        const trimmed = line.trim();
-        if (trimmed) {
-          const names = trimmed.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
-          if (names.length > 0) {
-            const result = this.addPlayers(names, i);
-            if (result.added.length > 0) {
-              groupsUsed.add(i);
-            }
-            allAdded = allAdded.concat(result.added);
-            allDuplicates = allDuplicates.concat(result.duplicates);
-          }
-        }
+    let ignoredPlayersCount = 0;
+    
+    let currentGroup = 0;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      if (trimmed === '') {
+        // Empty line: advance to next group
+        currentGroup++;
       } else {
-        const trimmed = line.trim();
-        if (trimmed) {
-          const names = trimmed.split(/[,.]/).map(name => name.trim()).filter(name => name.length > 0);
-          if (names.length > 0) {
-            ignoredGroupsCount++;
+        // Non-empty line: add player to current group
+        if (currentGroup < maxGroups) {
+          const result = this.addPlayers([trimmed], currentGroup);
+          if (result.added.length > 0) {
+            groupsUsed.add(currentGroup);
           }
+          allAdded = allAdded.concat(result.added);
+          allDuplicates = allDuplicates.concat(result.duplicates);
+        } else {
+          // Beyond max groups - count as ignored
+          ignoredPlayersCount++;
         }
       }
-    });
+    }
 
     const addedCount = allAdded.length;
     const duplicateCount = allDuplicates.length;
     const groupCount = groupsUsed.size;
-    const hasErrors = duplicateCount > 0 || ignoredGroupsCount > 0;
+    const hasErrors = duplicateCount > 0 || ignoredPlayersCount > 0;
 
     if (addedCount === 0 && !hasErrors) {
       return createInfoResult("No players added");
@@ -149,12 +148,12 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       if (duplicateCount > 0) {
         errorParts.push(pluralizeWithCount(duplicateCount, "duplicate"));
       }
-      if (ignoredGroupsCount > 0) {
-        errorParts.push(pluralizeWithCount(ignoredGroupsCount, "group"));
+      if (ignoredPlayersCount > 0) {
+        errorParts.push(pluralizeWithCount(ignoredPlayersCount, "player"));
       }
       return createErrorResult(`No players added - ${errorParts.join(" and ")} ignored`, {
         duplicates: duplicateCount,
-        ignored: ignoredGroupsCount,
+        ignored: ignoredPlayersCount,
       });
     } else if (hasErrors) {
       let message = `Added ${pluralizeWithCount(addedCount, "player")}`;
@@ -169,8 +168,8 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       if (duplicateCount > 0) {
         errorParts.push(pluralizeWithCount(duplicateCount, "duplicate"));
       }
-      if (ignoredGroupsCount > 0) {
-        errorParts.push(pluralizeWithCount(ignoredGroupsCount, "group"));
+      if (ignoredPlayersCount > 0) {
+        errorParts.push(pluralizeWithCount(ignoredPlayersCount, "player"));
       }
 
       message += errorParts.join(" and ") + " ignored";
@@ -178,7 +177,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       return createErrorResult(message, {
         added: addedCount,
         duplicates: duplicateCount,
-        ignored: ignoredGroupsCount,
+        ignored: ignoredPlayersCount,
         groups: groupCount,
       });
     } else {
@@ -528,15 +527,6 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
   exportStandingsText(roundIndex: number, groups?: number[]): string {
     return exportStandingsText(this.rounds, roundIndex, groups);
-  }
-
-  exportPlayersText(filter?: PlayerFilter): string {
-    return exportPlayersText(
-      this.groups,
-      (group) => this.players(group),
-      (filter) => this.getFilteredPlayers(filter, "name"),
-      filter
-    );
   }
 
   exportBackup(settings: Settings): string {

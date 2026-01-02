@@ -42,15 +42,15 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
           m("textarea", {
             id: "add-players-textarea",
             name: "players",
-            rows: 6,
-            placeholder: "Alice, Beth, Carol\nDave, Eric, Frank",
+            rows: 7,
+            placeholder: "Alice\nBob\nCarol\n\nDave\nEric\nFrank",
             autocapitalize: "words",
             value: state.textareaContent,
             oninput: (e: Event) => {
               state.textareaContent = (e.target as HTMLTextAreaElement).value;
             }
           }),
-          m("small", "Separate players with commas (,) or periods (.) and put each group (max 4) on a new line.")
+          m("small", "Enter one player per line. Each empty line starts a new group. Maximum 4 groups.")
         ),
 
         m("footer",

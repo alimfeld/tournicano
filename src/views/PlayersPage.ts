@@ -71,23 +71,6 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
       };
     };
 
-    // Share players action
-    const sharePlayersAction = async () => {
-      const text = tournament.exportPlayersText();
-
-      try {
-        await navigator.share({ text });
-      } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
-          try {
-            await navigator.clipboard.writeText(text);
-          } catch (clipboardErr) {
-            showToast("Failed to share or copy players", "error");
-          }
-        }
-      }
-    };
-
     // Toggle all filtered players
     const toggleAllFiltered = () => {
       const result = tournament.toggleActivePlayers(sortedPlayers);
@@ -125,13 +108,7 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
               ],
               confirmButtonText: "Delete All"
             }
-          },
-          {
-            icon: "⤴",
-            label: "Share Players",
-            onclick: sharePlayersAction,
-            disabled: totalPlayers === 0
-          },
+          }
         ]
       }),
       m(
