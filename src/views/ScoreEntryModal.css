@@ -48,3 +48,13 @@ dialog.score-entry-modal section.keyboard button.backspace {
   background: var(--pico-form-element-invalid-focus-color);
   border-color: var(--pico-form-element-invalid-border-color);
 }
+
+/* Button press feedback */
+dialog.score-entry-modal section.keyboard button {
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+dialog.score-entry-modal section.keyboard button:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
