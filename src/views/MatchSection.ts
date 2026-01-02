@@ -7,15 +7,15 @@ export interface MatchSectionAttrs {
   roundIndex: number;
   match: Match;
   matchIndex: number;
-  
+
   // Mode toggle
   mode?: "interactive" | "display";  // Default: "interactive"
   showRoundIndex?: boolean;  // Control title format (replaces fullscreen)
-  
+
   // Interactive mode only
   openScoreEntry?: (roundIndex: number, matchIndex: number, match: Match) => void;
   openPlayerModal?: (player: ParticipatingPlayer) => void;
-  
+
   // Display mode only
   displayScore?: string;  // Override score text in display mode
 }
@@ -27,9 +27,9 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       : "";
     const isValid = !!match.score;
     const renderPlayer = (player: ParticipatingPlayer) => {
-      return m(ParticipatingPlayerCard, { 
+      return m(ParticipatingPlayerCard, {
         key: `player-${player.id}`,
-        player, 
+        player,
         onClick: openPlayerModal ? () => openPlayerModal(player) : undefined
       });
     }
@@ -48,8 +48,8 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
           m(
             "section.vs",
             showRoundIndex ?
-              m("h2.match", `${roundIndex + 1} - ${matchIndex + 1}`) :
-              m("h2.match", matchIndex + 1),
+              m("h2.match", `Match ${roundIndex + 1}-${matchIndex + 1}`) :
+              m("h2.match", `Match ${matchIndex + 1}`),
             mode === "display" ?
               m("div.score-text", displayScore ?? scoreString ?? "--:--") :
               m("button.outline.score", {
