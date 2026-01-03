@@ -304,7 +304,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
         disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
           if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0) {
-            showToast("Not all scores were entered in previous rounds", { type: "error", position: "top" });
+            showToast("Not all scores were entered in previous rounds", { type: "error", position: "middle" });
           }
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);

@@ -18,7 +18,7 @@ interface ToastState {
   message: string | null;
   type: "success" | "error" | "info";
   timeout: number | null;
-  position: "top" | "bottom";
+  position: "top" | "middle" | "bottom";
 }
 
 interface PWAState {
@@ -125,7 +125,7 @@ export const App = () => {
   const showToast = (message: string, options?: {
     type?: "success" | "error" | "info";
     duration?: number;
-    position?: "top" | "bottom";
+    position?: "top" | "middle" | "bottom";
   }) => {
     const type = options?.type ?? "info";
     const duration = options?.duration ?? 3000;
@@ -219,14 +219,14 @@ export const App = () => {
       setTimeout(() => {
         state.pwa.checkingForUpdates = false;
         if (!state.needRefresh) {
-          showToast("You're already running the latest version", { type: "success", position: "top" });
+          showToast("You're already running the latest version", { type: "success", position: "middle" });
         }
         m.redraw();
       }, 1000);
     } catch (error) {
       console.error("Error checking for updates:", error);
       state.pwa.checkingForUpdates = false;
-      showToast("Error checking for updates", { type: "error", position: "top" });
+      showToast("Error checking for updates", { type: "error", position: "middle" });
       m.redraw();
     }
   };

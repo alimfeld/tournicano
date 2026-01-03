@@ -57,7 +57,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
           // Reset roundIndex to last round (or -1 if no rounds)
           const newRoundIndex = tournament.rounds.length - 1;
           changeRound(newRoundIndex);
-          
+
           // Reset all filters - imported tournament is completely new
           resetFilters();
 

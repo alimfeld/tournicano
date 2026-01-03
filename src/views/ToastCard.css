@@ -29,6 +29,12 @@ article.toast-card.top.fullscreen {
   top: calc(env(safe-area-inset-top) + var(--pico-spacing));
 }
 
+/* Middle positioning */
+article.toast-card.middle {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 /* Success variant - green */
 article.toast-card.success {
   background: color-mix(in srgb, var(--pico-form-element-valid-border-color) 90%, transparent);

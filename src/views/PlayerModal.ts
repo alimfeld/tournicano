@@ -8,7 +8,7 @@ import { Modal } from "./Modal.ts";
 export interface PlayerModalAttrs {
   player: Player;
   onClose: () => void;
-  showToast?: (message: string, options?: { type?: "success" | "error" | "info"; duration?: number; position?: "top" | "bottom" }) => void;
+  showToast?: (message: string, options?: { type?: "success" | "error" | "info"; duration?: number; position?: "top" | "middle" | "bottom" }) => void;
 }
 
 interface PlayerModalState {
@@ -97,7 +97,7 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       }
 
       if (messages.length > 0 && showToast) {
-        showToast(messages.join(". "), { type: "success" });
+        showToast(messages.join(". "), { type: "success", position: "middle" });
       }
 
       onClose();
@@ -108,11 +108,11 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       const success = player.delete();
 
       if (success) {
-        if (showToast) showToast(`Player ${playerName} deleted`, { type: "success" });
+        if (showToast) showToast(`Player ${playerName} deleted`, { type: "success", position: "middle" });
         onClose();
       } else {
         if (showToast) {
-          showToast(`Cannot delete ${playerName} - participating in rounds`, { type: "error" });
+          showToast(`Cannot delete ${playerName} - participating in rounds`, { type: "error", position: "middle" });
         }
       }
     };

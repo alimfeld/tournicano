@@ -6,7 +6,7 @@ export interface ToastCardAttrs {
   type?: "success" | "error" | "info";
   onDismiss?: () => void;
   fullscreen: boolean;
-  position?: "top" | "bottom";  // Default: "bottom"
+  position?: "top" | "middle" | "bottom";  // Default: "bottom"
 }
 
 export const ToastCard: m.Component<ToastCardAttrs> = {
