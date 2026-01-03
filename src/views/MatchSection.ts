@@ -50,8 +50,8 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
           m(
             "section.vs",
             showRoundIndex ?
-              m("h2.match", `M ${roundIndex + 1}-${matchIndex + 1}`) :
-              m("h2.match", `M ${matchIndex + 1}`),
+              m("h2.match", `R${roundIndex + 1}-M${matchIndex + 1}`) :
+              m("h2.match", `M${matchIndex + 1}`),
             mode === "display" ?
               m("input.score-text", {
                 type: "text",
