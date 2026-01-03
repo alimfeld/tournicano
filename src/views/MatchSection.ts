@@ -53,13 +53,16 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
               m("h2.match", `M ${roundIndex + 1}-${matchIndex + 1}`) :
               m("h2.match", `M ${matchIndex + 1}`),
             mode === "display" ?
-              m("div.score-text", {
+              m("input.score-text", {
+                type: "text",
+                value: displayScore ?? scoreString ?? "--:--",
                 tabindex: autoFocus ? 0 : undefined,
+                readonly: true,
                 onkeydown: onKeyDown,
                 oncreate: autoFocus ? (vnode) => {
                   (vnode.dom as HTMLElement).focus();
                 } : undefined
-              }, displayScore ?? scoreString ?? "--:--") :
+              }) :
               m("button.outline.score", {
                 class: isValid ? "valid" : "invalid",
                 onclick: () => openScoreEntry!(roundIndex, matchIndex, match),

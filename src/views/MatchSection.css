@@ -48,13 +48,8 @@ section.vs button.score.valid {
 }
 
 /* Score display in display mode */
-section.vs div.score-text {
-  border: var(--pico-border-width) solid;
-  border-color: var(--pico-muted-border-color);
-  width: 100%;
+section.vs input.score-text {
   text-align: center;
-  padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
-  border-radius: var(--pico-border-radius);
 }
 
 section.team {
