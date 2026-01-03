@@ -8,7 +8,6 @@ import { Header, HeaderAction } from "./Header.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { GroupFilter } from "./GroupFilter.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
-import { pluralizeWithCount } from "../model/core/Util.ts";
 import { appContext } from "../Layout.ts";
 
 interface StandingsState {
@@ -110,8 +109,8 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
     return [
       m(Header, {
         title: roundIndex + 1 < roundCount
-          ? `Standings (${roundIndex + 1}/${roundCount})`
-          : `Standings`,
+          ? `Standings (R${roundIndex + 1}/${roundCount})`
+          : `Standings (R${roundIndex + 1})`,
         actions: actions
       }),
       m(
