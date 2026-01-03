@@ -310,8 +310,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
           changeRound(roundCount);
         },
       }),
-      m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }),
-      !fullscreen ? null : null,
+      roundCount > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {
         roundIndex: state.scoreEntryMatch.roundIndex,
