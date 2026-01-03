@@ -108,9 +108,9 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
 
     return [
       m(Header, {
-        title: roundIndex + 1 < roundCount
-          ? `Standings (R${roundIndex + 1}/${roundCount})`
-          : `Standings (R${roundIndex + 1})`,
+        title: "Standings" + (roundCount > 0 ? (roundIndex + 1 < roundCount
+          ? ` (R${roundIndex + 1}/${roundCount})`
+          : ` (R${roundIndex + 1})`) : ""),
         actions: actions
       }),
       m(
