@@ -159,12 +159,14 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
                     : m("div.group-symbols",
                       standingsFilters.groups.map(g => m(GroupSymbol, { group: g }))
                     ),
-                  m("small", pluralizeWithCount(standings.length, "player"))
                 ),
-                // Cell 3: All stats combined (left-aligned, 2 lines)
+                // Cell 3: All stats combined
                 m("div.standings-cell.stats-cell",
                   m("p",
                     m("strong", `${(groupWinRatio * 100).toFixed(0)}%`)
+                  ),
+                  m("p",
+                    m("small", `${groupWins}-${groupDraws}-${groupLosses}`)
                   ),
                   m("p",
                     m("strong", `${(groupPlusMinus >= 0 ? "+" : "") + groupPlusMinus}`)
@@ -177,7 +179,7 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
               return m("div.standings-row",
                 // Cell 1: Rank (right-aligned)
                 m("div.standings-cell.rank-cell",
-                  ranked.rank
+                  `${ranked.rank}.`
                 ),
                 // Cell 2: PlayerCard (centered)
                 m("div.standings-cell.player-cell",
@@ -187,10 +189,13 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
                     onClick: () => openPlayerModal(ranked.player)
                   })
                 ),
-                // Cell 3: All stats combined (left-aligned, 2 lines)
+                // Cell 3: All stats combined
                 m("div.standings-cell.stats-cell",
                   m("p",
                     m("strong", `${(ranked.player.winRatio * 100).toFixed(0)}%`)
+                  ),
+                  m("p",
+                    m("small", `${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses}`)
                   ),
                   m("p",
                     m("strong", `${(ranked.player.plusMinus >= 0 ? "+" : "") + ranked.player.plusMinus}`)
