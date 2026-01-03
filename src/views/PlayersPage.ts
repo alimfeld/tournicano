@@ -74,7 +74,7 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
     // Toggle all filtered players
     const toggleAllFiltered = () => {
       const result = tournament.toggleActivePlayers(sortedPlayers);
-      showToast(result.message, result.success ? "success" : "error");
+      showToast(result.message, { type: result.success ? "success" : "error" });
     };
 
     // Delete all players action
@@ -82,7 +82,6 @@ export const PlayersPage: m.Component<{}, PlayersState> = {
       tournament.reset();
       resetFilters();
       changeRound(-1);
-      showToast("All players deleted", "success");
     };
 
     return [

@@ -133,13 +133,11 @@ export const RoundPage: m.Component<{}, RoundState> = {
         onclick: () => {
           const lastRound = tournament.rounds.at(-1);
           if (lastRound) {
-            const lastRoundNumber = tournament.rounds.length;
             lastRound.delete();
             // Navigate to previous round if we were viewing the last round
             if (roundIndex >= tournament.rounds.length) {
               changeRound(Math.max(0, tournament.rounds.length - 1));
             }
-            showToast(`Deleted Round ${lastRoundNumber}`, "success");
           }
         },
         confirmation: {
@@ -159,7 +157,6 @@ export const RoundPage: m.Component<{}, RoundState> = {
           tournament.restart();
           changeRound(-1);
           resetFilters();
-          showToast("Tournament restarted", "success");
         },
         confirmation: {
           title: "🚨 Restart Tournament?",
@@ -178,7 +175,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
           settings.enableWakeLock(!settings.wakeLock);
           showToast(
             settings.wakeLock ? "Keep Screen On" : "Allow Screen to turn Off",
-            "success"
+            { type: "success", position: "top" }
           );
         },
         disabled: !("wakeLock" in navigator),
@@ -307,7 +304,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
         disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
           if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0) {
-            showToast(`Missing scores`, "error");
+            showToast("Not all scores were entered in previous rounds", { type: "error", position: "top" });
           }
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);

@@ -43,7 +43,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
     const handleMatchingSpecChange = (matchingSpec: typeof Americano) => {
       settings.setMatchingSpec(matchingSpec);
       if (tournament.rounds.length > 0 && showToast) {
-        showToast("Mode change affects ongoing tournament", "error");
+        showToast("Mode change affects ongoing tournament", { type: "error" });
       }
     };
 
@@ -61,9 +61,9 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
           // Reset all filters - imported tournament is completely new
           resetFilters();
 
-          showToast?.(result.summary || "Tournament imported successfully", "success");
+          showToast?.(result.summary || "Tournament imported successfully", { type: "success" });
         } else {
-          showToast?.(result.error || "Import failed", "error");
+          showToast?.(result.error || "Import failed", { type: "error" });
         }
 
         // Reset modal state
@@ -71,7 +71,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
         state.pendingImportFile = null;
       };
       reader.onerror = () => {
-        showToast?.("Failed to read file", "error");
+        showToast?.("Failed to read file", { type: "error" });
         state.showImportConfirmModal = false;
         state.pendingImportFile = null;
       };

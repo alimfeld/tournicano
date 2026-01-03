@@ -98,7 +98,7 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
               try {
                 await navigator.clipboard.writeText(text);
               } catch (clipboardErr) {
-                showToast("Failed to share or copy tournament data", "error");
+                showToast("Failed to share or copy tournament data", { type: "error", position: "top" });
               }
             }
             // If user cancelled, don't show any message

@@ -1,26 +1,44 @@
-/* Toast card positioning - above navigation */
+/* Toast card positioning */
 article.toast-card {
+  max-width: var(--toast-card-max-width);
+  width: calc(100% - (var(--pico-spacing) * 2));
   position: fixed;
-  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 90%;
-  width: max-content;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   cursor: pointer;
   z-index: 1000;
-  margin: 0;
+  background: color-mix(in srgb, var(--pico-card-background-color) 90%, transparent);
+}
+
+/* Bottom positioning (default) */
+article.toast-card.bottom {
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+}
+
+article.toast-card.bottom.fullscreen {
+  bottom: calc(env(safe-area-inset-bottom) + var(--pico-spacing));
+}
+
+/* Top positioning */
+article.toast-card.top {
+  top: calc(var(--header-height) + env(safe-area-inset-top));
+}
+
+article.toast-card.top.fullscreen {
+  top: calc(env(safe-area-inset-top) + var(--pico-spacing));
 }
 
 /* Success variant - green */
 article.toast-card.success {
-  background: var(--pico-form-element-valid-border-color);
+  background: color-mix(in srgb, var(--pico-form-element-valid-border-color) 90%, transparent);
   border-color: var(--pico-form-element-valid-active-border-color);
   color: var(--pico-primary-inverse);
 }
 
 /* Error variant - red */
 article.toast-card.error {
-  background: var(--pico-form-element-invalid-border-color);
+  background: color-mix(in srgb, var(--pico-form-element-invalid-border-color) 90%, transparent);
   border-color: var(--pico-form-element-invalid-active-border-color);
   color: var(--pico-primary-inverse);
 }

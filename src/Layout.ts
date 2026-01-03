@@ -12,11 +12,11 @@ export interface LayoutAttrs {
 
 export const Layout: m.Component<LayoutAttrs> = {
   view: ({ children }) => {
-    const { 
-      state, 
-      dismissUpdate, 
-      applyUpdate, 
-      dismissToast 
+    const {
+      state,
+      dismissUpdate,
+      applyUpdate,
+      dismissToast
     } = appContext;
 
     return [
@@ -51,7 +51,7 @@ export const Layout: m.Component<LayoutAttrs> = {
       // Page content
       children,
       // Toast notifications
-      m(ToastCard, { message: state.toast.message, type: state.toast.type, onDismiss: dismissToast }),
+      m(ToastCard, { message: state.toast.message, type: state.toast.type, onDismiss: dismissToast, fullscreen: state.fullscreen, position: state.toast.position }),
       // Navigation (hidden in fullscreen mode)
       !state.fullscreen ? m(Nav) : null,
     ];

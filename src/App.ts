@@ -18,6 +18,7 @@ interface ToastState {
   message: string | null;
   type: "success" | "error" | "info";
   timeout: number | null;
+  position: "top" | "bottom";
 }
 
 interface PWAState {
@@ -82,7 +83,8 @@ const createState: () => State = () => {
     toast: {
       message: null,
       type: "info" as "success" | "error" | "info",
-      timeout: null
+      timeout: null,
+      position: "bottom" as "top" | "bottom"
     },
     fullscreen: false,
     pwa: {
@@ -120,7 +122,15 @@ export const App = () => {
   state.tournament.addListener(tournamentListener);
 
   // Toast management
-  const showToast = (message: string, type: "success" | "error" | "info" = "info", duration: number = 3000) => {
+  const showToast = (message: string, options?: {
+    type?: "success" | "error" | "info";
+    duration?: number;
+    position?: "top" | "bottom";
+  }) => {
+    const type = options?.type ?? "info";
+    const duration = options?.duration ?? 3000;
+    const position = options?.position ?? "bottom";
+
     // Clear any existing timeout
     if (state.toast.timeout !== null) {
       clearTimeout(state.toast.timeout);
@@ -128,6 +138,7 @@ export const App = () => {
 
     state.toast.message = message;
     state.toast.type = type;
+    state.toast.position = position;
 
     // Auto-hide after duration
     state.toast.timeout = window.setTimeout(() => {
@@ -208,14 +219,14 @@ export const App = () => {
       setTimeout(() => {
         state.pwa.checkingForUpdates = false;
         if (!state.needRefresh) {
-          showToast("You're already running the latest version", "success");
+          showToast("You're already running the latest version", { type: "success", position: "top" });
         }
         m.redraw();
       }, 1000);
     } catch (error) {
       console.error("Error checking for updates:", error);
       state.pwa.checkingForUpdates = false;
-      showToast("Error checking for updates", "error");
+      showToast("Error checking for updates", { type: "error", position: "top" });
       m.redraw();
     }
   };

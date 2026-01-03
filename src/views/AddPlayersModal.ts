@@ -5,7 +5,7 @@ import { Modal } from "./Modal.ts";
 export interface AddPlayersModalAttrs {
   tournament: Tournament;
   onClose: () => void;
-  showToast: (message: string, type?: "success" | "error" | "info") => void;
+  showToast: (message: string, options?: { type?: "success" | "error" | "info"; duration?: number; position?: "top" | "bottom" }) => void;
 }
 
 interface AddPlayersModalState {
@@ -24,7 +24,7 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
       const result = tournament.addPlayersFromInput(state.textareaContent);
       // Map warning to error for toast display
       const toastType = result.type === "warning" ? "error" : result.type;
-      showToast(result.message, toastType);
+      showToast(result.message, { type: toastType, position: "top" });
       onClose();
     };
 

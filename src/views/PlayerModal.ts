@@ -8,7 +8,7 @@ import { Modal } from "./Modal.ts";
 export interface PlayerModalAttrs {
   player: Player;
   onClose: () => void;
-  showToast?: (message: string, type?: "success" | "error" | "info") => void;
+  showToast?: (message: string, options?: { type?: "success" | "error" | "info"; duration?: number; position?: "top" | "bottom" }) => void;
 }
 
 interface PlayerModalState {
@@ -31,7 +31,7 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
     const trimmedEditName = state.editName.trim();
 
     // Check if any changes have been made
-    const hasChanges = 
+    const hasChanges =
       player.name !== trimmedEditName ||
       player.group !== state.editGroup ||
       player.active !== state.editActive;
@@ -78,17 +78,17 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       const messages: string[] = [];
       if (nameChanged && groupChanged && activeChanged) {
         const groupLabel = `${getGroupSymbol(state.editGroup)} ${getGroupLetter(state.editGroup)}`;
-        messages.push(`${oldName} → ${trimmedName} renamed, moved to group ${groupLabel}, ${state.editActive ? 'activated' : 'deactivated'}`);
+        messages.push(`${oldName} renamed to ${trimmedName}, moved to group ${groupLabel}, ${state.editActive ? 'activated' : 'deactivated'}`);
       } else if (nameChanged && groupChanged) {
         const groupLabel = `${getGroupSymbol(state.editGroup)} ${getGroupLetter(state.editGroup)}`;
-        messages.push(`${oldName} → ${trimmedName} renamed and moved to group ${groupLabel}`);
+        messages.push(`${oldName} renamed to ${trimmedName} and moved to group ${groupLabel}`);
       } else if (nameChanged && activeChanged) {
-        messages.push(`${oldName} → ${trimmedName} renamed and ${state.editActive ? 'activated' : 'deactivated'}`);
+        messages.push(`${oldName} renamed to ${trimmedName} and ${state.editActive ? 'activated' : 'deactivated'}`);
       } else if (groupChanged && activeChanged) {
         const groupLabel = `${getGroupSymbol(state.editGroup)} ${getGroupLetter(state.editGroup)}`;
         messages.push(`${trimmedName} moved to group ${groupLabel} and ${state.editActive ? 'activated' : 'deactivated'}`);
       } else if (nameChanged) {
-        messages.push(`${oldName} → ${trimmedName} renamed successfully`);
+        messages.push(`${oldName} renamed to ${trimmedName}`);
       } else if (groupChanged) {
         const groupLabel = `${getGroupSymbol(state.editGroup)} ${getGroupLetter(state.editGroup)}`;
         messages.push(`${trimmedName} moved to group ${groupLabel}`);
@@ -97,7 +97,7 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       }
 
       if (messages.length > 0 && showToast) {
-        showToast(messages.join(". "), "success");
+        showToast(messages.join(". "), { type: "success" });
       }
 
       onClose();
@@ -108,11 +108,11 @@ export const PlayerModal: m.Component<PlayerModalAttrs, PlayerModalState> = {
       const success = player.delete();
 
       if (success) {
-        if (showToast) showToast(`Player ${playerName} deleted`, "success");
+        if (showToast) showToast(`Player ${playerName} deleted`, { type: "success" });
         onClose();
       } else {
         if (showToast) {
-          showToast(`Cannot delete ${playerName} - participating in rounds`, "error");
+          showToast(`Cannot delete ${playerName} - participating in rounds`, { type: "error" });
         }
       }
     };
