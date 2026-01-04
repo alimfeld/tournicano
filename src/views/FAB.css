@@ -24,3 +24,13 @@ button.fab.ins {
   background: var(--pico-form-element-valid-focus-color);
   border-color: var(--pico-form-element-valid-border-color);
 }
+
+/* Button press feedback */
+button.fab {
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+button.fab:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}

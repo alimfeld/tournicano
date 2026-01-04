@@ -37,3 +37,18 @@ nav li {
 nav li.active {
   border-top-color: var(--pico-primary);
 }
+
+/* Nav icon styling - required for transform */
+nav li span.icon {
+  display: inline-block;
+}
+
+/* Button press feedback - animate icon only, not border */
+nav li span.icon {
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+nav li:active span.icon {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
