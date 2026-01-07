@@ -485,7 +485,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
   createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
     const { participating, active, inactive } = this.getPlayersForNextRound(true); // shuffle new players
-    const [matched, paused] = matching(active, spec || Americano, maxMatches);
+    const [matched, paused] = matching(active, spec || Americano, this.rounds.length, maxMatches);
     const round = new RoundImpl(
       this,
       this.rounds.length,

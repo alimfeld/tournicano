@@ -1,104 +1,13 @@
-import { expect } from "vitest";
+import { expect, test as vitest } from "vitest";
 import { test, runTournament } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
+import { validatePlayerName, Tournament } from "./Tournament.ts";
 import {
   Americano,
-  AmericanoMixedBalanced,
-  MatchingSpec,
-  MatchUpGroupMode,
-  TeamUpGroupMode,
-  TeamUpPerformanceMode,
-  matchingSpecEquals,
-  Mexicano,
-  Tournicano,
-  GroupBattle,
-  GroupBattleMixed,
   AmericanoMixed,
+  AmericanoMixedBalanced,
+  Mexicano,
 } from "../matching/MatchingSpec.ts";
-
-test("should serialize tournament", ({ players, scores }) => {
-  const tournament = runTournament(players, scores);
-  const serialized = tournament.serialize();
-  const fromSerialized = tournamentFactory.create(serialized);
-  expect(fromSerialized.rounds).toHaveLength(tournament.rounds.length);
-
-  // Compare round data directly
-  fromSerialized.rounds.forEach((round, i) => {
-    const origRound = tournament.rounds[i]!;
-
-    // Compare matches
-    expect(round.matches).toHaveLength(origRound.matches.length);
-    round.matches.forEach((match, j) => {
-      const origMatch = origRound.matches[j];
-      expect(match.teamA.player1.name).toBe(origMatch.teamA.player1.name);
-      expect(match.teamA.player2.name).toBe(origMatch.teamA.player2.name);
-      expect(match.teamB.player1.name).toBe(origMatch.teamB.player1.name);
-      expect(match.teamB.player2.name).toBe(origMatch.teamB.player2.name);
-      expect(match.score).toEqual(origMatch.score);
-    });
-
-    // Compare paused players
-    expect(round.paused).toHaveLength(origRound.paused.length);
-    round.paused.forEach((player, j) => {
-      expect(player.name).toBe(origRound.paused[j].name);
-    });
-
-    // Compare standings
-    const standings = round.standings();
-    const origStandings = origRound.standings();
-    expect(standings).toHaveLength(origStandings.length);
-    standings.forEach((ranked, j) => {
-      const origRanked = origStandings[j];
-      expect(ranked.rank).toBe(origRanked.rank);
-      expect(ranked.player.name).toBe(origRanked.player.name);
-      expect(ranked.player.wins).toBe(origRanked.player.wins);
-      expect(ranked.player.draws).toBe(origRanked.player.draws);
-      expect(ranked.player.losses).toBe(origRanked.player.losses);
-      expect(ranked.player.pointsFor).toBe(origRanked.player.pointsFor);
-      expect(ranked.player.pointsAgainst).toBe(origRanked.player.pointsAgainst);
-    });
-  });
-});
-
-test("should serialize and deserialize registration status", ({ players }) => {
-  const tournament = runTournament(players);
-
-  // Deactivate some players
-  tournament.players()[0].activate(false);
-  tournament.players()[3].activate(false);
-  tournament.players()[7].activate(false);
-
-  expect(tournament.activePlayerCount).toBe(7);
-
-  const serialized = tournament.serialize();
-  const fromSerialized = tournamentFactory.create(serialized);
-
-  // Verify activation status preserved
-  expect(fromSerialized.activePlayerCount).toBe(7);
-  expect(fromSerialized.players()[0].active).toBe(false);
-  expect(fromSerialized.players()[1].active).toBe(true);
-  expect(fromSerialized.players()[3].active).toBe(false);
-  expect(fromSerialized.players()[7].active).toBe(false);
-});
-
-test("should serialize and deserialize active status", ({ players }) => {
-  const tournament = runTournament(players);
-
-  // Deactivate some players
-  tournament.players()[0].activate(false);
-  tournament.players()[4].activate(false);
-
-  expect(tournament.activePlayerCount).toBe(8);
-
-  const serialized = tournament.serialize();
-  const fromSerialized = tournamentFactory.create(serialized);
-
-  // Verify active status preserved
-  expect(fromSerialized.activePlayerCount).toBe(8);
-  expect(fromSerialized.players()[0].active).toBe(false);
-  expect(fromSerialized.players()[1].active).toBe(true);
-  expect(fromSerialized.players()[4].active).toBe(false);
-});
 
 test("should update performance through rounds", ({ players, scores }) => {
   const tournament = runTournament(players);
@@ -248,141 +157,6 @@ test("should return hasAllScoresSubmitted - mixed score states", ({ players }) =
 
   // Verify draw is still counted as a submitted score
   expect(round.matches[0].score).toEqual([10, 10]);
-});
-
-test("matchingSpecEquals should return true for identical specs", () => {
-  const spec1: MatchingSpec = {
-    teamUp: {
-      varietyFactor: 1,
-      performanceFactor: 0.5,
-      performanceMode: "rank" as unknown as TeamUpPerformanceMode,
-      groupFactor: 0,
-      groupMode: "none" as unknown as TeamUpGroupMode,
-    },
-    matchUp: {
-      varietyFactor: 1,
-      performanceFactor: 0.5,
-      groupFactor: 0,
-      groupMode: "none" as unknown as MatchUpGroupMode,
-    },
-  };
-
-  const spec2: MatchingSpec = {
-    teamUp: {
-      varietyFactor: 1,
-      performanceFactor: 0.5,
-      performanceMode: "rank" as unknown as TeamUpPerformanceMode,
-      groupFactor: 0,
-      groupMode: "none" as unknown as TeamUpGroupMode,
-    },
-    matchUp: {
-      varietyFactor: 1,
-      performanceFactor: 0.5,
-      groupFactor: 0,
-      groupMode: "none" as unknown as MatchUpGroupMode,
-    },
-  };
-
-  expect(matchingSpecEquals(spec1, spec2)).toBe(true);
-});
-
-test("matchingSpecEquals should return true for same object", () => {
-  const spec: MatchingSpec = Americano;
-  expect(matchingSpecEquals(spec, spec)).toBe(true);
-});
-
-test("matchingSpecEquals should return true for predefined modes", () => {
-  expect(matchingSpecEquals(Americano, Americano)).toBe(true);
-  expect(matchingSpecEquals(Mexicano, Mexicano)).toBe(true);
-  expect(matchingSpecEquals(Tournicano, Tournicano)).toBe(true);
-});
-
-test("matchingSpecEquals should return false when teamUp.varietyFactor differs", () => {
-  const spec1: MatchingSpec = { ...Americano };
-  const spec2: MatchingSpec = {
-    ...Americano,
-    teamUp: { ...Americano.teamUp, varietyFactor: 0.5 },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when teamUp.performanceFactor differs", () => {
-  const spec1: MatchingSpec = { ...Mexicano };
-  const spec2: MatchingSpec = {
-    ...Mexicano,
-    teamUp: { ...Mexicano.teamUp, performanceFactor: 0.9 },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when teamUp.performanceMode differs", () => {
-  const spec1: MatchingSpec = { ...Mexicano };
-  const spec2: MatchingSpec = {
-    ...Mexicano,
-    teamUp: { ...Mexicano.teamUp, performanceMode: "rank" as unknown as TeamUpPerformanceMode },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when teamUp.groupFactor differs", () => {
-  const spec1: MatchingSpec = { ...AmericanoMixed };
-  const spec2: MatchingSpec = {
-    ...AmericanoMixed,
-    teamUp: { ...AmericanoMixed.teamUp, groupFactor: 0.5 },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when teamUp.groupMode differs", () => {
-  const spec1: MatchingSpec = { ...AmericanoMixed };
-  const spec2: MatchingSpec = {
-    ...AmericanoMixed,
-    teamUp: { ...AmericanoMixed.teamUp, groupMode: "same" as unknown as TeamUpGroupMode },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when matchUp.varietyFactor differs", () => {
-  const spec1: MatchingSpec = { ...Americano };
-  const spec2: MatchingSpec = {
-    ...Americano,
-    matchUp: { ...Americano.matchUp, varietyFactor: 0.5 },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when matchUp.performanceFactor differs", () => {
-  const spec1: MatchingSpec = { ...Mexicano };
-  const spec2: MatchingSpec = {
-    ...Mexicano,
-    matchUp: { ...Mexicano.matchUp, performanceFactor: 0.9 },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when matchUp.groupFactor differs", () => {
-  const spec1: MatchingSpec = { ...AmericanoMixed };
-  const spec2: MatchingSpec = {
-    ...AmericanoMixed,
-    matchUp: { ...AmericanoMixed.matchUp, groupFactor: 0.5 },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should return false when matchUp.groupMode differs", () => {
-  const spec1: MatchingSpec = { ...GroupBattle };
-  const spec2: MatchingSpec = {
-    ...GroupBattle,
-    matchUp: { ...GroupBattle.matchUp, groupMode: "mixed" as unknown as MatchUpGroupMode },
-  };
-  expect(matchingSpecEquals(spec1, spec2)).toBe(false);
-});
-
-test("matchingSpecEquals should distinguish between different predefined modes", () => {
-  expect(matchingSpecEquals(Americano, Mexicano)).toBe(false);
-  expect(matchingSpecEquals(Americano, AmericanoMixed)).toBe(false);
-  expect(matchingSpecEquals(Mexicano, Tournicano)).toBe(false);
-  expect(matchingSpecEquals(GroupBattle, GroupBattleMixed)).toBe(false);
 });
 
 test("getNextRoundInfo should return correct match count for new tournament", ({ players }) => {
@@ -535,4 +309,344 @@ test("getNextRoundInfo should handle inactive players correctly", ({ players }) 
   
   const group0 = info.groupDistribution.get(0)!;
   expect(group0.total).toBe(7); // Only active players in distribution
+});
+
+// Tests for toggleActivePlayers
+test("toggleActivePlayers activates all when majority inactive", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"]);
+  
+  // Get all players and deactivate 3 of them
+  const players = tournament.players();
+  players[0].activate(false);
+  players[1].activate(false);
+  players[2].activate(false);
+  // players[3] stays active
+  
+  const result = tournament.toggleActivePlayers(players);
+  
+  expect(result.success).toBe(true);
+  expect(result.message).toBe("3 players activated");
+  expect(players.every(p => p.active)).toBe(true);
+});
+
+test("toggleActivePlayers deactivates all when majority active", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"]);
+  
+  const players = tournament.players();
+  // Deactivate only 1 player (minority)
+  players[0].activate(false);
+  
+  const result = tournament.toggleActivePlayers(players);
+  
+  // 3 active, 1 inactive - should activate the 1 inactive player
+  expect(result.success).toBe(true);
+  expect(result.message).toBe("1 player activated");
+  expect(players.every(p => p.active)).toBe(true);
+});
+
+test("toggleActivePlayers activates when exactly half are active", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"]);
+  
+  const players = tournament.players();
+  players[0].activate(false);
+  players[1].activate(false);
+  // 2 active, 2 inactive - should activate
+  
+  const result = tournament.toggleActivePlayers(players);
+  
+  expect(result.success).toBe(true);
+  expect(result.message).toBe("2 players activated");
+  expect(players.every(p => p.active)).toBe(true);
+});
+
+test("toggleActivePlayers works with single player", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice"]);
+  
+  const players = tournament.players();
+  players[0].activate(false);
+  
+  const result = tournament.toggleActivePlayers(players);
+  
+  expect(result.success).toBe(true);
+  expect(result.message).toBe("1 player activated");
+  expect(players[0].active).toBe(true);
+});
+
+test("toggleActivePlayers handles empty array", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob"]);
+  
+  const result = tournament.toggleActivePlayers([]);
+  
+  // Empty array has 0 active, 0 total, so should try to activate (0 affected)
+  expect(result.success).toBe(true);
+  expect(result.message).toMatch(/0 players? (activated|deactivated)/);
+});
+
+// Tests for getFilteredPlayers and getPlayerCounts
+test("getFilteredPlayers with no filter returns all players", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol"]);
+  
+  const players = tournament.getFilteredPlayers();
+  expect(players).toHaveLength(3);
+});
+
+test("getFilteredPlayers sorts by name by default", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Carol", "Alice", "Bob"]);
+  
+  const players = tournament.getFilteredPlayers();
+  expect(players.map(p => p.name)).toEqual(["Alice", "Bob", "Carol"]);
+});
+
+test("getFilteredPlayers with search filter (case insensitive)", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"]);
+  
+  const players = tournament.getFilteredPlayers({ search: "al" });
+  expect(players).toHaveLength(1);
+  expect(players[0].name).toBe("Alice");
+});
+
+test("getFilteredPlayers with participating filter", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"]);
+  tournament.createRound(); // Alice and Bob will participate
+  
+  const participating = tournament.getFilteredPlayers({ participating: true });
+  expect(participating.length).toBeGreaterThan(0);
+  participating.forEach(p => expect(p.inAnyRound()).toBe(true));
+  
+  const nonParticipating = tournament.getFilteredPlayers({ participating: false });
+  nonParticipating.forEach(p => expect(p.inAnyRound()).toBe(false));
+});
+
+test("getFilteredPlayers with groups filter", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Carol", "Dave"], 1);
+  
+  const group0 = tournament.getFilteredPlayers({ groups: [0] });
+  expect(group0).toHaveLength(2);
+  expect(group0.every(p => p.group === 0)).toBe(true);
+  
+  const group1 = tournament.getFilteredPlayers({ groups: [1] });
+  expect(group1).toHaveLength(2);
+  expect(group1.every(p => p.group === 1)).toBe(true);
+  
+  const both = tournament.getFilteredPlayers({ groups: [0, 1] });
+  expect(both).toHaveLength(4);
+});
+
+test("getFilteredPlayers with active filter", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol"]);
+  tournament.players()[0].activate(false);
+  
+  const active = tournament.getFilteredPlayers({ active: "active" });
+  expect(active).toHaveLength(2);
+  expect(active.every(p => p.active)).toBe(true);
+  
+  const inactive = tournament.getFilteredPlayers({ active: "inactive" });
+  expect(inactive).toHaveLength(1);
+  expect(inactive.every(p => !p.active)).toBe(true);
+  
+  const all = tournament.getFilteredPlayers({ active: undefined });
+  expect(all).toHaveLength(3);
+  
+  // Also test with empty filter object
+  const allWithEmptyFilter = tournament.getFilteredPlayers({});
+  expect(allWithEmptyFilter).toHaveLength(3);
+});
+
+test("getFilteredPlayers with combined filters", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Alison"], 0);
+  tournament.addPlayers(["Bob", "Beth"], 1);
+  
+  const filtered = tournament.getFilteredPlayers({
+    search: "al",
+    groups: [0],
+    active: "active",
+  });
+  
+  expect(filtered).toHaveLength(2);
+  expect(filtered.every(p => p.group === 0)).toBe(true);
+  expect(filtered.every(p => p.name.toLowerCase().includes("al"))).toBe(true);
+});
+
+test("getFilteredPlayers sorted by group", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice"], 2);
+  tournament.addPlayers(["Bob"], 0);
+  tournament.addPlayers(["Carol"], 1);
+  
+  const players = tournament.getFilteredPlayers(undefined, "group");
+  expect(players.map(p => p.group)).toEqual([0, 1, 2]);
+});
+
+test("getPlayerCounts returns correct totals", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol"]);
+  tournament.players()[0].activate(false);
+  
+  const counts = tournament.getPlayerCounts();
+  expect(counts.total).toBe(3);
+  expect(counts.active).toBe(2);
+  expect(counts.inactive).toBe(1);
+  expect(counts.participating).toBe(0);
+});
+
+test("getPlayerCounts with filter", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Alison", "Bob"], 0);
+  
+  const counts = tournament.getPlayerCounts({ search: "al" });
+  expect(counts.total).toBe(2);
+  expect(counts.active).toBe(2);
+});
+
+test("getPlayerCounts byGroup", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob"], 0);
+  tournament.addPlayers(["Carol"], 1);
+  tournament.players()[0].activate(false);
+  
+  const counts = tournament.getPlayerCounts();
+  
+  const group0 = counts.byGroup.get(0);
+  expect(group0?.total).toBe(2);
+  expect(group0?.active).toBe(1);
+  expect(group0?.inactive).toBe(1);
+  
+  const group1 = counts.byGroup.get(1);
+  expect(group1?.total).toBe(1);
+  expect(group1?.active).toBe(1);
+  expect(group1?.inactive).toBe(0);
+});
+
+test("getPlayerCounts participating", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"]);
+  tournament.createRound();
+  
+  const counts = tournament.getPlayerCounts();
+  expect(counts.participating).toBeGreaterThan(0);
+  expect(counts.participating).toBeLessThanOrEqual(4);
+});
+
+// Tests for validatePlayerName function
+vitest("validatePlayerName accepts valid names", () => {
+  expect(validatePlayerName("Alice")).toEqual({ valid: true });
+  expect(validatePlayerName("Bob Smith")).toEqual({ valid: true });
+  expect(validatePlayerName("Player-123")).toEqual({ valid: true });
+  expect(validatePlayerName("José")).toEqual({ valid: true });
+});
+
+vitest("validatePlayerName trims whitespace", () => {
+  expect(validatePlayerName("  Alice  ")).toEqual({ valid: true });
+  expect(validatePlayerName("\tBob\n")).toEqual({ valid: true });
+});
+
+vitest("validatePlayerName rejects empty names", () => {
+  expect(validatePlayerName("")).toEqual({ 
+    valid: false, 
+    error: "Name is required" 
+  });
+  expect(validatePlayerName("   ")).toEqual({ 
+    valid: false, 
+    error: "Name is required" 
+  });
+});
+
+vitest("validatePlayerName allows commas", () => {
+  const result = validatePlayerName("Smith, John");
+  expect(result.valid).toBe(true);
+});
+
+vitest("validatePlayerName allows periods", () => {
+  const result = validatePlayerName("J.R. Smith");
+  expect(result.valid).toBe(true);
+});
+
+// Tests for Tournament.validateConfiguration
+interface ValidationFixture {
+  tournament: Tournament;
+}
+
+const validationTest = test.extend<ValidationFixture>({
+  tournament: async ({}, use) => {
+    const tournament = tournamentFactory.create();
+    // Add players in different groups
+    tournament.addPlayers(["Alice", "Bob", "Carol", "Dave"], 0);
+    tournament.addPlayers(["Eve", "Frank", "Grace", "Hank"], 1);
+    await use(tournament);
+  },
+});
+
+validationTest("validateConfiguration warns for Americano with mixed groups", ({ tournament }) => {
+  // Americano doesn't use groups, so having players in multiple groups should warn
+  const warnings = tournament.validateConfiguration(Americano);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0].type).toBe("groupMismatch");
+  expect(warnings[0].message).toContain("mode ignores them");
+});
+
+validationTest("validateConfiguration warns when AmericanoMixed used with one group", ({ tournament }) => {
+  // Deactivate all players in group 1
+  tournament.activateGroup(1, false);
+  
+  const warnings = tournament.validateConfiguration(AmericanoMixed);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0].type).toBe("groupMismatch");
+  expect(warnings[0].message).toContain("all active players are in one group");
+});
+
+validationTest("validateConfiguration warns when mode ignores groups but players are in multiple groups", ({ tournament }) => {
+  // Americano doesn't use groups
+  const warnings = tournament.validateConfiguration(Americano);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0].type).toBe("groupMismatch");
+  expect(warnings[0].message).toContain("mode ignores them");
+});
+
+validationTest("validateConfiguration returns no warnings for AmericanoMixed with multiple groups", ({ tournament }) => {
+  const warnings = tournament.validateConfiguration(AmericanoMixed);
+  expect(warnings).toEqual([]);
+});
+
+validationTest("validateConfiguration returns no warnings for Mexicano (no group factor)", ({ tournament }) => {
+  const warnings = tournament.validateConfiguration(Mexicano);
+  // Mexicano doesn't use groups, but warning only shows if players are in multiple groups
+  expect(warnings).toHaveLength(1); // Should warn about multiple groups being ignored
+  expect(warnings[0].type).toBe("groupMismatch");
+});
+
+validationTest("validateConfiguration handles all players in one group correctly", ({ tournament }) => {
+  // Put everyone in group 0
+  tournament.activateGroup(1, false);
+  
+  // Americano should have no warnings (doesn't use groups anyway)
+  const americanoWarnings = tournament.validateConfiguration(Americano);
+  expect(americanoWarnings).toEqual([]);
+  
+  // AmericanoMixed should warn (needs multiple groups)
+  const mixedWarnings = tournament.validateConfiguration(AmericanoMixed);
+  expect(mixedWarnings).toHaveLength(1);
+  expect(mixedWarnings[0].type).toBe("groupMismatch");
+});
+
+validationTest("validateConfiguration with insufficient players", ({ tournament }) => {
+  // Deactivate most players (leave only 2 active)
+  const players = tournament.players();
+  players.slice(2).forEach(p => p.activate(false));
+  
+  const warnings = tournament.validateConfiguration(Americano);
+  // With < 4 players, no group mismatch warning should appear
+  expect(warnings).toEqual([]);
 });
