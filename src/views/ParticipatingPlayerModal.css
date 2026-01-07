@@ -12,26 +12,8 @@ dialog.participating-player-modal header img {
   height: var(--player-modal-avatar-size);
 }
 
-/* Stats section - centered grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: calc(var(--pico-spacing) / 2) var(--pico-spacing);
-  margin-bottom: var(--pico-spacing);
-  max-width: 12rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.stats-grid dt {
-  color: var(--pico-muted-color);
+dialog.participating-player-modal table td {
   text-align: right;
-  font-weight: normal;
-}
-
-.stats-grid dd {
-  margin: 0;
-  font-weight: bold;
 }
 
 /* Footer - flex layout for toggle + button */

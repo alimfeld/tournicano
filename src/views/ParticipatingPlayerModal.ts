@@ -12,6 +12,21 @@ export interface ParticipatingPlayerModalAttrs {
 
 export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs> = {
   view: ({ attrs: { player, onClose } }) => {
+    // Partner statistics
+    const uniquePartners = player.partners.size;
+    const partnerCounts = Array.from(player.partners.values())
+      .map(rounds => rounds.length);
+    const minPartnerings = partnerCounts.length > 0 ? Math.min(...partnerCounts) : 0;
+    const avgPartnerings = uniquePartners > 0 ? player.matchCount / uniquePartners : 0;
+    const maxPartnerings = partnerCounts.length > 0 ? Math.max(...partnerCounts) : 0;
+
+    // Opponent statistics
+    const uniqueOpponents = player.opponents.size;
+    const opponentCounts = Array.from(player.opponents.values())
+      .map(rounds => rounds.length);
+    const minOppositions = opponentCounts.length > 0 ? Math.min(...opponentCounts) : 0;
+    const avgOppositions = uniqueOpponents > 0 ? (player.matchCount * 2) / uniqueOpponents : 0;
+    const maxOppositions = opponentCounts.length > 0 ? Math.max(...opponentCounts) : 0;
 
     return m(Modal, { onClose, className: 'participating-player-modal' },
       m("article",
@@ -30,40 +45,35 @@ export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs
           ),
         ),
 
-        // Stats Section - Use semantic HTML (dl/dt/dd)
-        m("dl.stats-grid",
-
-          // Win %
-          m("dt", "Win Ratio"),
-          m("dd", `${(player.winRatio * 100).toFixed(0)}%`),
-
-          // Record
-          m("dt", "W-D-L"),
-          m("dd", `${player.wins}-${player.draws}-${player.losses}`),
-
-          // Plus/Minus
-          m("dt", "Points"),
-          m("dd", `${player.plusMinus >= 0 ? "+" : ""}${player.plusMinus}`),
-
-          // Points For/Against
-          m("dt", "Plus/Minus"),
-          m("dd", `+${player.pointsFor}/-${player.pointsAgainst}`),
-
-          // Play %
-          m("dt", "Play Ratio"),
-          m("dd", `${(player.playRatio * 100).toFixed(0)}% `),
-
-          // Matches (& Pauses)
-          m("dt", "Matches"),
-          m("dd", `${player.matchCount} / ${player.matchCount + player.pauseCount}`),
-
-          // Partners
-          m("dt", "Partners"),
-          m("dd", player.partners.size),
-
-          // Opponents
-          m("dt", "Opponents"),
-          m("dd", player.opponents.size)
+        // Stats Section
+        m("table.striped",
+          m("tbody",
+            m("tr",
+              m("th[scope=row]", "Win Ratio"),
+              m("td", `${(player.winRatio * 100).toFixed(0)}%`),
+              m("td", `${player.wins}-${player.draws}-${player.losses}`),
+            ),
+            m("tr",
+              m("th[scope=row]", "Points"),
+              m("td", `${player.plusMinus >= 0 ? "+" : ""}${player.plusMinus}`),
+              m("td", `+${player.pointsFor}/-${player.pointsAgainst}`),
+            ),
+            m("tr",
+              m("th[scope=row]", "Play Ratio"),
+              m("td", `${(player.playRatio * 100).toFixed(0)}% `),
+              m("td", `${player.matchCount}/${player.matchCount + player.pauseCount}`),
+            ),
+            m("tr",
+              m("th[scope=row]", "Partners"),
+              m("td", `${uniquePartners}`),
+              m("td", `${minPartnerings}|${avgPartnerings.toFixed(1)}|${maxPartnerings}`),
+            ),
+            m("tr",
+              m("th[scope=row]", "Opponents"),
+              m("td", `${uniqueOpponents}`),
+              m("td", `${minOppositions}|${avgOppositions.toFixed(1)}|${maxOppositions}`),
+            ),
+          ),
         ),
 
         // Footer: Active toggle
