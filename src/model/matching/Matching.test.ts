@@ -32,9 +32,9 @@ function calculateCV(values: number[]): number {
 
 // Helper: Update player statistics after a round
 function updatePlayerStats(
-  players: Player[], 
-  matches: Match[], 
-  paused: any[], 
+  players: Player[],
+  matches: Match[],
+  paused: any[],
   roundIndex: number
 ): void {
   matches.forEach((match) => {
@@ -42,13 +42,13 @@ function updatePlayerStats(
       team.forEach((player) => {
         const mutablePlayer = players.find(p => p.id === player.id)!;
         mutablePlayer.matchCount++;
-        
+
         // Track partners
         const partner = team[0].id === player.id ? team[1] : team[0];
         const partnerRounds = mutablePlayer.partners.get(partner.id) || [];
         partnerRounds.push(roundIndex);
         mutablePlayer.partners.set(partner.id, partnerRounds);
-        
+
         // Track opponents
         const opponentTeam = match[0] === team ? match[1] : match[0];
         opponentTeam.forEach((opponent) => {
@@ -59,7 +59,7 @@ function updatePlayerStats(
       });
     });
   });
-  
+
   paused.forEach(p => {
     const mutablePlayer = players.find(mp => mp.id === p.id)!;
     mutablePlayer.pauseCount++;
@@ -79,7 +79,7 @@ interface DistributionAnalysis {
 
 function analyzeDistribution(players: Player[]): DistributionAnalysis {
   const partnerCounts = new Map<string, number>();
-  
+
   // Collect all partner counts
   players.forEach(p => {
     p.partners.forEach((rounds, partnerId) => {
@@ -87,17 +87,17 @@ function analyzeDistribution(players: Player[]): DistributionAnalysis {
       partnerCounts.set(pairKey, rounds.length);
     });
   });
-  
+
   const counts = Array.from(partnerCounts.values());
   const uniqueCount = counts.filter(c => c === 1).length;
   const uniqueRate = counts.length > 0 ? uniqueCount / counts.length : 0;
   const maxRepeats = counts.length > 0 ? Math.max(...counts) : 0;
   const variance = calculateVariance(counts);
   const cv = calculateCV(counts);
-  const avgPartnershipsPerPair = counts.length > 0 
-    ? counts.reduce((sum, c) => sum + c, 0) / counts.length 
+  const avgPartnershipsPerPair = counts.length > 0
+    ? counts.reduce((sum, c) => sum + c, 0) / counts.length
     : 0;
-  
+
   return {
     partnerCounts,
     uniqueRate,
@@ -105,6 +105,46 @@ function analyzeDistribution(players: Player[]): DistributionAnalysis {
     variance,
     cv,
     avgPartnershipsPerPair,
+  };
+}
+
+// Helper: Analyze opponent distribution for a set of players
+interface OpponentDistributionAnalysis {
+  opponentCounts: Map<string, number>;
+  minOpponents: number;
+  maxOpponents: number;
+  avgOpponents: number;
+  range: number;
+  cv: number;
+}
+
+function analyzeOpponentDistribution(players: Player[]): OpponentDistributionAnalysis {
+  const opponentCounts = new Map<string, number>();
+
+  // Collect all opponent counts
+  players.forEach(p => {
+    p.opponents.forEach((rounds, opponentId) => {
+      const pairKey = [p.id, opponentId].sort().join("-");
+      opponentCounts.set(pairKey, rounds.length);
+    });
+  });
+
+  const counts = Array.from(opponentCounts.values());
+  const minOpponents = counts.length > 0 ? Math.min(...counts) : 0;
+  const maxOpponents = counts.length > 0 ? Math.max(...counts) : 0;
+  const avgOpponents = counts.length > 0
+    ? counts.reduce((sum, c) => sum + c, 0) / counts.length
+    : 0;
+  const range = maxOpponents - minOpponents;
+  const cv = calculateCV(counts);
+
+  return {
+    opponentCounts,
+    minOpponents,
+    maxOpponents,
+    avgOpponents,
+    range,
+    cv,
   };
 }
 
@@ -814,7 +854,7 @@ test("should prevent cross-pair violations over multiple rounds with 4 groups", 
 test("should distribute partnerships fairly with 6 players (Americano Mixed)", () => {
   const runsToTest = 20;
   const allAnalyses: DistributionAnalysis[] = [];
-  
+
   for (let run = 0; run < runsToTest; run++) {
     // Create 6 players: 3 men (group 0), 3 women (group 1)
     const players: Player[] = [];
@@ -823,39 +863,39 @@ test("should distribute partnerships fairly with 6 players (Americano Mixed)", (
       p.group = i < 3 ? 0 : 1;
       players.push(p);
     }
-    
+
     // Simulate 5 rounds (1 court, 2 teams/round, 2 paused)
     for (let round = 0; round < 5; round++) {
       const [matches, paused] = matching(players, AmericanoMixed, round, 1);
       updatePlayerStats(players, matches, paused, round);
     }
-    
+
     const analysis = analyzeDistribution(players);
     allAnalyses.push(analysis);
   }
-  
+
   // Aggregate statistics across all runs
   const avgUniqueRate = allAnalyses.reduce((sum, a) => sum + a.uniqueRate, 0) / runsToTest;
   const avgMaxRepeats = allAnalyses.reduce((sum, a) => sum + a.maxRepeats, 0) / runsToTest;
   const maxRepeatsOverall = Math.max(...allAnalyses.map(a => a.maxRepeats));
   const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
-  
+
   console.log(`\n=== 6 PLAYERS (Americano Mixed) - 5 rounds, 20 runs ===`);
   console.log(`Average unique partnership rate: ${(avgUniqueRate * 100).toFixed(1)}%`);
   console.log(`Average max repeats per pair: ${avgMaxRepeats.toFixed(2)}`);
   console.log(`Max repeats across all runs: ${maxRepeatsOverall}`);
   console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
-  
+
   // ASSERTIONS
   // With 6 players over 5 rounds: 10 team slots, 9 possible mixed pairs
   // Expect: very high unique partnerships, low repetition
-  
+
   // 1. Most partnerships should be unique
   expect(avgUniqueRate).toBeGreaterThan(0.85); // 85%+ unique (tightened from 80%)
-  
+
   // 2. No pair should partner excessively (max 2x in 5 rounds is acceptable)
   expect(maxRepeatsOverall).toBeLessThanOrEqual(2);
-  
+
   // 3. Distribution should be fairly uniform (low CV)
   expect(avgCV).toBeLessThan(0.35); // CV < 0.35 (tightened from 0.5)
 });
@@ -863,46 +903,46 @@ test("should distribute partnerships fairly with 6 players (Americano Mixed)", (
 test("should distribute partnerships fairly with 8 players (Americano)", () => {
   const runsToTest = 15; // Fewer runs since 8 players is more deterministic
   const allAnalyses: DistributionAnalysis[] = [];
-  
+
   for (let run = 0; run < runsToTest; run++) {
     // Create 8 players (no groups for regular Americano)
     const players: Player[] = [];
     for (let i = 0; i < 8; i++) {
       players.push(new Player(`${i}`, `Player${i}`));
     }
-    
+
     // Simulate 7 rounds (2 courts, 4 teams/round, 0 paused)
     for (let round = 0; round < 7; round++) {
       const [matches, paused] = matching(players, Americano, round, 2);
       updatePlayerStats(players, matches, paused, round);
     }
-    
+
     const analysis = analyzeDistribution(players);
     allAnalyses.push(analysis);
   }
-  
+
   // Aggregate statistics
   const avgUniqueRate = allAnalyses.reduce((sum, a) => sum + a.uniqueRate, 0) / runsToTest;
   const avgMaxRepeats = allAnalyses.reduce((sum, a) => sum + a.maxRepeats, 0) / runsToTest;
   const maxRepeatsOverall = Math.max(...allAnalyses.map(a => a.maxRepeats));
   const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
-  
+
   console.log(`\n=== 8 PLAYERS (Americano) - 7 rounds, 15 runs ===`);
   console.log(`Average unique partnership rate: ${(avgUniqueRate * 100).toFixed(1)}%`);
   console.log(`Average max repeats per pair: ${avgMaxRepeats.toFixed(2)}`);
   console.log(`Max repeats across all runs: ${maxRepeatsOverall}`);
   console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
-  
+
   // ASSERTIONS
   // With 8 players over 7 rounds: 28 team slots, 28 possible pairs (C(8,2))
   // This is mathematically IDEAL: each pair partners exactly once = perfect variety
-  
+
   // 1. Should achieve perfect unique rate (100%)
   expect(avgUniqueRate).toBe(1.0); // Exact 100% unique (aggressive expectation)
-  
+
   // 2. No repeats allowed (perfect distribution)
   expect(maxRepeatsOverall).toBe(1); // Exact 1x per pair (tightened from ≤2)
-  
+
   // 3. Perfect distribution uniformity
   expect(avgCV).toBe(0); // Perfect uniformity (tightened from <0.4)
 });
@@ -910,46 +950,46 @@ test("should distribute partnerships fairly with 8 players (Americano)", () => {
 test("should distribute partnerships fairly with 12 players (Americano)", () => {
   const runsToTest = 10; // Fewer runs (larger tournaments are slower)
   const allAnalyses: DistributionAnalysis[] = [];
-  
+
   for (let run = 0; run < runsToTest; run++) {
     // Create 12 players
     const players: Player[] = [];
     for (let i = 0; i < 12; i++) {
       players.push(new Player(`${i}`, `Player${i}`));
     }
-    
+
     // Simulate 11 rounds (3 courts, 6 teams/round, 0 paused)
     for (let round = 0; round < 11; round++) {
       const [matches, paused] = matching(players, Americano, round, 3);
       updatePlayerStats(players, matches, paused, round);
     }
-    
+
     const analysis = analyzeDistribution(players);
     allAnalyses.push(analysis);
   }
-  
+
   // Aggregate statistics
   const avgUniqueRate = allAnalyses.reduce((sum, a) => sum + a.uniqueRate, 0) / runsToTest;
   const avgMaxRepeats = allAnalyses.reduce((sum, a) => sum + a.maxRepeats, 0) / runsToTest;
   const maxRepeatsOverall = Math.max(...allAnalyses.map(a => a.maxRepeats));
   const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
-  
+
   console.log(`\n=== 12 PLAYERS (Americano) - 11 rounds, 10 runs ===`);
   console.log(`Average unique partnership rate: ${(avgUniqueRate * 100).toFixed(1)}%`);
   console.log(`Average max repeats per pair: ${avgMaxRepeats.toFixed(2)}`);
   console.log(`Max repeats across all runs: ${maxRepeatsOverall}`);
   console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
-  
+
   // ASSERTIONS
   // With 12 players over 11 rounds: 66 team slots, 66 possible pairs (C(12,2))
   // This is mathematically IDEAL: each pair partners exactly once
-  
+
   // 1. High unique rate expected (near perfect)
   expect(avgUniqueRate).toBeGreaterThan(0.95); // 95%+ unique (tightened from 80%)
-  
+
   // 2. Max 2 repeats (66 slots / 66 pairs = ideal 1.0 avg)
   expect(maxRepeatsOverall).toBeLessThanOrEqual(2);
-  
+
   // 3. Excellent distribution uniformity
   expect(avgCV).toBeLessThan(0.15); // CV < 0.15 (tightened from 0.5)
 });
@@ -957,47 +997,47 @@ test("should distribute partnerships fairly with 12 players (Americano)", () => 
 test("should distribute partnerships fairly with 10 players (Americano)", () => {
   const runsToTest = 15;
   const allAnalyses: DistributionAnalysis[] = [];
-  
+
   for (let run = 0; run < runsToTest; run++) {
     // Create 10 players
     const players: Player[] = [];
     for (let i = 0; i < 10; i++) {
       players.push(new Player(`${i}`, `Player${i}`));
     }
-    
+
     // Simulate 9 rounds (2 courts, 4 teams/round, 2 paused)
     for (let round = 0; round < 9; round++) {
       const [matches, paused] = matching(players, Americano, round, 2);
       updatePlayerStats(players, matches, paused, round);
     }
-    
+
     const analysis = analyzeDistribution(players);
     allAnalyses.push(analysis);
   }
-  
+
   // Aggregate statistics
   const avgUniqueRate = allAnalyses.reduce((sum, a) => sum + a.uniqueRate, 0) / runsToTest;
   const avgMaxRepeats = allAnalyses.reduce((sum, a) => sum + a.maxRepeats, 0) / runsToTest;
   const maxRepeatsOverall = Math.max(...allAnalyses.map(a => a.maxRepeats));
   const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
-  
+
   console.log(`\n=== 10 PLAYERS (Americano) - 9 rounds, 15 runs ===`);
   console.log(`Average unique partnership rate: ${(avgUniqueRate * 100).toFixed(1)}%`);
   console.log(`Average max repeats per pair: ${avgMaxRepeats.toFixed(2)}`);
   console.log(`Max repeats across all runs: ${maxRepeatsOverall}`);
   console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
-  
+
   // ASSERTIONS
   // With 10 players over 9 rounds: 45 team slots, 45 possible pairs (C(10,2))
   // This is mathematically IDEAL: each pair partners exactly once
   // Note: With paused players (2 per round), achieving 100% is more challenging
-  
+
   // 1. Should achieve very high unique rate (near perfect)
   expect(avgUniqueRate).toBeGreaterThan(0.99); // 99%+ unique
-  
+
   // 2. Max 2 repeats (some edge cases with paused players)
   expect(maxRepeatsOverall).toBeLessThanOrEqual(2);
-  
+
   // 3. Excellent distribution uniformity
   expect(avgCV).toBeLessThan(0.05); // CV < 0.05 (very tight)
 });
@@ -1005,46 +1045,228 @@ test("should distribute partnerships fairly with 10 players (Americano)", () => 
 test("should distribute partnerships fairly with 16 players (Americano)", () => {
   const runsToTest = 8; // Fewer runs (larger tournaments are slower)
   const allAnalyses: DistributionAnalysis[] = [];
-  
+
   for (let run = 0; run < runsToTest; run++) {
     // Create 16 players
     const players: Player[] = [];
     for (let i = 0; i < 16; i++) {
       players.push(new Player(`${i}`, `Player${i}`));
     }
-    
+
     // Simulate 15 rounds (4 courts, 8 teams/round, 0 paused)
     for (let round = 0; round < 15; round++) {
       const [matches, paused] = matching(players, Americano, round, 4);
       updatePlayerStats(players, matches, paused, round);
     }
-    
+
     const analysis = analyzeDistribution(players);
     allAnalyses.push(analysis);
   }
-  
+
   // Aggregate statistics
   const avgUniqueRate = allAnalyses.reduce((sum, a) => sum + a.uniqueRate, 0) / runsToTest;
   const avgMaxRepeats = allAnalyses.reduce((sum, a) => sum + a.maxRepeats, 0) / runsToTest;
   const maxRepeatsOverall = Math.max(...allAnalyses.map(a => a.maxRepeats));
   const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
-  
+
   console.log(`\n=== 16 PLAYERS (Americano) - 15 rounds, 8 runs ===`);
   console.log(`Average unique partnership rate: ${(avgUniqueRate * 100).toFixed(1)}%`);
   console.log(`Average max repeats per pair: ${avgMaxRepeats.toFixed(2)}`);
   console.log(`Max repeats across all runs: ${maxRepeatsOverall}`);
   console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
-  
+
   // ASSERTIONS
   // With 16 players over 15 rounds: 120 team slots, 120 possible pairs (C(16,2))
   // This is mathematically IDEAL: each pair partners exactly once
-  
+
   // 1. Should achieve very high unique rate (near perfect)
   expect(avgUniqueRate).toBeGreaterThan(0.98); // 98%+ unique (tightened from none)
-  
+
   // 2. Max 2 repeats (very rare edge cases)
   expect(maxRepeatsOverall).toBeLessThanOrEqual(2);
-  
+
   // 3. Excellent distribution uniformity
   expect(avgCV).toBeLessThan(0.10); // CV < 0.10 (tightened)
+});
+
+test("DIAGNOSTIC: trace 6-player Americano to find root cause", () => {
+  // Single run with detailed logging
+  const players: Player[] = [];
+  for (let i = 0; i < 6; i++) {
+    players.push(new Player(`${i}`, `Player${i}`));
+  }
+
+  console.log('\n=== DIAGNOSTIC: 6-PLAYER AMERICANO ROOT CAUSE ANALYSIS ===\n');
+
+  const pausePairs: string[][] = [];
+  const partnerPairs: string[][] = [];
+
+  // Simulate 20 rounds with detailed logging
+  for (let round = 0; round < 20; round++) {
+    // Enable debug mode for first few rounds to see weights
+    const debug = round >= 1 && round <= 3;
+    const [matches, paused] = matching(players, Americano, round, 1, debug);
+    updatePlayerStats(players, matches, paused, round);
+
+    // Track pause pairs
+    if (paused.length === 2) {
+      const pair = [paused[0].id, paused[1].id].sort();
+      pausePairs.push(pair);
+    }
+
+    // Track partner pairs
+    matches.forEach(match => {
+      match.forEach(team => {
+        const pair = [team[0].id, team[1].id].sort();
+        partnerPairs.push(pair);
+      });
+    });
+
+    if (round < 10 || round >= 15) {
+      // Log first 10 and last 5 rounds
+      const match = matches[0];
+      console.log(`Round ${round}: [${match[0][0].id},${match[0][1].id}] vs [${match[1][0].id},${match[1][1].id}] | Paused: [${paused.map(p => p.id).join(',')}]`);
+    } else if (round === 10) {
+      console.log('... (rounds 10-14) ...');
+    }
+  }
+
+  // Analyze pause pair frequency
+  console.log('\n--- PAUSE PAIR FREQUENCY ---');
+  const pausePairCounts = new Map<string, number>();
+  pausePairs.forEach(pair => {
+    const key = pair.join('-');
+    pausePairCounts.set(key, (pausePairCounts.get(key) || 0) + 1);
+  });
+
+  const sortedPausePairs = Array.from(pausePairCounts.entries())
+    .sort((a, b) => b[1] - a[1]);
+  sortedPausePairs.forEach(([pair, count]) => {
+    console.log(`  ${pair}: paused together ${count} times`);
+  });
+
+  // Analyze partner pair frequency
+  console.log('\n--- PARTNER PAIR FREQUENCY (Top 10) ---');
+  const partnerPairCounts = new Map<string, number>();
+  partnerPairs.forEach(pair => {
+    const key = pair.join('-');
+    partnerPairCounts.set(key, (partnerPairCounts.get(key) || 0) + 1);
+  });
+
+  const sortedPartnerPairs = Array.from(partnerPairCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  sortedPartnerPairs.forEach(([pair, count]) => {
+    console.log(`  ${pair}: partnered ${count} times`);
+  });
+
+  // Analyze opponent distribution
+  console.log('\n--- OPPONENT DISTRIBUTION ---');
+  const analysis = analyzeOpponentDistribution(players);
+  const sortedOpponentPairs = Array.from(analysis.opponentCounts.entries())
+    .sort((a, b) => b[1] - a[1]);
+
+  sortedOpponentPairs.forEach(([pair, count]) => {
+    console.log(`  ${pair}: faced ${count} times`);
+  });
+
+  console.log(`\nMin: ${analysis.minOpponents}, Max: ${analysis.maxOpponents}, Range: ${analysis.range}, CV: ${analysis.cv.toFixed(3)}`);
+
+  // Key hypothesis tests:
+  console.log('\n--- HYPOTHESIS TESTS ---');
+
+  // Hypothesis 1: Do players who pause together frequently also partner together frequently?
+  const pauseToPartnerCorrelation: Array<{ pair: string, pauseCount: number, partnerCount: number }> = [];
+  pausePairCounts.forEach((pauseCount, pairKey) => {
+    const partnerCount = partnerPairCounts.get(pairKey) || 0;
+    pauseToPartnerCorrelation.push({ pair: pairKey, pauseCount, partnerCount });
+  });
+
+  console.log('Pause-Partner Correlation:');
+  pauseToPartnerCorrelation
+    .sort((a, b) => b.pauseCount - a.pauseCount)
+    .forEach(({ pair, pauseCount, partnerCount }) => {
+      console.log(`  ${pair}: paused ${pauseCount}x → partnered ${partnerCount}x`);
+    });
+
+  // Hypothesis 2: How often do pause pairs compete together (both playing)?
+  console.log('\nPause Pair Compete-Together Analysis:');
+  pauseToPartnerCorrelation.forEach(({ pair, pauseCount }) => {
+    const [p1, p2] = pair.split('-');
+    const player1 = players.find(p => p.id === p1)!;
+    const player2 = players.find(p => p.id === p2)!;
+
+    // Count rounds where both played (not paused)
+    let bothPlayedCount = 0;
+    for (let round = 0; round < 20; round++) {
+      const p1Played = player1.partners.has(p2) && player1.partners.get(p2)!.includes(round) ||
+        player1.opponents.has(p2) && player1.opponents.get(p2)!.includes(round) ||
+        Array.from(player1.partners.values()).flat().includes(round) ||
+        Array.from(player1.opponents.values()).flat().includes(round);
+      const p2Played = Array.from(player2.partners.values()).flat().includes(round) ||
+        Array.from(player2.opponents.values()).flat().includes(round);
+
+      if (p1Played && p2Played) {
+        bothPlayedCount++;
+      }
+    }
+
+    const opponentCount = analysis.opponentCounts.get(pair) || 0;
+    const partnerCount = partnerPairCounts.get(pair) || 0;
+
+    console.log(`  ${pair}: paused together ${pauseCount}x, both played ${bothPlayedCount}x (${partnerCount} as partners, ${opponentCount} as opponents)`);
+  });
+
+  // This test is for investigation - don't fail
+  expect(true).toBe(true);
+});
+
+test("should distribute opponents fairly in 6-player Americano", () => {
+  const runsToTest = 20;
+  const allAnalyses: OpponentDistributionAnalysis[] = [];
+
+  for (let run = 0; run < runsToTest; run++) {
+    // Create 6 players (no groups for regular Americano)
+    const players: Player[] = [];
+    for (let i = 0; i < 6; i++) {
+      players.push(new Player(`${i}`, `Player${i}`));
+    }
+
+    // Simulate 20 rounds (1 court, 4 play, 2 pause)
+    for (let round = 0; round < 20; round++) {
+      const [matches, paused] = matching(players, Americano, round, 1);
+      updatePlayerStats(players, matches, paused, round);
+    }
+
+    const analysis = analyzeOpponentDistribution(players);
+    allAnalyses.push(analysis);
+  }
+
+  // Aggregate statistics
+  const avgMinOpponents = allAnalyses.reduce((sum, a) => sum + a.minOpponents, 0) / runsToTest;
+  const avgMaxOpponents = allAnalyses.reduce((sum, a) => sum + a.maxOpponents, 0) / runsToTest;
+  const avgRange = allAnalyses.reduce((sum, a) => sum + a.range, 0) / runsToTest;
+  const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
+  const maxRangeOverall = Math.max(...allAnalyses.map(a => a.range));
+
+  console.log(`\n=== 6 PLAYERS (Americano) OPPONENT VARIETY - 20 rounds, 20 runs ===`);
+  console.log(`Average min opponent count: ${avgMinOpponents.toFixed(1)}`);
+  console.log(`Average max opponent count: ${avgMaxOpponents.toFixed(1)}`);
+  console.log(`Average range (max-min): ${avgRange.toFixed(1)}`);
+  console.log(`Max range across all runs: ${maxRangeOverall}`);
+  console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
+
+  // ASSERTIONS
+  // With 6 players over 20 rounds:
+  // - Each player plays approximately 13-14 rounds (4 play, 2 pause each round)
+  // - In those rounds, they face 2 opponents per match = ~26-28 opponent slots
+  // - With 5 possible opponents, ideal distribution: 26/5 = 5.2 times each
+  // - Acceptable range: opponents faced between 3-8 times (range of 5)
+  // - Poor distribution (the problem): 2-12 times (range of 10)
+
+  // 1. Range should be reasonable (not 10+)
+  expect(avgRange).toBeLessThan(10); // Will likely fail initially, exposing the issue
+
+  // 2. Distribution should be relatively uniform
+  expect(avgCV).toBeLessThan(0.6); // Coefficient of variation should be low
 });
