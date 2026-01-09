@@ -10,7 +10,6 @@ const MEXICANO_RANK_DIFF = 2; // In Mexicano mode, pair 1st with 3rd, 2nd with 4
 
 // Scaling factors for penalty calculations
 const PARTNER_FREQUENCY_SCALE = 5; // Partner frequency dominates over recency
-const OPPONENT_WEIGHT_RATIO = 0.20; // Opponent penalty is 20% of partner penalty
 const EXACT_TEAM_FREQUENCY_SCALE = 8; // Exact team matches are heavily penalized
 const INDIVIDUAL_FREQUENCY_SCALE = 2; // Individual opponent encounters secondary weight
 
@@ -136,58 +135,14 @@ const calculatePartnerPenalty = (
     (saturationFactorA + saturationFactorB);
 };
 
-/**
- * Calculates a penalty for two players having been opponents before.
- * Uses the same hierarchical structure as partner penalty but scaled by OPPONENT_WEIGHT_RATIO.
- * 
- * This ensures opponent history scales consistently with tournament growth and protects
- * newcomers from developing high opponent repetition rates.
- */
-const calculateOpponentPenalty = (
-  playerA: Player,
-  playerB: Player,
-  currentRoundIndex: number,
-): number => {
-  const roundsOpposed = playerA.opponents.get(playerB.id) || [];
-
-  if (roundsOpposed.length === 0) {
-    return 0;
-  }
-
-  // Use tournament-wide round count for consistent, symmetric scaling
-  const totalRounds = currentRoundIndex + 1;
-
-  // Calculate each player's participation history (for repetition rate amplification)
-  const totalRoundsA = Math.max(1, playerA.matchCount + playerA.pauseCount);
-  const totalRoundsB = Math.max(1, playerB.matchCount + playerB.pauseCount);
-  const minParticipation = Math.min(totalRoundsA, totalRoundsB);
-
-  // FREQUENCY: How many times have they been opponents? (with amplification)
-  const baseFrequency = roundsOpposed.length;
-  const repetitionAmplifier = totalRounds / minParticipation;
-  const frequencyFactor = baseFrequency * repetitionAmplifier;
-
-  // RECENCY: How recently did they face each other?
-  const lastRoundIndex = roundsOpposed.at(-1)!;
-  const recencyFactor = lastRoundIndex + 1; // 1-indexed for weight
-
-  // Hierarchical penalty matching partner structure but scaled by OPPONENT_WEIGHT_RATIO
-  // Frequency (R×PARTNER_FREQUENCY_SCALE) > Recency (R×1), then scaled to 20%
-  return ((frequencyFactor * PARTNER_FREQUENCY_SCALE * totalRounds) +
-    (recencyFactor * totalRounds)) * OPPONENT_WEIGHT_RATIO;
-};
-
 export const curriedTeamUpVarietyWeight = (currentRoundIndex: number) => {
   return (a: { entity: Player }, b: { entity: Player }): number => {
     // Calculate penalty for having partnered before
     const partnerPenalty = calculatePartnerPenalty(a.entity, b.entity, currentRoundIndex);
 
-    // Calculate penalty for having been opponents before (OPPONENT_WEIGHT_RATIO of partner penalty)
-    const opponentPenalty = calculateOpponentPenalty(a.entity, b.entity, currentRoundIndex);
-
     // Return negative because we want to MAXIMIZE weight for good pairings (minimize penalty)
     // The match() function handles normalization to [0,1] range automatically
-    return -(partnerPenalty + opponentPenalty);
+    return -partnerPenalty;
   };
 };
 
