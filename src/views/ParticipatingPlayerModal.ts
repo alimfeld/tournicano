@@ -17,7 +17,6 @@ export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs
     const partnerCounts = Array.from(player.partners.values())
       .map(rounds => rounds.length);
     const minPartnerings = partnerCounts.length > 0 ? Math.min(...partnerCounts) : 0;
-    const avgPartnerings = uniquePartners > 0 ? player.matchCount / uniquePartners : 0;
     const maxPartnerings = partnerCounts.length > 0 ? Math.max(...partnerCounts) : 0;
 
     // Opponent statistics
@@ -25,7 +24,6 @@ export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs
     const opponentCounts = Array.from(player.opponents.values())
       .map(rounds => rounds.length);
     const minOppositions = opponentCounts.length > 0 ? Math.min(...opponentCounts) : 0;
-    const avgOppositions = uniqueOpponents > 0 ? (player.matchCount * 2) / uniqueOpponents : 0;
     const maxOppositions = opponentCounts.length > 0 ? Math.max(...opponentCounts) : 0;
 
     return m(Modal, { onClose, className: 'participating-player-modal' },
@@ -66,12 +64,12 @@ export const ParticipatingPlayerModal: m.Component<ParticipatingPlayerModalAttrs
             m("tr",
               m("th[scope=row]", "Partners"),
               m("td", `${uniquePartners}`),
-              m("td", `${minPartnerings}|${avgPartnerings.toFixed(1)}|${maxPartnerings}`),
+              m("td", `${minPartnerings}-${maxPartnerings}`),
             ),
             m("tr",
               m("th[scope=row]", "Opponents"),
               m("td", `${uniqueOpponents}`),
-              m("td", `${minOppositions}|${avgOppositions.toFixed(1)}|${maxOppositions}`),
+              m("td", `${minOppositions}-${maxOppositions}`),
             ),
           ),
         ),
