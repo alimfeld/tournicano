@@ -1270,3 +1270,53 @@ test("should distribute opponents fairly in 6-player Americano", () => {
   // 2. Distribution should be relatively uniform
   expect(avgCV).toBeLessThan(0.6); // Coefficient of variation should be low
 });
+
+test("should distribute opponents fairly in 10-player Americano", () => {
+  const runsToTest = 20;
+  const allAnalyses: OpponentDistributionAnalysis[] = [];
+
+  for (let run = 0; run < runsToTest; run++) {
+    // Create 10 players (no groups for regular Americano)
+    const players: Player[] = [];
+    for (let i = 0; i < 10; i++) {
+      players.push(new Player(`${i}`, `Player${i}`));
+    }
+
+    // Simulate 20 rounds (2 courts, 8 play, 2 pause)
+    for (let round = 0; round < 20; round++) {
+      const [matches, paused] = matching(players, Americano, round, 2);
+      updatePlayerStats(players, matches, paused, round);
+    }
+
+    const analysis = analyzeOpponentDistribution(players);
+    allAnalyses.push(analysis);
+  }
+
+  // Aggregate statistics
+  const avgMinOpponents = allAnalyses.reduce((sum, a) => sum + a.minOpponents, 0) / runsToTest;
+  const avgMaxOpponents = allAnalyses.reduce((sum, a) => sum + a.maxOpponents, 0) / runsToTest;
+  const avgRange = allAnalyses.reduce((sum, a) => sum + a.range, 0) / runsToTest;
+  const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / runsToTest;
+  const maxRangeOverall = Math.max(...allAnalyses.map(a => a.range));
+
+  console.log(`\n=== 10 PLAYERS (Americano) OPPONENT VARIETY - 20 rounds, 20 runs ===`);
+  console.log(`Average min opponent count: ${avgMinOpponents.toFixed(1)}`);
+  console.log(`Average max opponent count: ${avgMaxOpponents.toFixed(1)}`);
+  console.log(`Average range (max-min): ${avgRange.toFixed(1)}`);
+  console.log(`Max range across all runs: ${maxRangeOverall}`);
+  console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
+
+  // ASSERTIONS
+  // With 10 players over 20 rounds:
+  // - Each player plays approximately 16 rounds (8 play, 2 pause each round)
+  // - In those rounds, they face 2 opponents per match = ~32 opponent slots
+  // - With 9 possible opponents, ideal distribution: 32/9 = 3.6 times each
+  // - Acceptable range: opponents faced between 2-6 times (range of 4)
+  // - Poor distribution: wider range (8+)
+
+  // 1. Range should be reasonable
+  expect(avgRange).toBeLessThan(8); // Test threshold - may need adjustment
+
+  // 2. Distribution should be relatively uniform
+  expect(avgCV).toBeLessThan(0.5); // Coefficient of variation
+});
