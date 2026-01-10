@@ -10,7 +10,7 @@ export class Player {
   plusMinus: number = 0;
   matchCount: number = 0;
   pauseCount: number = 0;
-  lastPause: number = 0;
+  lastPause: number = -1;
   partners: Map<string, number[]> = new Map();
   opponents: Map<string, number[]> = new Map();
   constructor(

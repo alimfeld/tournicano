@@ -17,6 +17,10 @@ const playRatio = (p: Player) => {
   return p.matchCount / (p.pauseCount + p.matchCount + PLAY_RATIO_SMOOTHING);
 };
 
+const usesGroupFactors = (spec: MatchingSpec): boolean => {
+  return spec.teamUp.groupFactor > 0 || spec.matchUp.groupFactor > 0;
+};
+
 const groupCounts = (players: Player[]) => {
   return players.reduce((acc: number[], player) => {
     acc[player.group] = (acc[player.group] || 0) + 1;
@@ -65,7 +69,7 @@ const findGroupDistribution = (
   return null;
 };
 
-const partition = (
+const partitionGroupAware = (
   players: Player[],
   maxMatches: number,
 ): [competing: Player[], paused: Player[]] => {
@@ -136,6 +140,39 @@ const partition = (
   return [sorted.slice(0, competingCount), sorted.slice(competingCount)];
 };
 
+const partitionSimple = (
+  players: Player[],
+  maxMatches: number,
+): [competing: Player[], paused: Player[]] => {
+  let competingCount = maxMatches * PLAYERS_PER_MATCH;
+  if (players.length < competingCount) {
+    competingCount = players.length - (players.length % PLAYERS_PER_MATCH);
+  }
+  
+  if (competingCount === players.length) {
+    // All players can compete
+    return [players, []];
+  }
+  
+  // We need to pause some players - use simple playRatio + lastPause logic
+  // Shuffle first to introduce randomness for tiebreaking
+  const shuffled = shuffle(players.slice());
+  
+  // Sort by playRatio (ascending - lower ratio plays first)
+  // For equal playRatio, sort by lastPause (descending - MORE RECENT pause plays first)
+  // This matches the existing behavior in partitionGroupAware and prevents back-to-back pauses
+  const sorted = shuffled.toSorted((p, q) => {
+    const ratioP = playRatio(p);
+    const ratioQ = playRatio(q);
+    if (ratioP !== ratioQ) {
+      return ratioP - ratioQ; // Lower ratio first (played less)
+    }
+    return q.lastPause - p.lastPause; // Higher lastPause first (paused more recently)
+  });
+  
+  return [sorted.slice(0, competingCount), sorted.slice(competingCount)];
+};
+
 const partitionBalanced = (
   players: Player[],
   maxMatches: number,
@@ -151,12 +188,12 @@ const partitionBalanced = (
   const numberOfGroups = playersByGroup.size;
 
   // Only support 2 or 4 groups with balancing
-  // - Single group: no balancing needed, use regular partition logic
+  // - Single group: no balancing needed, use simple partition logic
   // - 3 groups: not supported (would require 3 courts minimum and 12 players per match)
   // - 5+ groups: not supported (adds complexity without clear use case)
   if (numberOfGroups === 1) {
-    // Single group - no balancing needed, use regular partition
-    return partition(players, maxMatches);
+    // Single group - no balancing needed, use simple partition
+    return partitionSimple(players, maxMatches);
   }
   if (numberOfGroups !== 2 && numberOfGroups !== 4) {
     return [[], players]; // Everyone paused
@@ -216,7 +253,9 @@ export const partitionPlayers = (
 
   const [competing, paused] = spec.balanceGroups
     ? partitionBalanced(players, effectiveMaxMatches)
-    : partition(players, effectiveMaxMatches);
+    : !usesGroupFactors(spec)
+      ? partitionSimple(players, effectiveMaxMatches)
+      : partitionGroupAware(players, effectiveMaxMatches);
 
   // Calculate group distribution
   const groupDistribution = new Map<number, { total: number; competing: number; paused: number }>();

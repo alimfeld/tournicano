@@ -2,11 +2,13 @@ import { expect } from "vitest";
 import { test, Player } from "../tournament/TestHelpers.ts";
 import {
   Americano,
+  AmericanoMixed,
   AmericanoMixedBalanced,
   GroupBattle,
   MatchingSpec,
   MatchUpGroupMode,
   TeamUpGroupMode,
+  TeamUpPerformanceMode,
 } from "./MatchingSpec.ts";
 import { matching, partitionPlayers } from "./Matching.ts";
 
@@ -426,4 +428,257 @@ test("partitionPlayers should reject 6 groups with balancing", () => {
   // Should return all paused (only 2 or 4 groups supported)
   expect(result.competing.length).toBe(0);
   expect(result.paused.length).toBe(6);
+});
+
+// Test for back-to-back pause bug with 7 players
+test("should not pause same players in consecutive rounds (7 players)", () => {
+  const allPlayers = [];
+  for (let i = 0; i < 7; i++) {
+    allPlayers.push(new Player(`${i}`, `Player${i}`));
+  }
+
+  const spec = Americano;
+  let backToBackPauseFound = false;
+
+  // Simulate 20 rounds
+  for (let round = 0; round < 20; round++) {
+    const [matches, paused] = matching(allPlayers, spec, round, 1);
+
+    // Check if any player paused this round also paused last round (back-to-back)
+    if (round > 0) {
+      const backToBackPlayers = paused.filter(p => p.lastPause === round - 1);
+      if (backToBackPlayers.length > 0) {
+        console.log(
+          `Round ${round}: Back-to-back pause detected for players: ${
+            backToBackPlayers.map(p => p.id).join(', ')
+          }`
+        );
+        backToBackPauseFound = true;
+      }
+    }
+
+    // Update player stats
+    matches.forEach((match) => {
+      match.forEach((team) => {
+        team.forEach((player) => {
+          const mutablePlayer = allPlayers.find(p => p.id === player.id)!;
+          mutablePlayer.matchCount++;
+
+          // Track partners
+          const partner = team[0].id === player.id ? team[1] : team[0];
+          const partnerRounds = mutablePlayer.partners.get(partner.id) || [];
+          partnerRounds.push(round);
+          mutablePlayer.partners.set(partner.id, partnerRounds);
+
+          // Track opponents
+          const opponentTeam = match[0] === team ? match[1] : match[0];
+          opponentTeam.forEach((opponent) => {
+            const oppRounds = mutablePlayer.opponents.get(opponent.id) || [];
+            oppRounds.push(round);
+            mutablePlayer.opponents.set(opponent.id, oppRounds);
+          });
+        });
+      });
+    });
+
+    paused.forEach(p => {
+      const mutablePlayer = allPlayers.find(mp => mp.id === p.id)!;
+      mutablePlayer.pauseCount++;
+      mutablePlayer.lastPause = round;
+    });
+  }
+
+  // Players should not pause in consecutive rounds (back-to-back)
+  expect(backToBackPauseFound).toBe(false);
+});
+
+// Tests for simple partitioning mode (no group factors)
+
+test("partitionPlayers should use simple mode for Americano (no group factors)", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  // Set different play ratios
+  players[0].matchCount = 5; // Higher ratio - should not play
+  players[1].matchCount = 4;
+  players[2].matchCount = 3;
+  players[3].matchCount = 0; // Lower ratio - should play
+  players[4].matchCount = 0; // Lower ratio - should play
+  players[5].matchCount = 0; // Lower ratio - should play
+  players[6].matchCount = 0; // Lower ratio - should play
+  players[7].matchCount = 1;
+  players[8].matchCount = 2;
+  players[9].matchCount = 2;
+  
+  const result = partitionPlayers(players, Americano, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(2);
+  
+  // Players with lowest playRatio should be competing
+  const competingIds = result.competing.map(p => p.id);
+  expect(competingIds).toContain("3");
+  expect(competingIds).toContain("4");
+  expect(competingIds).toContain("5");
+  expect(competingIds).toContain("6");
+  
+  // Player with highest playRatio should be paused
+  const pausedIds = result.paused.map(p => p.id);
+  expect(pausedIds).toContain("0");
+});
+
+test("partitionPlayers simple mode should use lastPause as tiebreaker", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  // All players have same play ratio
+  players.forEach(p => {
+    p.matchCount = 2;
+    p.pauseCount = 2;
+  });
+  
+  // Set very different lastPause values
+  // Note: Higher lastPause = more recent pause, and those are selected to play (to prevent back-to-back pauses)
+  // Group with very old pause (should pause - haven't been active recently)
+  players[0].lastPause = -100;
+  players[1].lastPause = -99;
+  
+  // Group with very recent pause (should compete - have been active recently)
+  players[2].lastPause = 1000;
+  players[3].lastPause = 1001;
+  players[4].lastPause = 1002;
+  players[5].lastPause = 1003;
+  players[6].lastPause = 1004;
+  players[7].lastPause = 1005;
+  players[8].lastPause = 1006;
+  players[9].lastPause = 1007;
+  
+  const result = partitionPlayers(players, Americano, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(2);
+  
+  // With such extreme differences, lastPause tiebreaker should work despite shuffle
+  // Players with MORE RECENT lastPause (higher values) should compete
+  const pausedIds = result.paused.map(p => p.id);
+  
+  // The two with oldest pause should be paused
+  expect(pausedIds).toContain("0");
+  expect(pausedIds).toContain("1");
+});
+
+test("partitionPlayers simple mode should work with Mexicano", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  // Set different play ratios
+  players[0].matchCount = 3;
+  players[1].matchCount = 0; // Should play
+  players[2].matchCount = 0; // Should play
+  players[3].matchCount = 0; // Should play
+  players[4].matchCount = 0; // Should play
+  players[5].matchCount = 2;
+  players[6].matchCount = 1;
+  players[7].matchCount = 1;
+  players[8].matchCount = 1;
+  players[9].matchCount = 1;
+  
+  const result = partitionPlayers(players, {
+    teamUp: {
+      varietyFactor: 0,
+      performanceFactor: 100,
+      performanceMode: TeamUpPerformanceMode.MEXICANO,
+      groupFactor: 0,
+      groupMode: TeamUpGroupMode.PAIRED,
+    },
+    matchUp: {
+      varietyFactor: 0,
+      performanceFactor: 100,
+      groupFactor: 0,
+      groupMode: MatchUpGroupMode.SAME,
+    },
+  }, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(2);
+  
+  // Players with lowest playRatio should be competing
+  const competingIds = result.competing.map(p => p.id);
+  expect(competingIds).toContain("1");
+  expect(competingIds).toContain("2");
+  expect(competingIds).toContain("3");
+  expect(competingIds).toContain("4");
+});
+
+test("partitionPlayers simple mode should ignore groups", ({ players }) => {
+  // Set different groups
+  for (let i = 0; i < 5; i++) players[i].group = 0;
+  for (let i = 5; i < 10; i++) players[i].group = 1;
+  
+  // Set play ratios so group 0 players have lower ratios
+  players[0].matchCount = 0; // Group 0, should play
+  players[1].matchCount = 0; // Group 0, should play
+  players[2].matchCount = 0; // Group 0, should play
+  players[3].matchCount = 0; // Group 0, should play
+  players[4].matchCount = 0; // Group 0, should play
+  players[5].matchCount = 5; // Group 1, higher ratio
+  players[6].matchCount = 5; // Group 1, higher ratio
+  players[7].matchCount = 0; // Group 1, should play
+  players[8].matchCount = 0; // Group 1, should play
+  players[9].matchCount = 0; // Group 1, should play
+  
+  const result = partitionPlayers(players, Americano, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(2);
+  
+  // Simple mode ignores groups - just picks by playRatio
+  // Should have all 8 players with matchCount=0 competing
+  const pausedIds = result.paused.map(p => p.id);
+  expect(pausedIds).toContain("5");
+  expect(pausedIds).toContain("6");
+});
+
+test("partitionPlayers should NOT use simple mode for AmericanoMixed (has group factors)", ({ players }) => {
+  // Set different groups
+  for (let i = 0; i < 7; i++) players[i].group = 0;
+  for (let i = 7; i < 10; i++) players[i].group = 1;
+  
+  // All players have same play ratio
+  players.forEach(p => p.matchCount = 0);
+  
+  const result = partitionPlayers(players, AmericanoMixed, 2);
+  
+  // AmericanoMixed has groupFactor > 0, so should use groupAware partitioning
+  // This would try to find multiples of 4 or 2 from each group
+  expect(result.competing.length + result.paused.length).toBe(10);
+});
+
+test("partitionPlayers simple mode should handle exact multiple of 4", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  const result = partitionPlayers(players.slice(0, 8), Americano, 2);
+  
+  expect(result.competing).toHaveLength(8);
+  expect(result.paused).toHaveLength(0);
+});
+
+test("partitionPlayers simple mode should handle insufficient players", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  const result = partitionPlayers(players.slice(0, 5), Americano, 2);
+  
+  // 5 players -> 4 compete (1 match), 1 pauses
+  expect(result.competing).toHaveLength(4);
+  expect(result.paused).toHaveLength(1);
+});
+
+test("partitionPlayers simple mode should respect maxMatches constraint", ({ players }) => {
+  players.forEach(p => p.group = 0);
+  
+  // All have same play ratio
+  players.forEach(p => p.matchCount = 0);
+  
+  const result = partitionPlayers(players, Americano, 1);
+  
+  // maxMatches=1 means only 4 players compete
+  expect(result.competing).toHaveLength(4);
+  expect(result.paused).toHaveLength(6);
 });
