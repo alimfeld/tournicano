@@ -8,10 +8,28 @@ import {
 // Constants
 const MEXICANO_RANK_DIFF = 2; // In Mexicano mode, pair 1st with 3rd, 2nd with 4th (rank diff = 2)
 
-// Scaling factors for penalty calculations
-const PARTNER_FREQUENCY_SCALE = 5; // Partner frequency dominates over recency
-const EXACT_TEAM_FREQUENCY_SCALE = 8; // Exact team matches are heavily penalized
-const INDIVIDUAL_FREQUENCY_SCALE = 2; // Individual opponent encounters secondary weight
+// ============================================================================
+// Penalty Scaling Factors
+// ============================================================================
+// These constants control the hierarchical weighting of different penalty components.
+// Higher scale = stronger influence on the matching algorithm.
+// All individual factors are normalized to [0, 1] range before scaling.
+
+// PARTNER PENALTY HIERARCHY (from highest to lowest impact):
+// 1. FREQUENCY - Partnership frequency rate (dominates all)
+// 2. RECENCY - How recently they partnered (prevents back-to-back)
+// 3. SATURATION - Partner history variety (tiebreaker)
+const PARTNER_FREQUENCY_SCALE = 5;
+const PARTNER_RECENCY_SCALE = 3;
+const PARTNER_SATURATION_SCALE = 1;
+
+// OPPONENT PENALTY HIERARCHY (from highest to lowest impact):
+// 1. FREQUENCY - Opponent encounter frequency rate (dominates)
+// 2. RECENCY - How recently opponents faced (secondary)
+// 3. SATURATION - Opponent history variety (tiebreaker)
+const OPPONENT_FREQUENCY_SCALE = 5;
+const OPPONENT_RECENCY_SCALE = 3;
+const OPPONENT_SATURATION_SCALE = 1;
 
 // Group pairing penalties
 const TEAM_UP_GROUP_SAME_PENALTY = -1; // Penalty for same group pairing
@@ -49,51 +67,42 @@ export const curriedTeamUpGroupWeight = (mode: TeamUpGroupMode) => {
 };
 
 /**
- * Calculates how "saturated" a player's partnership history is.
- * This measures how many times a player has repeated partnerships across their entire history.
+ * Calculates the saturation rate of a player's partnership history.
+ * This measures how many repeated partnerships occurred relative to participation.
  *
- * Example: If partnered with A(2x), B(1x), C(1x):
- *   (2-1) + (1-1) + (1-1) = 1 + 0 + 0 = 1
+ * Returns a normalized rate [0, 1]: totalRepetitions / participation
+ * where totalRepetitions = sum over all partners of (partnershipCount - 1)
  *
- * Players with high saturation (many repeated partnerships) should be encouraged
- * to find new partners.
+ * Example: If partnered with A(2x), B(1x), C(1x) over 10 rounds participation:
+ *   totalRepetitions = (2-1) + (1-1) + (1-1) = 1
+ *   saturation rate = 1/10 = 0.1
+ *
+ * Players with high saturation (many repeated partnerships relative to participation)
+ * should be encouraged to find new partners.
  */
 const calculatePartnerSaturation = (player: Player): number => {
   const partnerCounts = Array.from(player.partners.values());
-  return partnerCounts.reduce((acc, rounds) => acc + rounds.length - 1, 0);
+  const totalRepetitions = partnerCounts.reduce((acc, rounds) => acc + rounds.length - 1, 0);
+  const participation = Math.max(1, player.matchCount + player.pauseCount);
+  return totalRepetitions / participation;
 };
 
 /**
  * Calculates a penalty for two players having partnered together before.
  * Higher penalty = less desirable pairing.
  *
- * Uses round-based hierarchical scaling with repetition rate amplification:
- * 1. FREQUENCY (R×PARTNER_FREQUENCY_SCALE): How many times have they partnered? (dominates all)
- *    - Amplified by repetition rate: higher penalties when either player is new
- *    - This prevents newcomers from developing high repetition rates quickly
- * 2. RECENCY (R scale): How recently did they partner? (secondary tiebreaker)
- * 3. SATURATION (constant scale): Partner history variety (final tiebreaker)
+ * Uses normalized factors [0, 1] with hierarchical scaling:
+ * 1. FREQUENCY (×PARTNER_FREQUENCY_SCALE): Partnership frequency rate (dominates all)
+ *    - Rate per player: repetitions / participation
+ *    - Combined: average of both players' rates
+ * 2. RECENCY (×PARTNER_RECENCY_SCALE): How recently did they partner? (secondary)
+ *    - Inverse normalized: 1 / (roundsSince + 1)
+ *    - Round-independent: same time gap = same penalty regardless of tournament length
+ * 3. SATURATION (×PARTNER_SATURATION_SCALE): Partner history variety (tiebreaker)
+ *    - Rate per player: totalRepetitions / participation
+ *    - Combined: average of both players' rates
  *
- * Where R = total rounds in the tournament (currentRoundIndex + 1). Using the
- * tournament-wide round count (rather than individual player history) ensures
- * symmetric penalties and consistent scaling across all pairings.
- *
- * The repetition rate amplifier = R / min(playerA.history, playerB.history)
- * increases penalties when either player has limited history, reflecting that
- * repetitions "hurt more" when fewer rounds have been played.
- *
- * Examples at Round 10 (R=10):
- * - Two veterans (10 rounds each), partnered 2x (last R9):
- *   Amplifier=1.0, penalty = 2×1.0×PARTNER_FREQUENCY_SCALE×10 + 10×10 + 2 = 202
- * - Two newcomers (3 rounds each), partnered 1x (last R9):
- *   Amplifier=3.33, penalty = 1×3.33×PARTNER_FREQUENCY_SCALE×10 + 10×10 + 2 = 278
- * - Newcomer (3) + veteran (10), partnered 1x (last R9):
- *   Amplifier=3.33, penalty = 1×3.33×PARTNER_FREQUENCY_SCALE×10 + 10×10 + 2 = 278
- * - Veterans, never partnered: 0
- *
- * Note: Back-to-back repetitions (consecutive rounds) are handled naturally by
- * recency, but are not strictly prevented. Frequency always dominates: partnering
- * 2x always has higher penalty than 1x, regardless of when or player history.
+ * All factors are normalized to [0, 1] range before applying scale constants.
  */
 const calculatePartnerPenalty = (
   playerA: Player,
@@ -106,33 +115,33 @@ const calculatePartnerPenalty = (
     return 0; // Never partnered - no penalty
   }
 
-  // Use tournament-wide round count for consistent, symmetric scaling
-  const totalRounds = currentRoundIndex + 1;
+  const repetitions = roundsTeamedUp.length;
+  const participationA = Math.max(1, playerA.matchCount + playerA.pauseCount);
+  const participationB = Math.max(1, playerB.matchCount + playerB.pauseCount);
 
-  // Calculate each player's participation history (for repetition rate amplification)
-  const totalRoundsA = Math.max(1, playerA.matchCount + playerA.pauseCount);
-  const totalRoundsB = Math.max(1, playerB.matchCount + playerB.pauseCount);
-  const minParticipation = Math.min(totalRoundsA, totalRoundsB);
+  // 1. FREQUENCY: Partnership frequency rate [0, 1]
+  //    Average rate of both players
+  const frequencyRateA = repetitions / participationA;
+  const frequencyRateB = repetitions / participationB;
+  const frequencyFactor = (frequencyRateA + frequencyRateB) / 2;
 
-  // 1. FREQUENCY: How many times have they partnered? (R×5 scale - dominates everything)
-  //    Amplified by repetition rate: penalties increase when either player has limited history
-  const baseFrequency = roundsTeamedUp.length;
-  const repetitionAmplifier = totalRounds / minParticipation;
-  const frequencyFactor = baseFrequency * repetitionAmplifier;
-
-  // 2. RECENCY: How recently did they partner? (R scale - secondary tiebreaker)
+  // 2. RECENCY: Inverse normalized [0, 1]
+  //    1 = partnered last round (maximum penalty), approaches 0 for distant partnerships
   const lastRoundIndex = roundsTeamedUp[roundsTeamedUp.length - 1]!;
-  const recencyFactor = lastRoundIndex + 1; // 1-indexed for weight
+  const roundsSince = Math.max(0, currentRoundIndex - lastRoundIndex);
+  const recencyFactor = 1 / (roundsSince + 1);
 
-  // 3. SATURATION: Partner history saturation for both players (constant scale - final tiebreaker)
-  const saturationFactorA = calculatePartnerSaturation(playerA);
-  const saturationFactorB = calculatePartnerSaturation(playerB);
+  // 3. SATURATION: Partner history saturation rate [0, 1]
+  //    Average saturation rate of both players
+  const saturationRateA = calculatePartnerSaturation(playerA);
+  const saturationRateB = calculatePartnerSaturation(playerB);
+  const saturationFactor = (saturationRateA + saturationRateB) / 2;
 
-  // Hierarchical penalty: linear scaling with clear separation
-  // Frequency (R×PARTNER_FREQUENCY_SCALE) > Recency (R×1) > Saturation (1)
-  return (frequencyFactor * PARTNER_FREQUENCY_SCALE * totalRounds) +
-    (recencyFactor * totalRounds) +
-    (saturationFactorA + saturationFactorB);
+  // Hierarchical penalty: simple weighted sum of normalized factors
+  // FREQUENCY (×PARTNER_FREQUENCY_SCALE) > RECENCY (×PARTNER_RECENCY_SCALE) > SATURATION (×PARTNER_SATURATION_SCALE)
+  return (frequencyFactor * PARTNER_FREQUENCY_SCALE) +
+    (recencyFactor * PARTNER_RECENCY_SCALE) +
+    (saturationFactor * PARTNER_SATURATION_SCALE);
 };
 
 export const curriedTeamUpVarietyWeight = (currentRoundIndex: number) => {
@@ -184,37 +193,40 @@ export const curriedMatchUpGroupWeight = (mode: MatchUpGroupMode) => {
 };
 
 /**
+ * Calculates the saturation rate of a player's opponent history.
+ * This measures how many repeated opponent encounters occurred relative to participation.
+ *
+ * Returns a normalized rate [0, 1]: totalRepetitions / participation
+ * where totalRepetitions = sum over all opponents of (encounterCount - 1)
+ *
+ * Players with high saturation (many repeated opponent encounters relative to participation)
+ * have faced the same opponents multiple times.
+ */
+const calculateOpponentSaturation = (player: Player): number => {
+  const opponentCounts = Array.from(player.opponents.values());
+  const totalRepetitions = opponentCounts.reduce((acc, rounds) => acc + rounds.length - 1, 0);
+  const participation = Math.max(1, player.matchCount + player.pauseCount);
+  return totalRepetitions / participation;
+};
+
+/**
  * Calculates a penalty for two teams having played against each other before.
  * Higher penalty = less desirable match-up.
  *
- * Uses round-based hierarchical scaling with repetition rate amplification:
- * 1. EXACT_TEAM_FREQUENCY (R×EXACT_TEAM_FREQUENCY_SCALE): Exact same teams faced each other (dominates all)
- * 2. INDIVIDUAL_FREQUENCY (R×INDIVIDUAL_FREQUENCY_SCALE): Players faced each other in any combination (secondary)
- * 3. RECENCY (R scale): How recently encounters happened (tiebreaker)
- * 4. REPETITION RATE AMPLIFICATION: Frequencies amplified for matches involving newcomers
+ * Uses normalized factors [0, 1] with hierarchical scaling:
+ * 1. FREQUENCY (×OPPONENT_FREQUENCY_SCALE): Opponent encounter frequency (dominates)
+ *    - Rate per player: (encounters with both opponents) / participation
+ *    - Combined: average of all 4 players' average frequency rates
+ *    - Leverages symmetry: encounter counts are symmetric but rates differ per player
+ * 2. RECENCY (×OPPONENT_RECENCY_SCALE): How recently opponents faced (secondary)
+ *    - Per player-pair: 1 / (roundsSince + 1)
+ *    - Combined: average of 4 unique pair recencies (a0↔b0, a0↔b1, a1↔b0, a1↔b1)
+ *    - Leverages symmetry: only calculate 4 combinations, not 8
+ * 3. SATURATION (×OPPONENT_SATURATION_SCALE): Opponent history variety (tiebreaker)
+ *    - Rate per player: totalOpponentRepetitions / participation
+ *    - Combined: average of all 4 players' saturation rates
  *
- * Where R = total rounds in the tournament (currentRoundIndex + 1). Using the
- * tournament-wide round count ensures consistent scaling across all match-ups.
- *
- * Repetition rate amplification protects newcomers from developing high repetition rates:
- * - Amplifier = totalRounds / minParticipation (of all 4 players)
- * - Applied to exact team and individual frequencies (but not recency)
- * - Philosophy: "Repetitions hurt more when fewer rounds have been played"
- *
- * Examples at Round 10 (R=10):
- * - Teams never faced: 0
- * - All veterans (10 rounds each), faced 1× exact (Round 9):
- *   amplifier=1.0, penalty = 1×1.0×EXACT_TEAM_FREQUENCY_SCALE×10 + 4×1.0×INDIVIDUAL_FREQUENCY_SCALE×10 + 10 = 170
- * - One newcomer (3 rounds), faced 1× exact (Round 9):
- *   amplifier=3.33, penalty = 1×3.33×EXACT_TEAM_FREQUENCY_SCALE×10 + 4×3.33×INDIVIDUAL_FREQUENCY_SCALE×10 + 10 = 543
- * - All veterans, faced 2× exact:
- *   amplifier=1.0, penalty = 2×1.0×EXACT_TEAM_FREQUENCY_SCALE×10 + 8×1.0×INDIVIDUAL_FREQUENCY_SCALE×10 + 10 = 330
- *
- * The exact team match-ups are weighted higher (EXACT_TEAM_FREQUENCY_SCALE×) than individual 
- * encounters (INDIVIDUAL_FREQUENCY_SCALE×), ensuring that repeating the exact same match-up is 
- * heavily penalized. In a typical exact team match (1 exact team = 4 individual encounters), the 
- * contributions are balanced: exact contributes EXACT_TEAM_FREQUENCY_SCALE×R, individual 
- * contributes EXACT_TEAM_FREQUENCY_SCALE×R (4×INDIVIDUAL_FREQUENCY_SCALE×R).
+ * All factors are normalized to [0, 1] range before applying scale constants.
  */
 const calculateOpponentTeamPenalty = (
   teamA: Team,
@@ -227,65 +239,72 @@ const calculateOpponentTeamPenalty = (
   const a1b0Rounds = teamA[1].opponents.get(teamB[0].id) || [];
   const a1b1Rounds = teamA[1].opponents.get(teamB[1].id) || [];
 
-  // 1. INDIVIDUAL_FREQUENCY: Total count of individual opponent encounters
-  const individualFrequency =
-    a0b0Rounds.length + a0b1Rounds.length + a1b0Rounds.length + a1b1Rounds.length;
+  const totalEncounters = a0b0Rounds.length + a0b1Rounds.length +
+    a1b0Rounds.length + a1b1Rounds.length;
 
-  if (individualFrequency === 0) {
+  if (totalEncounters === 0) {
     return 0; // Never faced each other - no penalty
   }
 
-  // 2. EXACT_TEAM_FREQUENCY: Detect when exact same teams faced each other
-  // An exact team match occurs when all 4 player combinations faced each other in the same round
-  const exactTeamRounds = a0b0Rounds.filter(round =>
-    a0b1Rounds.includes(round) &&
-    a1b0Rounds.includes(round) &&
-    a1b1Rounds.includes(round)
-  );
+  // 1. FREQUENCY: Calculate per-player average frequency rates [0, 1]
+  //    Encounter counts are symmetric, but rates differ based on participation
+  const participationA0 = Math.max(1, teamA[0].matchCount + teamA[0].pauseCount);
+  const participationA1 = Math.max(1, teamA[1].matchCount + teamA[1].pauseCount);
+  const participationB0 = Math.max(1, teamB[0].matchCount + teamB[0].pauseCount);
+  const participationB1 = Math.max(1, teamB[1].matchCount + teamB[1].pauseCount);
 
-  const exactTeamFrequency = exactTeamRounds.length;
+  // Team A, Player 0: average frequency with both opponents
+  const freqA0vsB0 = a0b0Rounds.length / participationA0;
+  const freqA0vsB1 = a0b1Rounds.length / participationA0;
+  const avgFreqA0 = (freqA0vsB0 + freqA0vsB1) / 2;
 
-  // 3. RECENCY: When did encounters happen?
-  const totalRounds = currentRoundIndex + 1;
+  // Team A, Player 1: average frequency with both opponents
+  const freqA1vsB0 = a1b0Rounds.length / participationA1;
+  const freqA1vsB1 = a1b1Rounds.length / participationA1;
+  const avgFreqA1 = (freqA1vsB0 + freqA1vsB1) / 2;
 
-  // Individual recency: most recent encounter for each player combination
-  const individualRecency = Math.max(
-    a0b0Rounds.at(-1) ?? -1,
-    a0b1Rounds.at(-1) ?? -1,
-    a1b0Rounds.at(-1) ?? -1,
-    a1b1Rounds.at(-1) ?? -1
-  ) + 1; // Convert to 1-indexed
+  // Team B, Player 0: average frequency with both opponents (symmetric encounters)
+  const freqB0vsA0 = a0b0Rounds.length / participationB0; // same encounters as freqA0vsB0
+  const freqB0vsA1 = a1b0Rounds.length / participationB0; // same encounters as freqA1vsB0
+  const avgFreqB0 = (freqB0vsA0 + freqB0vsA1) / 2;
 
-  // Exact team recency: when did exact teams last face?
-  const exactTeamRecency = exactTeamRounds.length > 0
-    ? Math.max(...exactTeamRounds) + 1
-    : 0;
+  // Team B, Player 1: average frequency with both opponents (symmetric encounters)
+  const freqB1vsA0 = a0b1Rounds.length / participationB1; // same encounters as freqA0vsB1
+  const freqB1vsA1 = a1b1Rounds.length / participationB1; // same encounters as freqA1vsB1
+  const avgFreqB1 = (freqB1vsA0 + freqB1vsA1) / 2;
 
-  // Use the more recent of the two (exact team or individual)
-  const recencyFactor = Math.max(exactTeamRecency, individualRecency);
+  // Average of all 4 players' average frequencies
+  const frequencyFactor = (avgFreqA0 + avgFreqA1 + avgFreqB0 + avgFreqB1) / 4;
 
-  // 4. REPETITION RATE AMPLIFICATION: Protect newcomers from high repetition rates
-  // Calculate minimum participation across all 4 players in this match
-  const minParticipation = Math.min(
-    Math.max(1, teamA[0].matchCount + teamA[0].pauseCount),
-    Math.max(1, teamA[1].matchCount + teamA[1].pauseCount),
-    Math.max(1, teamB[0].matchCount + teamB[0].pauseCount),
-    Math.max(1, teamB[1].matchCount + teamB[1].pauseCount)
-  );
+  // 2. RECENCY: Calculate per-combination recency [0, 1]
+  //    4 unique pairs due to symmetry
+  const lastA0B0 = a0b0Rounds.at(-1) ?? -1;
+  const lastA0B1 = a0b1Rounds.at(-1) ?? -1;
+  const lastA1B0 = a1b0Rounds.at(-1) ?? -1;
+  const lastA1B1 = a1b1Rounds.at(-1) ?? -1;
 
-  // Amplifier increases penalties when any player has limited history
-  // Philosophy: "Repetitions hurt more when fewer rounds have been played"
-  const amplifier = totalRounds / minParticipation;
+  const recencyA0B0 = lastA0B0 >= 0 ? 1 / (currentRoundIndex - lastA0B0 + 1) : 0;
+  const recencyA0B1 = lastA0B1 >= 0 ? 1 / (currentRoundIndex - lastA0B1 + 1) : 0;
+  const recencyA1B0 = lastA1B0 >= 0 ? 1 / (currentRoundIndex - lastA1B0 + 1) : 0;
+  const recencyA1B1 = lastA1B1 >= 0 ? 1 / (currentRoundIndex - lastA1B1 + 1) : 0;
 
-  // Apply amplification to frequencies (but not recency - consistent with partner penalty)
-  const amplifiedExactFrequency = exactTeamFrequency * amplifier;
-  const amplifiedIndividualFrequency = individualFrequency * amplifier;
+  // Average of all 4 unique pair recencies
+  const recencyFactor = (recencyA0B0 + recencyA0B1 + recencyA1B0 + recencyA1B1) / 4;
 
-  // Hierarchical penalty: linear scaling with clear separation
-  // EXACT_TEAM (R×EXACT_TEAM_FREQUENCY_SCALE) > INDIVIDUAL (R×INDIVIDUAL_FREQUENCY_SCALE) > RECENCY (R×1)
-  return (amplifiedExactFrequency * EXACT_TEAM_FREQUENCY_SCALE * totalRounds) +
-    (amplifiedIndividualFrequency * INDIVIDUAL_FREQUENCY_SCALE * totalRounds) +
-    (recencyFactor * totalRounds);
+  // 3. SATURATION: Calculate per-player saturation rates [0, 1]
+  const saturationA0 = calculateOpponentSaturation(teamA[0]);
+  const saturationA1 = calculateOpponentSaturation(teamA[1]);
+  const saturationB0 = calculateOpponentSaturation(teamB[0]);
+  const saturationB1 = calculateOpponentSaturation(teamB[1]);
+
+  // Average of all 4 players' saturation rates
+  const saturationFactor = (saturationA0 + saturationA1 + saturationB0 + saturationB1) / 4;
+
+  // Hierarchical penalty: simple weighted sum of normalized factors
+  // FREQUENCY (×OPPONENT_FREQUENCY_SCALE) > RECENCY (×OPPONENT_RECENCY_SCALE) > SATURATION (×OPPONENT_SATURATION_SCALE)
+  return (frequencyFactor * OPPONENT_FREQUENCY_SCALE) +
+    (recencyFactor * OPPONENT_RECENCY_SCALE) +
+    (saturationFactor * OPPONENT_SATURATION_SCALE);
 };
 
 export const curriedMatchUpVarietyWeight = (currentRoundIndex: number) => {
