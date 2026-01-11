@@ -72,6 +72,7 @@ export interface Round {
   readonly paused: ParticipatingPlayer[];
   readonly inactive: ParticipatingPlayer[];
   standings(groups?: number[]): RankedPlayer[];
+  getParticipatingPlayers(): ParticipatingPlayer[];
   isLast(): boolean;
   delete(): boolean;
 }
