@@ -303,7 +303,9 @@ export const RoundPage: m.Component<{}, RoundState> = {
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
         disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
-          if (!tournament.hasAllScoresSubmitted && tournament.rounds.length > 0) {
+          const spec = settings.matchingSpec;
+          const usesPerformanceFactors = spec.teamUp.performanceFactor > 0 || spec.matchUp.performanceFactor > 0;
+          if (tournament.rounds.length > 0 && usesPerformanceFactors && !tournament.hasAllScoresSubmitted) {
             showToast("Not all scores were entered in previous rounds", { type: "error", position: "middle" });
           }
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
