@@ -94,7 +94,7 @@ const calculatePartnerSaturation = (player: Player): number => {
  * Uses normalized factors [0, 1] with hierarchical scaling:
  * 1. FREQUENCY (×PARTNER_FREQUENCY_SCALE): Partnership frequency rate (dominates all)
  *    - Rate per player: repetitions / participation
- *    - Combined: average of both players' rates
+ *    - Combined: MAX of both players' rates (prevents asymmetric repetition)
  * 2. RECENCY (×PARTNER_RECENCY_SCALE): How recently did they partner? (secondary)
  *    - Inverse normalized: 1 / (roundsSince + 1)
  *    - Round-independent: same time gap = same penalty regardless of tournament length
@@ -120,10 +120,10 @@ const calculatePartnerPenalty = (
   const participationB = Math.max(1, playerB.matchCount + playerB.pauseCount);
 
   // 1. FREQUENCY: Partnership frequency rate [0, 1]
-  //    Average rate of both players
+  //    Use MAX to prevent new players from being stuck with same partner
   const frequencyRateA = repetitions / participationA;
   const frequencyRateB = repetitions / participationB;
-  const frequencyFactor = (frequencyRateA + frequencyRateB) / 2;
+  const frequencyFactor = Math.max(frequencyRateA, frequencyRateB);
 
   // 2. RECENCY: Inverse normalized [0, 1]
   //    1 = partnered last round (maximum penalty), approaches 0 for distant partnerships
@@ -216,7 +216,7 @@ const calculateOpponentSaturation = (player: Player): number => {
  * Uses normalized factors [0, 1] with hierarchical scaling:
  * 1. FREQUENCY (×OPPONENT_FREQUENCY_SCALE): Opponent encounter frequency (dominates)
  *    - Rate per player: (encounters with both opponents) / participation
- *    - Combined: average of all 4 players' average frequency rates
+ *    - Combined: MAX of all 4 players' average frequency rates (catches hotspots)
  *    - Leverages symmetry: encounter counts are symmetric but rates differ per player
  * 2. RECENCY (×OPPONENT_RECENCY_SCALE): How recently opponents faced (secondary)
  *    - Per player-pair: 1 / (roundsSince + 1)
@@ -248,6 +248,7 @@ const calculateOpponentTeamPenalty = (
 
   // 1. FREQUENCY: Calculate per-player average frequency rates [0, 1]
   //    Encounter counts are symmetric, but rates differ based on participation
+  //    Use MAX to catch repetition hotspots and prevent concentrated repetitions
   const participationA0 = Math.max(1, teamA[0].matchCount + teamA[0].pauseCount);
   const participationA1 = Math.max(1, teamA[1].matchCount + teamA[1].pauseCount);
   const participationB0 = Math.max(1, teamB[0].matchCount + teamB[0].pauseCount);
@@ -273,8 +274,8 @@ const calculateOpponentTeamPenalty = (
   const freqB1vsA1 = a1b1Rounds.length / participationB1; // same encounters as freqA1vsB1
   const avgFreqB1 = (freqB1vsA0 + freqB1vsA1) / 2;
 
-  // Average of all 4 players' average frequencies
-  const frequencyFactor = (avgFreqA0 + avgFreqA1 + avgFreqB0 + avgFreqB1) / 4;
+  // MAX of all 4 players' average frequencies - catches repetition hotspots
+  const frequencyFactor = Math.max(avgFreqA0, avgFreqA1, avgFreqB0, avgFreqB1);
 
   // 2. RECENCY: Calculate per-combination recency [0, 1]
   //    4 unique pairs due to symmetry
