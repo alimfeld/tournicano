@@ -28,6 +28,29 @@ const groupCounts = (players: Player[]) => {
   }, []);
 };
 
+/**
+ * Recursively searches for a valid group distribution that satisfies all constraints.
+ * 
+ * This function tries to find how many players from each group should be selected
+ * such that:
+ * - Each group contributes a multiple of `multipleOf` players (e.g., 0, 2, 4, 6...)
+ * - The total across all groups equals `sum` (target competing count)
+ * - No group exceeds its `max` available players
+ * 
+ * The recursive search explores different distribution combinations to find one that
+ * satisfies all constraints. This is used in group-aware partitioning to ensure
+ * proper group representation for matching algorithms.
+ * 
+ * @param constraints - The distribution constraints
+ * @param proposal - Current proposal being tested (array indexed by group number)
+ * @param next - Internal parameter for recursive iteration
+ * @returns Valid distribution array, or null if impossible
+ * 
+ * Example:
+ *   max: [7, 3], multipleOf: 2, sum: 8
+ *   → [6, 2] ✓ (6 from group 0, 2 from group 1 = 8 total, both multiples of 2)
+ *   → [8, 0] ✗ (exceeds max[0]=7)
+ */
 const findGroupDistribution = (
   constraints: {
     max: number[];
@@ -69,6 +92,31 @@ const findGroupDistribution = (
   return null;
 };
 
+/**
+ * Partitions players with group awareness for matching formats that use group factors
+ * (e.g., AmericanoMixed, Tournicano) but don't require strict group balancing.
+ * 
+ * Key behaviors:
+ * - Prioritizes individual fairness: players with lower playRatio compete first
+ * - Ensures competing players are in valid group multiples (for proper match formation)
+ * - Does NOT enforce equal representation per group (use balanceGroups for that)
+ * - Paused players are selected WITHOUT group awareness (just by playRatio)
+ * 
+ * Algorithm:
+ * 1. Sort all players by playRatio (group-agnostic)
+ * 2. Split into three buckets based on playRatio at competingCount cutoff:
+ *    - definitelyPlaying: playRatio < cutoff (will definitely compete)
+ *    - maybePaused: playRatio == cutoff (need group-aware selection)
+ *    - definitelyPaused: playRatio > cutoff (will definitely be paused)
+ * 3. From maybePaused, select players to reach competingCount using group-aware logic:
+ *    - First try multiples-of-4 per group (can improve match quality for unbalanced scenarios)
+ *    - Fall back to multiples-of-2 per group if multiples-of-4 fails
+ *    - Uses recursive search to find valid distribution
+ * 4. Unselected players from maybePaused + definitelyPaused become paused
+ * 
+ * Note: The multiple-of-4 attempt before multiple-of-2 can significantly improve
+ * partnership variety in unbalanced mixed scenarios (e.g., 7vs8 or 3vs4 groups).
+ */
 const partitionGroupAware = (
   players: Player[],
   maxMatches: number,
@@ -79,11 +127,13 @@ const partitionGroupAware = (
   }
   let sorted = players;
   if (players.length > competingCount) {
-    // we need to pause players
+    // We need to pause some players - use group-aware selection
     sorted = players.toSorted((p, q) => playRatio(p) - playRatio(q));
-    const definitelyPlaying = [];
-    const maybePaused = [];
-    const definitelyPaused = [];
+    
+    // Split players into three buckets based on their playRatio relative to cutoff:
+    const definitelyPlaying = [];  // playRatio < cutoff: will definitely compete
+    const maybePaused = [];         // playRatio == cutoff: need group-aware selection
+    const definitelyPaused = [];    // playRatio > cutoff: will definitely be paused
     const cutOff = playRatio(sorted.at(competingCount - 1)!);
     for (const player of sorted) {
       const r = playRatio(player);
@@ -98,28 +148,41 @@ const partitionGroupAware = (
     if (definitelyPlaying.length + maybePaused.length > competingCount) {
       const maxGroupCounts = groupCounts(definitelyPlaying.concat(maybePaused));
       const minGroupCounts = groupCounts(definitelyPlaying);
+      
+      // Try to find a distribution with multiples-of-4 per group first.
+      // This can lead to better group distributions and partnership variety,
+      // especially in unbalanced mixed scenarios (e.g., 7vs8 or 3vs4 groups).
       let distribution = findGroupDistribution(
         {
           max: maxGroupCounts,
-          multipleOf: PLAYERS_PER_MATCH,
+          multipleOf: PLAYERS_PER_MATCH, // Try multiples of 4 first
           sum: competingCount,
         },
         minGroupCounts,
       );
+      
+      // If multiples-of-4 fails, fall back to multiples-of-2.
+      // This ensures we can still form valid teams (pairs).
       if (distribution === null) {
         distribution = findGroupDistribution(
           {
             max: maxGroupCounts,
-            multipleOf: PLAYERS_PER_TEAM,
+            multipleOf: PLAYERS_PER_TEAM, // Fall back to multiples of 2
             sum: competingCount,
           },
           minGroupCounts,
         );
       }
+      
       if (distribution !== null) {
         sorted = definitelyPlaying;
         const currentCounts = minGroupCounts.slice();
         const tail = [];
+        
+        // Select from maybePaused candidates to fill remaining spots:
+        // - Shuffle first to break any patterns and introduce fairness
+        // - Then sort by lastPause (descending) to avoid back-to-back pauses
+        // - Select according to the distribution (respecting group multiples)
         // shuffle candidates to break patterns
         const candidates = shuffle(maybePaused.slice());
         candidates.sort((p, q) => q.lastPause - p.lastPause);
@@ -133,6 +196,11 @@ const partitionGroupAware = (
             tail.push(player);
           }
         }
+        // Final sorted order:
+        // 1. definitelyPlaying (lowest playRatio, all compete)
+        // 2. Selected from maybePaused (compete, respecting group multiples)
+        // 3. Unselected from maybePaused (paused, group-agnostic)
+        // 4. definitelyPaused (highest playRatio, all paused)
         sorted = sorted.concat(tail).concat(definitelyPaused);
       }
     }
