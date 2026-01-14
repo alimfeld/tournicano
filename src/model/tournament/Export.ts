@@ -45,8 +45,7 @@ function groupToLabel(groupNumber: number): string {
  * Format standings table as text
  */
 function formatStandingsTable(
-  standings: { rank: number; player: ParticipatingPlayer }[],
-  totalRounds: number
+  standings: { rank: number; player: ParticipatingPlayer }[]
 ): string {
   if (standings.length === 0) {
     return "";
@@ -54,25 +53,20 @@ function formatStandingsTable(
 
   let result = "";
 
-  // Calculate dynamic padding based on data
+  // Calculate padding based on data
   const maxRank = standings.length;
   const rankPad = String(maxRank).length;
   const maxNameLength = Math.max(...standings.map(p => p.player.name.length));
   const namePad = Math.max(maxNameLength, 10); // At least 10 chars
   const maxPlusMinus = Math.max(...standings.map(p => Math.abs(p.player.plusMinus)));
   const plusMinusPad = String(maxPlusMinus).length + 1; // +1 for sign
-  const maxPointsFor = Math.max(...standings.map(p => p.player.pointsFor));
-  const maxPointsAgainst = Math.max(...standings.map(p => p.player.pointsAgainst));
-  const pointsPad = Math.max(String(maxPointsFor).length, String(maxPointsAgainst).length);
 
   standings.forEach((ranked) => {
-    const participationCount = ranked.player.matchCount + ranked.player.pauseCount;
-    const reliabilityPercent = totalRounds > 0 ? Math.round((participationCount / totalRounds) * 100) : 0;
     const winRatioPercent = Math.round(ranked.player.winRatio * 100);
     const plusMinus = ranked.player.plusMinus >= 0 ? `+${ranked.player.plusMinus}` : `${ranked.player.plusMinus}`;
     const wdl = `(${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses})`;
-    const points = `(${String(ranked.player.pointsFor).padStart(pointsPad, " ")}-${String(ranked.player.pointsAgainst).padStart(pointsPad, " ")})`;
-    result += `${String(ranked.rank).padStart(rankPad, " ")}. ${ranked.player.name.padEnd(namePad, " ")} ${String(winRatioPercent).padStart(3, " ")}% ${wdl.padEnd(9, " ")} ${plusMinus.padStart(plusMinusPad, " ")} ${points} ${String(reliabilityPercent).padStart(3, " ")}%\n`;
+    
+    result += `${String(ranked.rank).padStart(rankPad, " ")}. ${ranked.player.name.padEnd(namePad, " ")} ${String(winRatioPercent).padStart(3, " ")}% ${wdl.padEnd(9, " ")} ${plusMinus.padStart(plusMinusPad, " ")}\n`;
   });
 
   return result;
@@ -96,9 +90,25 @@ export function exportStandingsText(
 
   let result = "";
   
-  // Header
-  result += `STANDINGS - Round ${targetRoundIndex + 1} of ${rounds.length}\n`;
-  result += `Export Date: ${new Date().toISOString()}\n`;
+  // Determine header title based on filter
+  let headerTitle: string;
+  if (groups && groups.length === 1) {
+    headerTitle = `GROUP ${groupToLabel(groups[0])} STANDINGS`;
+  } else if (groups && groups.length > 1) {
+    // Sort group labels alphabetically for consistency
+    const groupLabels = groups.map(g => groupToLabel(g)).sort().join('+');
+    headerTitle = `GROUPS ${groupLabels} STANDINGS`;
+  } else {
+    headerTitle = "STANDINGS";
+  }
+
+  // Add round info - show "of Y" only if not on final round
+  const isLastRound = targetRoundIndex + 1 === rounds.length;
+  const roundInfo = isLastRound
+    ? ` - Round ${targetRoundIndex + 1}`
+    : ` - Round ${targetRoundIndex + 1} of ${rounds.length}`;
+
+  result += `${headerTitle}${roundInfo}\n`;
   result += "\n";
 
   // Determine which standings to show
@@ -106,13 +116,9 @@ export function exportStandingsText(
     // Single group selected - show only that group
     const groupStandings = targetRound.standings(groups);
     if (groupStandings.length === 0) {
-      result += `GROUP ${groupToLabel(groups[0])} STANDINGS\n`;
-      result += "-".repeat(`GROUP ${groupToLabel(groups[0])} STANDINGS`.length) + "\n";
       result += "No standings available\n";
     } else {
-      result += `GROUP ${groupToLabel(groups[0])} STANDINGS\n`;
-      result += "-".repeat(`GROUP ${groupToLabel(groups[0])} STANDINGS`.length) + "\n";
-      result += formatStandingsTable(groupStandings, rounds.length);
+      result += formatStandingsTable(groupStandings);
     }
   } else {
     // No filter or multiple groups - show overall standings
@@ -120,13 +126,9 @@ export function exportStandingsText(
     const standings = targetRound.standings(selectedGroups);
     
     if (standings.length === 0) {
-      result += "OVERALL STANDINGS\n";
-      result += "-".repeat("OVERALL STANDINGS".length) + "\n";
       result += "No standings available\n";
     } else {
-      result += "OVERALL STANDINGS\n";
-      result += "-".repeat("OVERALL STANDINGS".length) + "\n";
-      result += formatStandingsTable(standings, rounds.length);
+      result += formatStandingsTable(standings);
     }
   }
 

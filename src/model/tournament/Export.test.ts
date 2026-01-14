@@ -18,9 +18,8 @@ test("should export standings text for specific round", ({ players, scores }) =>
   
   const text = tournament.exportStandingsText(0);
   
-  expect(text).toContain("STANDINGS - Round 1 of 1");
-  expect(text).toContain("Export Date:");
-  expect(text).toContain("OVERALL STANDINGS");
+  expect(text).toContain("STANDINGS - Round 1");
+  expect(text).not.toContain("OVERALL STANDINGS");
   expect(text).not.toContain("ROUND 1"); // Should not include round details
   expect(text).not.toContain("PLAYERS"); // Should not include player list
 });
@@ -36,7 +35,7 @@ test("should export standings text with group filter", () => {
   // Export with single group filter
   const textGroupA = tournament.exportStandingsText(0, [0]);
   
-  expect(textGroupA).toContain("GROUP A STANDINGS");
+  expect(textGroupA).toContain("GROUP A STANDINGS - Round 1");
   expect(textGroupA).not.toContain("OVERALL STANDINGS");
   expect(textGroupA).not.toContain("GROUP B");
 });
@@ -53,7 +52,8 @@ test("should export standings text with multiple group filter", () => {
   // Export with multiple groups filter
   const text = tournament.exportStandingsText(0, [0, 1]);
   
-  expect(text).toContain("OVERALL STANDINGS");
+  expect(text).toContain("GROUPS A+B STANDINGS - Round 1");
+  expect(text).not.toContain("OVERALL STANDINGS");
   expect(text).not.toContain("GROUP A STANDINGS");
   expect(text).not.toContain("GROUP B STANDINGS");
 });
