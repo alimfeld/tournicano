@@ -460,8 +460,8 @@ const mixedScenarios: TournamentScenario[] = [
     runsToTest: 25,
     groupSizes: [3, 4],
     category: 'mixed-unbalanced',
-    partner: { minUniqueRate: 0.70, maxRepeats: 3, maxCV: 0.45 },
-    opponent: { maxRange: 9, maxCV: 0.56 },
+    partner: { minUniqueRate: 0.85, maxRepeats: 2, maxCV: 0.20 },
+    opponent: { maxRange: 9, maxCV: 0.65 },
     backToBack: { maxPartnerRate: 0.15, maxMatchupRate: 0.02 },
     notes: "12 valid mixed pairs (3×4), unbalanced groups + odd total"
   },
@@ -572,8 +572,8 @@ const mixedScenarios: TournamentScenario[] = [
     runsToTest: 20,
     groupSizes: [7, 8],
     category: 'mixed-unbalanced',
-    partner: { minUniqueRate: 0.70, maxRepeats: 3, maxCV: 0.45 },
-    opponent: { maxRange: 10, maxCV: 0.58 },
+    partner: { minUniqueRate: 0.60, maxRepeats: 2, maxCV: 0.38 },
+    opponent: { maxRange: 10, maxCV: 0.45 },
     backToBack: { maxPartnerRate: 0.15, maxMatchupRate: 0.02 },
     notes: "56 valid mixed pairs (7×8), unbalanced groups + odd total"
   },

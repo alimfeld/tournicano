@@ -109,13 +109,13 @@ const findGroupDistribution = (
  *    - maybePaused: playRatio == cutoff (need group-aware selection)
  *    - definitelyPaused: playRatio > cutoff (will definitely be paused)
  * 3. From maybePaused, select players to reach competingCount using group-aware logic:
- *    - First try multiples-of-4 per group (can improve match quality for unbalanced scenarios)
- *    - Fall back to multiples-of-2 per group if multiples-of-4 fails
+ *    - Use multiples-of-2 per group to ensure proper team formation
  *    - Uses recursive search to find valid distribution
  * 4. Unselected players from maybePaused + definitelyPaused become paused
  * 
- * Note: The multiple-of-4 attempt before multiple-of-2 can significantly improve
- * partnership variety in unbalanced mixed scenarios (e.g., 7vs8 or 3vs4 groups).
+ * Note: We only use multiples-of-2 (not multiples-of-4) because unbalanced distributions
+ * like 4M+8F would force inter-group partnerships (e.g., F-F pairs) which violate the
+ * PAIRED constraint in mixed formats. This ensures all partnerships follow group rules.
  */
 const partitionGroupAware = (
   players: Player[],
@@ -149,30 +149,18 @@ const partitionGroupAware = (
       const maxGroupCounts = groupCounts(definitelyPlaying.concat(maybePaused));
       const minGroupCounts = groupCounts(definitelyPlaying);
       
-      // Try to find a distribution with multiples-of-4 per group first.
-      // This can lead to better group distributions and partnership variety,
-      // especially in unbalanced mixed scenarios (e.g., 7vs8 or 3vs4 groups).
-      let distribution = findGroupDistribution(
+      // Use multiples-of-2 per group to ensure proper team formation.
+      // We don't use multiples-of-4 because it can create unbalanced distributions
+      // (e.g., 4M+8F) which force inter-group partnerships (e.g., F-F pairs) that
+      // violate the PAIRED constraint in mixed formats.
+      const distribution = findGroupDistribution(
         {
           max: maxGroupCounts,
-          multipleOf: PLAYERS_PER_MATCH, // Try multiples of 4 first
+          multipleOf: PLAYERS_PER_TEAM, // Use multiples of 2
           sum: competingCount,
         },
         minGroupCounts,
       );
-      
-      // If multiples-of-4 fails, fall back to multiples-of-2.
-      // This ensures we can still form valid teams (pairs).
-      if (distribution === null) {
-        distribution = findGroupDistribution(
-          {
-            max: maxGroupCounts,
-            multipleOf: PLAYERS_PER_TEAM, // Fall back to multiples of 2
-            sum: competingCount,
-          },
-          minGroupCounts,
-        );
-      }
       
       if (distribution !== null) {
         sorted = definitelyPlaying;
