@@ -71,6 +71,33 @@ export class RoundImpl implements Round, RoundContext {
   inactive: ParticipatingPlayerImpl[];
   playerMap: Map<PlayerId, ParticipatingPlayerImpl>;
 
+  /**
+   * Creates a new round with the given matches and participating players.
+   * 
+   * @param tournament - Tournament context for accessing player data
+   * @param index - Zero-based round number
+   * @param participating - Players participating from previous rounds (carries over stats).
+   *                        For round 1 during deserialization, this may be empty and players
+   *                        will be created on-demand from matched/paused/inactive arrays.
+   * @param matched - Array of matched teams as player ID pairs: [[teamA], [teamB]]
+   * @param paused - Player IDs who were ACTIVE but unmatched at round creation time.
+   *                 These players wanted to play but couldn't be matched (e.g., odd number out).
+   * @param inactive - Player IDs who were INACTIVE at round creation time.
+   *                   These players were participating in previous rounds but are now inactive.
+   * 
+   * Note: The paused and inactive arrays capture historical player active state at the moment
+   * this round was created. They cannot be derived from current player.active state during
+   * deserialization, as players may have been activated/deactivated between rounds or after
+   * the tournament was saved. For example:
+   * - Round 1: Alice is active → gets paused (unmatched)
+   * - Round 2: Alice is deactivated → appears in inactive
+   * - Save & reload: Alice's current state is inactive, but Round 1 still shows her as paused
+   * 
+   * This historical record is essential for:
+   * - Displaying correct paused/inactive badges in the UI
+   * - Preserving pauseCount and lastPause statistics
+   * - Maintaining tournament history integrity
+   */
   constructor(
     readonly tournament: TournamentContext,
     readonly index: number,
