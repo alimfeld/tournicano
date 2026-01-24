@@ -80,7 +80,7 @@ export function validateScoreInput(input: string, maxDigitsPerSide: number = 2):
     // Before colon
     const canAddDigit = parts[0].length < maxDigitsPerSide;
     const needsColon = parts[0].length === maxDigitsPerSide;
-    
+
     return {
       canAddDigit,
       canAddColon: input.length > 0,
@@ -91,7 +91,7 @@ export function validateScoreInput(input: string, maxDigitsPerSide: number = 2):
     // After colon
     const canAddDigit = parts[1].length < maxDigitsPerSide;
     const isComplete = parts[1].length > 0;
-    
+
     return {
       canAddDigit,
       canAddColon: false,
@@ -114,27 +114,27 @@ export function validateScoreInput(input: string, maxDigitsPerSide: number = 2):
  */
 export function addDigitToScore(currentInput: string, digit: string, maxDigitsPerSide: number = 2): string {
   const parts = currentInput.split(":");
-  
+
   // Check if we can add before colon
   if (parts.length === 1) {
     const currentLength = parts[0].length;
-    
+
     // If already at max, add colon instead
     if (currentLength >= maxDigitsPerSide) {
       return currentInput + ":";
     }
-    
+
     // Add the digit
     let newInput = currentInput + digit;
-    
+
     // If we just reached max, auto-add colon
     if (currentLength + 1 === maxDigitsPerSide) {
       newInput += ":";
     }
-    
+
     return newInput;
   }
-  
+
   // After colon - check if we can add
   if (parts.length === 2) {
     if (parts[1].length >= maxDigitsPerSide) {
@@ -142,7 +142,7 @@ export function addDigitToScore(currentInput: string, digit: string, maxDigitsPe
     }
     return currentInput + digit;
   }
-  
+
   // Invalid state
   return currentInput;
 }
@@ -152,7 +152,7 @@ export function addDigitToScore(currentInput: string, digit: string, maxDigitsPe
  */
 export function formatScoreDisplay(input: string): string {
   if (input.length === 0) {
-    return "--:--";
+    return "";
   }
   return input;
 }

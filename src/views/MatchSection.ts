@@ -30,7 +30,7 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
   view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore, autoFocus, onKeyDown, playerCardClass, playerBadge } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
-      : "";
+      : undefined;
     const isValid = !!match.score;
     const renderPlayer = (player: ParticipatingPlayer) => {
       return m(ParticipatingPlayerCard, {
@@ -64,6 +64,7 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
                 value: displayScore ?? scoreString ?? "--:--",
                 tabindex: autoFocus ? 0 : undefined,
                 readonly: true,
+                disabled: !autoFocus,
                 onkeydown: onKeyDown,
                 oncreate: autoFocus ? (vnode) => {
                   (vnode.dom as HTMLElement).focus();

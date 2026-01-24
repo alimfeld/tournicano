@@ -50,6 +50,7 @@ section.vs button.score.valid {
 /* Score display in display mode */
 section.vs input.score-text {
   text-align: center;
+  margin-bottom: 0;
 }
 
 section.team {

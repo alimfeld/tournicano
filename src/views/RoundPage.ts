@@ -336,6 +336,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 roundIndex,
                 match,
                 matchIndex,
+                mode: state.switchMode?.active ? "display" : "interactive",
                 showRoundIndex: fullscreen,
                 openScoreEntry,
                 openPlayerModal: handlePlayerClick,
