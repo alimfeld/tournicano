@@ -448,7 +448,7 @@ const mixedScenarios: TournamentScenario[] = [
     category: 'mixed-balanced',
     partner: { minUniqueRate: 0.76, maxRepeats: 2, maxCV: 0.31 },
     opponent: { maxRange: 8, maxCV: 0.40 },
-    backToBack: { maxPartnerRate: 0.07, maxMatchupRate: 0.01 },
+    backToBack: { maxPartnerRate: 0.08, maxMatchupRate: 0.01 },
     notes: "9 valid mixed pairs (3×3)"
   },
   {

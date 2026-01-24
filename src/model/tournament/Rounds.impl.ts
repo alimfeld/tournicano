@@ -70,6 +70,9 @@ export class RoundImpl implements Round, RoundContext {
   paused: ParticipatingPlayerImpl[];
   inactive: ParticipatingPlayerImpl[];
   playerMap: Map<PlayerId, ParticipatingPlayerImpl>;
+  
+  // Store reference to original participating players for round reconstruction
+  private originalParticipating: ParticipatingPlayerImpl[];
 
   /**
    * Creates a new round with the given matches and participating players.
@@ -106,6 +109,20 @@ export class RoundImpl implements Round, RoundContext {
     paused: PlayerId[],
     inactive: PlayerId[],
   ) {
+    this.originalParticipating = participating;
+    this.buildRound(participating, matched, paused, inactive);
+  }
+
+  /**
+   * Builds or rebuilds the round with the given match/paused/inactive configuration.
+   * Used by both the constructor and switchPlayers() method.
+   */
+  private buildRound(
+    participating: ParticipatingPlayerImpl[],
+    matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
+    paused: PlayerId[],
+    inactive: PlayerId[]
+  ): void {
     this.playerMap = new Map(participating.map((p) => [p.id, p.deepCopy()]));
     const getOrCreate = (id: PlayerId) => {
       let result = this.playerMap.get(id);
@@ -118,7 +135,7 @@ export class RoundImpl implements Round, RoundContext {
     this.paused = paused.map((id) => {
       const player = getOrCreate(id);
       player.pauseCount += 1;
-      player.lastPause = index;
+      player.lastPause = this.index;
       return player;
     });
     this.inactive = inactive.map((id) => {
@@ -131,17 +148,17 @@ export class RoundImpl implements Round, RoundContext {
       const b1 = getOrCreate(m[1][0]);
       const b2 = getOrCreate(m[1][1]);
       const teamA = new TeamImpl(a1, a2);
-      a1.incPartner(a2.id, index);
-      a2.incPartner(a1.id, index);
-      b1.incPartner(b2.id, index);
-      b2.incPartner(b1.id, index);
+      a1.incPartner(a2.id, this.index);
+      a2.incPartner(a1.id, this.index);
+      b1.incPartner(b2.id, this.index);
+      b2.incPartner(b1.id, this.index);
       const teamB = new TeamImpl(b1, b2);
       const match = new MatchImpl(this, teamA, teamB);
       [a1, a2, b1, b2].forEach((p) => (p.matchCount += 1));
       [a1, a2].forEach((p) => {
         [b1, b2].forEach((q) => {
-          p.incOpponent(q.id, index);
-          q.incOpponent(p.id, index);
+          p.incOpponent(q.id, this.index);
+          q.incOpponent(p.id, this.index);
         });
       });
       return match;
@@ -159,6 +176,55 @@ export class RoundImpl implements Round, RoundContext {
       this.tournament.notifyChange();
     }
     return success;
+  }
+
+  switchPlayers(id1: PlayerId, id2: PlayerId): boolean {
+    // Validate: Must be last round
+    if (!this.isLast()) return false;
+    
+    // Validate: Cannot switch same player
+    if (id1 === id2) return false;
+    
+    // Validate: Both players must exist in round
+    if (!this.playerMap.has(id1) || !this.playerMap.has(id2)) return false;
+    
+    // Validate: Neither can be inactive
+    if (this.inactive.some(p => p.id === id1 || p.id === id2)) return false;
+    
+    // Validate: No matches can have scores
+    if (this.matches.some(m => m.score !== undefined)) return false;
+    
+    // Extract current structure from round state
+    const matched = this.matches.map(m => [
+      [m.teamA.player1.id, m.teamA.player2.id],
+      [m.teamB.player1.id, m.teamB.player2.id]
+    ] as [[PlayerId, PlayerId], [PlayerId, PlayerId]]);
+    const paused = this.paused.map(p => p.id);
+    
+    // Swap player IDs in arrays
+    for (const match of matched) {
+      for (const team of match) {
+        for (let i = 0; i < team.length; i++) {
+          if (team[i] === id1) team[i] = id2;
+          else if (team[i] === id2) team[i] = id1;
+        }
+      }
+    }
+    for (let i = 0; i < paused.length; i++) {
+      if (paused[i] === id1) paused[i] = id2;
+      else if (paused[i] === id2) paused[i] = id1;
+    }
+    
+    // Rebuild round with swapped configuration
+    this.buildRound(
+      this.originalParticipating,
+      matched,
+      paused,
+      this.inactive.map(p => p.id)
+    );
+    
+    this.tournament.notifyChange();
+    return true;
   }
 
   // RoundContext interface methods

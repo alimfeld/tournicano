@@ -75,6 +75,7 @@ export interface Round {
   getParticipatingPlayers(): ParticipatingPlayer[];
   isLast(): boolean;
   delete(): boolean;
+  switchPlayers(playerId1: PlayerId, playerId2: PlayerId): boolean;
 }
 
 export interface TournamentListener {
