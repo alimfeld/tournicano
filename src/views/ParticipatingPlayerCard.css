@@ -41,8 +41,8 @@ article.player .player-badge-right {
 
 /* Switch mode styles */
 article.player.selectable {
-  outline: 2px solid var(--pico-primary);
-  outline-offset: -2px;
+  outline: 1px solid var(--pico-primary);
+  outline-offset: -1px;
   cursor: pointer;
   transition: transform 120ms ease, opacity 120ms ease;
 }
@@ -55,8 +55,8 @@ article.player.selected:active {
 }
 
 article.player.selected {
-  outline: 2px solid var(--pico-primary);
-  outline-offset: -2px;
+  outline: 1px solid var(--pico-primary);
+  outline-offset: -1px;
   background-color: var(--pico-primary-background);
   color: var(--pico-primary-inverse);
 }

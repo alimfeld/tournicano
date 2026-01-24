@@ -149,6 +149,9 @@ export const RoundPage: m.Component<{}, RoundState> = {
     const toggleSwitchMode = () => {
       state.switchMode!.active = !state.switchMode!.active;
       state.switchMode!.selectedPlayerId = undefined;
+      if (state.switchMode!.active) {
+        showToast("Select two players to switch", { type: "info", position: "bottom" });
+      }
     };
 
     // Handle player selection/switching logic
@@ -166,11 +169,12 @@ export const RoundPage: m.Component<{}, RoundState> = {
         // Second selection - execute switch
         const success = round!.switchPlayers(state.switchMode!.selectedPlayerId, player.id);
         if (success) {
-          // Auto-exit edit mode
-          state.switchMode!.active = false;
+          const player1 = tournament.getPlayer(state.switchMode!.selectedPlayerId!)!;
+          const player2 = tournament.getPlayer(player.id)!;
+          showToast(`Switched ${player1.name} ↔ ${player2.name}`, { type: "success", position: "bottom" });
           state.switchMode!.selectedPlayerId = undefined;
         } else {
-          showToast("Failed to switch players", { type: "error", position: "middle" });
+          showToast("Failed to switch players", { type: "error", position: "bottom" });
         }
       }
     };
@@ -311,15 +315,15 @@ export const RoundPage: m.Component<{}, RoundState> = {
         Swipeable,
         {
           element: "main.round.container-fluid" + (fullscreen ? ".fullscreen" : ""),
-          showNavHints: true,
+          showNavHints: !state.switchMode?.active,
           onswipeleft:
-            roundIndex > 0 && roundCount > 0
+            roundIndex > 0 && roundCount > 0 && !state.switchMode?.active
               ? () => {
                 changeRound(roundIndex - 1);
               }
               : undefined,
           onswiperight:
-            roundIndex + 1 < roundCount && roundCount > 0
+            roundIndex + 1 < roundCount && roundCount > 0 && !state.switchMode?.active
               ? () => {
                 changeRound(roundIndex + 1);
               }
@@ -416,7 +420,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
           changeRound(roundCount);
         },
       }) : null,
-      roundCount > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
+      roundCount > 0 && !state.switchMode!.active ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {
         roundIndex: state.scoreEntryMatch.roundIndex,
