@@ -38,3 +38,35 @@ article.player .player-badge-right {
   right: 0;
   padding: 0 calc(var(--pico-form-element-spacing-horizontal) / 4);
 }
+
+/* Switch mode styles */
+article.player.selectable {
+  outline: 2px solid var(--pico-primary);
+  outline-offset: -2px;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+/* Press feedback (consistent with FAB/buttons) */
+article.player.selectable:active,
+article.player.selected:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+article.player.selected {
+  outline: 2px solid var(--pico-primary);
+  outline-offset: -2px;
+  background-color: var(--pico-primary-background);
+  color: var(--pico-primary-inverse);
+}
+
+article.player.selected p {
+  color: var(--pico-primary-inverse);
+}
+
+article.player.ineligible {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}

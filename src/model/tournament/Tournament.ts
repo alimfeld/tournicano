@@ -71,6 +71,7 @@ export interface Round {
   readonly matches: Match[];
   readonly paused: ParticipatingPlayer[];
   readonly inactive: ParticipatingPlayer[];
+  readonly playerMap: ReadonlyMap<PlayerId, ParticipatingPlayer>;
   standings(groups?: number[]): RankedPlayer[];
   getParticipatingPlayers(): ParticipatingPlayer[];
   isLast(): boolean;
@@ -141,6 +142,7 @@ export interface Tournament {
   readonly activePlayerCount: number;
   readonly hasAllScoresSubmitted: boolean;
   players(group?: number): Player[];
+  getPlayer(id: PlayerId): Player | undefined;
   getFilteredPlayers(filter?: PlayerFilter, sortBy?: PlayerSortBy): Player[];
   getPlayerCounts(filter?: PlayerFilter): PlayerCounts;
   addPlayers(names: string[], group?: number): { added: string[], duplicates: string[] };

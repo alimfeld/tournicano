@@ -8,6 +8,7 @@ export interface ParticipatingPlayerCardAttrs {
   player: ParticipatingPlayer;
   badge?: string;
   onClick?: () => void;
+  class?: string;
 }
 
 export const ParticipatingPlayerCard: m.Component<ParticipatingPlayerCardAttrs> = {
@@ -20,7 +21,7 @@ export const ParticipatingPlayerCard: m.Component<ParticipatingPlayerCardAttrs> 
     return m(
       "article.player",
       {
-        class: player.active ? "active" : "inactive",
+        class: `${player.active ? "active" : "inactive"} ${vnode.attrs.class || ""}`,
         onclick: vnode.attrs.onClick,
         style: vnode.attrs.onClick ? "cursor: pointer;" : undefined
       },

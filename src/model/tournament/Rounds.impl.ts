@@ -67,9 +67,9 @@ export class MatchImpl implements Mutable<Match> {
  */
 export class RoundImpl implements Round, RoundContext {
   matches: MatchImpl[] = [];
-  paused: ParticipatingPlayerImpl[];
-  inactive: ParticipatingPlayerImpl[];
-  playerMap: Map<PlayerId, ParticipatingPlayerImpl>;
+  paused!: ParticipatingPlayerImpl[];
+  inactive!: ParticipatingPlayerImpl[];
+  playerMap!: Map<PlayerId, ParticipatingPlayerImpl>;
   
   // Store reference to original participating players for round reconstruction
   private originalParticipating: ParticipatingPlayerImpl[];

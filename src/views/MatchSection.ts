@@ -20,10 +20,14 @@ export interface MatchSectionAttrs {
   displayScore?: string;  // Override score text in display mode
   autoFocus?: boolean;  // Auto-focus the score display when mounted
   onKeyDown?: (e: KeyboardEvent) => void;  // Keyboard event handler
+
+  // Switch mode support
+  playerCardClass?: (player: ParticipatingPlayer) => string | undefined;
+  playerBadge?: (player: ParticipatingPlayer) => string | undefined;
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore, autoFocus, onKeyDown } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore, autoFocus, onKeyDown, playerCardClass, playerBadge } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : "";
@@ -32,6 +36,8 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       return m(ParticipatingPlayerCard, {
         key: `player-${player.id}`,
         player,
+        badge: playerBadge?.(player),
+        class: playerCardClass?.(player),
         onClick: openPlayerModal ? () => openPlayerModal(player) : undefined
       });
     }

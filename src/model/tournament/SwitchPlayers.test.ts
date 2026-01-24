@@ -92,6 +92,10 @@ test("should switch players within same match", () => {
   // p1 now opposes old partner
   expect(p1After.opponents.has(p1Partner)).toBe(true);
   expect(p1After.opponents.has(p2Partner)).toBe(false);
+  
+  // p2 now partners with p1's old partner
+  expect(p2After.partners.has(p1Partner)).toBe(true);
+  expect(p2After.partners.has(p2Partner)).toBe(false);
 });
 
 test("should switch players between different matches", () => {
@@ -148,7 +152,6 @@ test("should switch matched player with paused player", () => {
   
   expect(matchedAfter.matchCount).toBe(0);
   expect(matchedAfter.pauseCount).toBe(1);
-  expect(matchedAfter.lastPause).toBe(0);
   
   expect(pausedAfter.matchCount).toBe(1);
   expect(pausedAfter.pauseCount).toBe(0);

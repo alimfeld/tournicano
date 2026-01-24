@@ -1,7 +1,7 @@
 import m from "mithril";
 import "./RoundPage.css";
 import { ParticipatingPlayerCard } from "./ParticipatingPlayerCard.ts";
-import { Match, ParticipatingPlayer } from "../model/tournament/Tournament.ts";
+import { Match, ParticipatingPlayer, PlayerId } from "../model/tournament/Tournament.ts";
 import { MatchSection } from "./MatchSection.ts";
 import { Swipeable } from "./Swipeable.ts";
 import { FAB } from "./FAB.ts";
@@ -21,6 +21,10 @@ interface RoundState {
     match: Match;
   };
   selectedPlayer?: ParticipatingPlayer;
+  switchMode?: {
+    active: boolean;
+    selectedPlayerId?: PlayerId;
+  };
   wakeLock: WakeLockSentinel | null;
   wakeLockListener?: { onchange: () => Promise<void> };
 }
@@ -30,6 +34,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
     const { state: appState } = appContext;
     state.scoreEntryMatch = undefined;
     state.selectedPlayer = undefined;
+    state.switchMode = { active: false };
     state.wakeLock = null;
 
     // Request wake lock if enabled and supported
@@ -124,12 +129,92 @@ export const RoundPage: m.Component<{}, RoundState> = {
       state.selectedPlayer = undefined;
     };
 
+    // Check if player switching is available for current round
+    const canSwitchPlayers = (): boolean => {
+      if (!round || !round.isLast()) return false;
+      if (round.matches.some(m => m.score !== undefined)) return false;
+      const eligibleCount = [...round.matches.flatMap(m =>
+        [m.teamA.player1, m.teamA.player2, m.teamB.player1, m.teamB.player2]
+      ), ...round.paused].length;
+      return eligibleCount >= 2;
+    };
+
+    // Auto-exit switch mode if it becomes invalid
+    if (state.switchMode?.active && !canSwitchPlayers()) {
+      state.switchMode.active = false;
+      state.switchMode.selectedPlayerId = undefined;
+    }
+
+    // Toggle switch mode on/off
+    const toggleSwitchMode = () => {
+      state.switchMode!.active = !state.switchMode!.active;
+      state.switchMode!.selectedPlayerId = undefined;
+    };
+
+    // Handle player selection/switching logic
+    const handlePlayerSelection = (player: ParticipatingPlayer) => {
+      // Ignore inactive players
+      if (round!.inactive.some(p => p.id === player.id)) return;
+
+      if (!state.switchMode!.selectedPlayerId) {
+        // First selection
+        state.switchMode!.selectedPlayerId = player.id;
+      } else if (state.switchMode!.selectedPlayerId === player.id) {
+        // Deselect same player
+        state.switchMode!.selectedPlayerId = undefined;
+      } else {
+        // Second selection - execute switch
+        const success = round!.switchPlayers(state.switchMode!.selectedPlayerId, player.id);
+        if (success) {
+          // Auto-exit edit mode
+          state.switchMode!.active = false;
+          state.switchMode!.selectedPlayerId = undefined;
+        } else {
+          showToast("Failed to switch players", { type: "error", position: "middle" });
+        }
+      }
+    };
+
+    // Unified player click handler
+    const handlePlayerClick = (player: ParticipatingPlayer) => {
+      if (state.switchMode?.active) {
+        handlePlayerSelection(player);
+      } else {
+        openPlayerModal(player);
+      }
+    };
+
+    const getPlayerCardClass = (player: ParticipatingPlayer): string | undefined => {
+      if (!state.switchMode?.active) return undefined;
+
+      const isInactive = round!.inactive.some(p => p.id === player.id);
+      const isSelected = state.switchMode!.selectedPlayerId === player.id;
+
+      if (isInactive) return "ineligible";
+      if (isSelected) return "selected";
+      return "selectable";
+    };
+
+    const getPlayerBadge = (player: ParticipatingPlayer, existingBadge?: string): string | undefined => {
+      if (state.switchMode?.active && state.switchMode.selectedPlayerId === player.id) {
+        return "✓";
+      }
+      return existingBadge;
+    };
+
     // Build actions for header overflow menu
     const actions: HeaderAction[] = [
       {
+        icon: "✎",
+        label: "Switch Players",
+        pressed: state.switchMode?.active || false,
+        disabled: !canSwitchPlayers(),
+        onclick: toggleSwitchMode
+      },
+      {
         icon: "－",
         label: "Delete Last Round",
-        disabled: tournament.rounds.length === 0,
+        disabled: tournament.rounds.length === 0 || state.switchMode?.active,
         onclick: () => {
           const lastRound = tournament.rounds.at(-1);
           if (lastRound) {
@@ -152,7 +237,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
       {
         icon: "↺",
         label: "Restart Tournament",
-        disabled: tournament.rounds.length === 0,
+        disabled: tournament.rounds.length === 0 || state.switchMode?.active,
         onclick: () => {
           tournament.restart();
           changeRound(-1);
@@ -243,7 +328,16 @@ export const RoundPage: m.Component<{}, RoundState> = {
         round
           ? [
             ...round.matches.map((match, matchIndex) =>
-              m(MatchSection, { roundIndex, match, matchIndex, showRoundIndex: fullscreen, openScoreEntry, openPlayerModal }),
+              m(MatchSection, {
+                roundIndex,
+                match,
+                matchIndex,
+                showRoundIndex: fullscreen,
+                openScoreEntry,
+                openPlayerModal: handlePlayerClick,
+                playerCardClass: (player: ParticipatingPlayer) => getPlayerCardClass(player),
+                playerBadge: (player: ParticipatingPlayer) => getPlayerBadge(player)
+              }),
             ),
             round.paused.length > 0 || round.inactive.length > 0
               ? [
@@ -252,11 +346,21 @@ export const RoundPage: m.Component<{}, RoundState> = {
                   [
                     // Paused players first (with sleep emoji)
                     ...round.paused.map((player) =>
-                      m(ParticipatingPlayerCard, { player, badge: "💤", onClick: () => openPlayerModal(player) })
+                      m(ParticipatingPlayerCard, {
+                        player,
+                        badge: getPlayerBadge(player, "💤"),
+                        class: getPlayerCardClass(player),
+                        onClick: () => handlePlayerClick(player)
+                      })
                     ),
                     // Inactive players after (with power off emoji)
                     ...round.inactive.map((player) =>
-                      m(ParticipatingPlayerCard, { player, badge: "⏻", onClick: () => openPlayerModal(player) })
+                      m(ParticipatingPlayerCard, {
+                        player,
+                        badge: getPlayerBadge(player, "⏻"),
+                        class: getPlayerCardClass(player),
+                        onClick: () => handlePlayerClick(player)
+                      })
                     )
                   ]
                 ),
@@ -297,7 +401,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 }
           )],
       ),
-      m(FAB, {
+      !state.switchMode?.active ? m(FAB, {
         icon: "＋",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
@@ -311,7 +415,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);
         },
-      }),
+      }) : null,
       roundCount > 0 ? m(ToggleFullscreenButton, { isFullscreen: fullscreen, fullscreen: fullscreen, onclick: toggleFullscreen }) : null,
       // Score entry modal (conditionally rendered)
       state.scoreEntryMatch ? m(ScoreEntryModal, {
