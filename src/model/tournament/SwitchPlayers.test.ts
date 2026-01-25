@@ -14,17 +14,22 @@ test("should reject switch if not last round", () => {
   expect(r1.switchPlayers(p1, p2)).toBe(false);
 });
 
-test("should reject switch if any match has score", () => {
+test("should reject switch if player's match has score", () => {
   const t = tournamentFactory.create();
   t.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
   
   const r1 = t.createRound();
   r1.matches[0].submitScore([11, 5]);
   
+  // Should reject: player from match with score
   const p1 = r1.matches[0].teamA.player1.id;
   const p2 = r1.matches[1].teamA.player1.id;
-  
   expect(r1.switchPlayers(p1, p2)).toBe(false);
+  
+  // Should allow: both players from unscored matches
+  const p3 = r1.matches[1].teamA.player1.id;
+  const p4 = r1.matches[1].teamB.player1.id;
+  expect(r1.switchPlayers(p3, p4)).toBe(true);
 });
 
 test("should reject switch if player is inactive", () => {
@@ -157,7 +162,7 @@ test("should switch matched player with paused player", () => {
   expect(pausedAfter.pauseCount).toBe(0);
 });
 
-test("should switch two paused players", () => {
+test("should allow switching two paused players", () => {
   const t = tournamentFactory.create();
   t.addPlayers(["A", "B", "C", "D", "E", "F"]);
   
@@ -256,4 +261,85 @@ test("should notify tournament of change", () => {
   r1.switchPlayers(p1, p2);
   
   expect(notified).toBe(true);
+});
+
+test("should allow switching players on same team", () => {
+  const t = tournamentFactory.create();
+  t.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
+  
+  const r1 = t.createRound();
+  const teammate1 = r1.matches[0].teamA.player1.id;
+  const teammate2 = r1.matches[0].teamA.player2.id;
+  
+  expect(r1.switchPlayers(teammate1, teammate2)).toBe(true);
+});
+
+test("should preserve scores in unaffected matches after switch", () => {
+  const t = tournamentFactory.create();
+  t.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
+  
+  const r1 = t.createRound();
+  
+  // Submit score to match 0
+  r1.matches[0].submitScore([11, 5]);
+  
+  // Switch players in match 1 (unscored)
+  const p1 = r1.matches[1].teamA.player1.id;
+  const p2 = r1.matches[1].teamB.player1.id;
+  
+  expect(r1.switchPlayers(p1, p2)).toBe(true);
+  
+  // Match 0's score should still be preserved
+  expect(r1.matches[0].score).toEqual([11, 5]);
+  
+  // Match 1 should still have no score
+  expect(r1.matches[1].score).toBeUndefined();
+});
+
+test("should preserve multiple scores across different matches", () => {
+  const t = tournamentFactory.create();
+  t.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]);
+  
+  const r1 = t.createRound();
+  
+  if (r1.matches.length < 2) return; // Skip if not enough matches
+  
+  // Submit scores to first two matches
+  r1.matches[0].submitScore([11, 5]);
+  r1.matches[1].submitScore([8, 11]);
+  
+  // Switch two paused players
+  if (r1.paused.length >= 2) {
+    expect(r1.switchPlayers(r1.paused[0].id, r1.paused[1].id)).toBe(true);
+    
+    // Both scores should be preserved
+    expect(r1.matches[0].score).toEqual([11, 5]);
+    expect(r1.matches[1].score).toEqual([8, 11]);
+  }
+});
+
+test("should preserve player statistics after switch with scores", () => {
+  const t = tournamentFactory.create();
+  t.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
+  
+  const r1 = t.createRound();
+  
+  // Submit score to match 0
+  r1.matches[0].submitScore([11, 5]);
+  
+  // Get player stats before switch
+  const p1Before = r1.matches[0].teamA.player1;
+  const winsBefore = p1Before.wins;
+  const pmBefore = p1Before.plusMinus;
+  
+  // Switch players in match 1 (different match)
+  const p2 = r1.matches[1].teamA.player1.id;
+  const p3 = r1.matches[1].teamB.player1.id;
+  r1.switchPlayers(p2, p3);
+  
+  // Player in match 0 should have same statistics
+  const p1After = r1.matches[0].teamA.player1;
+  expect(p1After.id).toBe(p1Before.id);
+  expect(p1After.wins).toBe(winsBefore);
+  expect(p1After.plusMinus).toBe(pmBefore);
 });

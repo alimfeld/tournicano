@@ -132,11 +132,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
     // Check if player switching is available for current round
     const canSwitchPlayers = (): boolean => {
       if (!round || !round.isLast()) return false;
-      if (round.matches.some(m => m.score !== undefined)) return false;
-      const eligibleCount = [...round.matches.flatMap(m =>
-        [m.teamA.player1, m.teamA.player2, m.teamB.player1, m.teamB.player2]
-      ), ...round.paused].length;
-      return eligibleCount >= 2;
+      // Can switch if at least one match has no score
+      return round.matches.some(m => m.score === undefined);
     };
 
     // Auto-exit switch mode if it becomes invalid
@@ -156,8 +153,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
 
     // Handle player selection/switching logic
     const handlePlayerSelection = (player: ParticipatingPlayer) => {
-      // Ignore inactive players
-      if (round!.inactive.some(p => p.id === player.id)) return;
+      // Ignore ineligible players
+      if (getPlayerCardClass(player) === "ineligible") return;
 
       if (!state.switchMode!.selectedPlayerId) {
         // First selection
@@ -192,10 +189,21 @@ export const RoundPage: m.Component<{}, RoundState> = {
       if (!state.switchMode?.active) return undefined;
 
       const isInactive = round!.inactive.some(p => p.id === player.id);
-      const isSelected = state.switchMode!.selectedPlayerId === player.id;
-
       if (isInactive) return "ineligible";
-      if (isSelected) return "selected";
+      
+      // Check if player's match has a score
+      const playerMatch = round!.matches.find(m =>
+        m.teamA.player1.id === player.id ||
+        m.teamA.player2.id === player.id ||
+        m.teamB.player1.id === player.id ||
+        m.teamB.player2.id === player.id
+      );
+      
+      if (playerMatch?.score !== undefined) return "ineligible";
+      
+      // Handle selection state
+      if (state.switchMode!.selectedPlayerId === player.id) return "selected";
+      
       return "selectable";
     };
 

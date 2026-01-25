@@ -191,19 +191,31 @@ export class RoundImpl implements Round, RoundContext {
     // Validate: Neither can be inactive
     if (this.inactive.some(p => p.id === id1 || p.id === id2)) return false;
     
-    // Validate: No matches can have scores
-    if (this.matches.some(m => m.score !== undefined)) return false;
+    // Validate: Neither player can be in a match with a score
+    const match1 = this.matches.find(m =>
+      m.teamA.player1.id === id1 || m.teamA.player2.id === id1 ||
+      m.teamB.player1.id === id1 || m.teamB.player2.id === id1
+    );
+    const match2 = this.matches.find(m =>
+      m.teamA.player1.id === id2 || m.teamA.player2.id === id2 ||
+      m.teamB.player1.id === id2 || m.teamB.player2.id === id2
+    );
     
-    // Extract current structure from round state
-    const matched = this.matches.map(m => [
-      [m.teamA.player1.id, m.teamA.player2.id],
-      [m.teamB.player1.id, m.teamB.player2.id]
-    ] as [[PlayerId, PlayerId], [PlayerId, PlayerId]]);
+    if (match1?.score !== undefined || match2?.score !== undefined) {
+      return false;
+    }
+    
+    // Extract current structure AND scores from round state
+    const matchesWithScores = this.matches.map(m => ({
+      teamA: [m.teamA.player1.id, m.teamA.player2.id] as [PlayerId, PlayerId],
+      teamB: [m.teamB.player1.id, m.teamB.player2.id] as [PlayerId, PlayerId],
+      score: m.score
+    }));
     const paused = this.paused.map(p => p.id);
     
-    // Swap player IDs in arrays
-    for (const match of matched) {
-      for (const team of match) {
+    // Swap player IDs in arrays (including in score tracking structure)
+    for (const matchData of matchesWithScores) {
+      for (const team of [matchData.teamA, matchData.teamB]) {
         for (let i = 0; i < team.length; i++) {
           if (team[i] === id1) team[i] = id2;
           else if (team[i] === id2) team[i] = id1;
@@ -216,12 +228,20 @@ export class RoundImpl implements Round, RoundContext {
     }
     
     // Rebuild round with swapped configuration
+    const matched = matchesWithScores.map(m => [m.teamA, m.teamB] as [[PlayerId, PlayerId], [PlayerId, PlayerId]]);
     this.buildRound(
       this.originalParticipating,
       matched,
       paused,
       this.inactive.map(p => p.id)
     );
+    
+    // Restore scores to reconstructed matches
+    matchesWithScores.forEach((oldMatch, index) => {
+      if (oldMatch.score !== undefined) {
+        this.matches[index].submitScore(oldMatch.score);
+      }
+    });
     
     this.tournament.notifyChange();
     return true;

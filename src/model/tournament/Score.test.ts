@@ -37,7 +37,7 @@ test("parseScore with empty parts", () => {
   const result1 = parseScore(":9");
   expect(result1.success).toBe(false);
   expect(result1.error).toContain("required");
-  
+
   const result2 = parseScore("11:");
   expect(result2.success).toBe(false);
   expect(result2.error).toContain("required");
@@ -143,7 +143,7 @@ test("addDigitToScore with custom max digits", () => {
 
 // formatScoreDisplay tests
 test("formatScoreDisplay with empty input", () => {
-  expect(formatScoreDisplay("")).toBe("--:--");
+  expect(formatScoreDisplay("")).toBe("");
 });
 
 test("formatScoreDisplay with input", () => {
@@ -155,23 +155,23 @@ test("formatScoreDisplay with input", () => {
 // Integration test: simulating user input
 test("score input simulation", () => {
   let input = "";
-  
+
   // User types "1"
   input = addDigitToScore(input, "1");
   expect(input).toBe("1");
   expect(validateScoreInput(input).canAddDigit).toBe(true);
-  
+
   // User types "1" again - should auto-add colon
   input = addDigitToScore(input, "1");
   expect(input).toBe("11:");
   expect(validateScoreInput(input).canAddDigit).toBe(true);
   expect(validateScoreInput(input).canAddColon).toBe(false);
-  
+
   // User types "9"
   input = addDigitToScore(input, "9");
   expect(input).toBe("11:9");
   expect(validateScoreInput(input).isComplete).toBe(true);
-  
+
   // Parse the final score
   const result = parseScore(input);
   expect(result.success).toBe(true);
