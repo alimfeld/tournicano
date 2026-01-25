@@ -19,16 +19,16 @@ const MEXICANO_RANK_DIFF = 2; // In Mexicano mode, pair 1st with 3rd, 2nd with 4
 // 1. FREQUENCY - Partnership frequency rate (dominates all)
 // 2. RECENCY - How recently they partnered (prevents back-to-back)
 // 3. SATURATION - Partner history variety (tiebreaker)
-const PARTNER_FREQUENCY_SCALE = 5;
-const PARTNER_RECENCY_SCALE = 3;
+const PARTNER_FREQUENCY_SCALE = 100;
+const PARTNER_RECENCY_SCALE = 10;
 const PARTNER_SATURATION_SCALE = 1;
 
 // OPPONENT PENALTY HIERARCHY (from highest to lowest impact):
 // 1. FREQUENCY - Opponent encounter frequency rate (dominates)
 // 2. RECENCY - How recently opponents faced (secondary)
 // 3. SATURATION - Opponent history variety (tiebreaker)
-const OPPONENT_FREQUENCY_SCALE = 5;
-const OPPONENT_RECENCY_SCALE = 3;
+const OPPONENT_FREQUENCY_SCALE = 100;
+const OPPONENT_RECENCY_SCALE = 10;
 const OPPONENT_SATURATION_SCALE = 1;
 
 // Group pairing penalties
