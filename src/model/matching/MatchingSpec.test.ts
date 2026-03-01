@@ -64,7 +64,7 @@ test("matchingSpecEquals should return false when teamUp.varietyFactor differs",
   const spec1: MatchingSpec = { ...Americano };
   const spec2: MatchingSpec = {
     ...Americano,
-    teamUp: { ...Americano.teamUp, varietyFactor: 0.5 },
+    teamUp: { ...Americano.teamUp!, varietyFactor: 0.5 },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -73,7 +73,7 @@ test("matchingSpecEquals should return false when teamUp.performanceFactor diffe
   const spec1: MatchingSpec = { ...Mexicano };
   const spec2: MatchingSpec = {
     ...Mexicano,
-    teamUp: { ...Mexicano.teamUp, performanceFactor: 0.9 },
+    teamUp: { ...Mexicano.teamUp!, performanceFactor: 0.9 },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -82,7 +82,7 @@ test("matchingSpecEquals should return false when teamUp.performanceMode differs
   const spec1: MatchingSpec = { ...Mexicano };
   const spec2: MatchingSpec = {
     ...Mexicano,
-    teamUp: { ...Mexicano.teamUp, performanceMode: "rank" as unknown as TeamUpPerformanceMode },
+    teamUp: { ...Mexicano.teamUp!, performanceMode: "rank" as unknown as TeamUpPerformanceMode },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -91,7 +91,7 @@ test("matchingSpecEquals should return false when teamUp.groupFactor differs", (
   const spec1: MatchingSpec = { ...AmericanoMixed };
   const spec2: MatchingSpec = {
     ...AmericanoMixed,
-    teamUp: { ...AmericanoMixed.teamUp, groupFactor: 0.5 },
+    teamUp: { ...AmericanoMixed.teamUp!, groupFactor: 0.5 },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
@@ -100,7 +100,7 @@ test("matchingSpecEquals should return false when teamUp.groupMode differs", () 
   const spec1: MatchingSpec = { ...AmericanoMixed };
   const spec2: MatchingSpec = {
     ...AmericanoMixed,
-    teamUp: { ...AmericanoMixed.teamUp, groupMode: "same" as unknown as TeamUpGroupMode },
+    teamUp: { ...AmericanoMixed.teamUp!, groupMode: "same" as unknown as TeamUpGroupMode },
   };
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });

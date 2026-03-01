@@ -3,10 +3,12 @@ import {
   Americano,
   AmericanoMixed,
   AmericanoMixedBalanced,
+  TeamAmericano,
   GroupBattle,
   GroupBattleMixed,
   matchingSpecEquals,
   Mexicano,
+  TeamMexicano,
   Tournicano,
   isMatchingSpecMode,
 } from "../model/matching/MatchingSpec.ts";
@@ -35,7 +37,9 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
     const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
     const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
     const isAmericanoMixedBalanced = isMatchingSpecMode(settings.matchingSpec, AmericanoMixedBalanced);
+    const isTeamAmericano = isMatchingSpecMode(settings.matchingSpec, TeamAmericano);
     const isMexicano = isMatchingSpecMode(settings.matchingSpec, Mexicano);
+    const isTeamMexicano = isMatchingSpecMode(settings.matchingSpec, TeamMexicano);
     const isTournicano = isMatchingSpecMode(settings.matchingSpec, Tournicano);
     const isGroupBattle = isMatchingSpecMode(settings.matchingSpec, GroupBattle);
     const isGroupBattleMixed = isMatchingSpecMode(settings.matchingSpec, GroupBattleMixed);
@@ -171,12 +175,36 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             m("input", {
               type: "radio",
               name: "matching-spec",
+              id: "team-americano",
+              checked: isTeamAmericano,
+              onchange: () => handleMatchingSpecChange(TeamAmericano),
+            }),
+            "Team Americano",
+            m("small", "Americano mode with fixed teams."),
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
               id: "mexicano",
               checked: isMexicano,
               onchange: () => handleMatchingSpecChange(Mexicano),
             }),
             "Mexicano",
             m("small", "Skill-based team formation and competitive balance."),
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "team-mexicano",
+              checked: isTeamMexicano,
+              onchange: () => handleMatchingSpecChange(TeamMexicano),
+            }),
+            "Team Mexicano",
+            m("small", "Mexicano mode with fixed teams."),
           ),
           m(
             "label",
@@ -224,7 +252,9 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
                 !isAmericano &&
                 !isAmericanoMixed &&
                 !isAmericanoMixedBalanced &&
+                !isTeamAmericano &&
                 !isMexicano &&
+                !isTeamMexicano &&
                 !isTournicano &&
                 !isGroupBattle &&
                 !isGroupBattleMixed,

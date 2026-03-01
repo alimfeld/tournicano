@@ -7,7 +7,7 @@
 
 import { PlayerId, Score, Player, Round } from "./Tournament.ts";
 import { TournamentContext } from "./Context.ts";
-import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
+import { PlayerImpl, ParticipatingPlayerImpl, ParticipatingTeamImpl } from "./Players.impl.ts";
 import { RoundImpl } from "./Rounds.impl.ts";
 
 // Compact serialization format
@@ -53,6 +53,7 @@ export function deserializeTournament(
   createRound: (
     index: number,
     participating: ParticipatingPlayerImpl[],
+    participatingTeams: ParticipatingTeamImpl[],
     matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
     paused: PlayerId[],
     inactive: PlayerId[]
@@ -72,9 +73,13 @@ export function deserializeTournament(
     const participating = previousRound
       ? previousRound.getParticipatingPlayers()
       : [];
+    const participatingTeams = previousRound
+      ? previousRound.getParticipatingTeams()
+      : [];
     const round = createRound(
       roundIndex,
       participating as ParticipatingPlayerImpl[],
+      participatingTeams as ParticipatingTeamImpl[],
       cr[0].map((cm) => [cm[0], cm[1]]),
       cr[1],
       cr[2],

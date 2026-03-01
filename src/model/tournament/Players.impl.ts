@@ -10,9 +10,12 @@ import { Mutable } from "../core/Mutable.ts";
 import {
   Performance,
   ParticipatingPlayer,
+  ParticipatingTeam,
   PlayerId,
   Player,
   Score,
+  TeamKey,
+  createTeamKey,
 } from "./Tournament.ts";
 import { TournamentContext } from "./Context.ts";
 
@@ -237,6 +240,51 @@ export class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<
     copy.draws = this.draws;
     copy.pointsFor = this.pointsFor;
     copy.pointsAgainst = this.pointsAgainst;
+
+    return copy;
+  }
+}
+
+/**
+ * @internal - Implementation class, not part of public API
+ * Only exported for use within Tournament model files
+ * 
+ * Parallel structure to ParticipatingPlayerImpl:
+ * - Extends PerformanceImpl for wins/losses/points
+ * - Tracks opponents (no partners - teams ARE the partnership)
+ * - Has lastPause as implementation detail (like ParticipatingPlayerImpl)
+ * - Provides deepCopy() for round cascading
+ */
+export class ParticipatingTeamImpl extends PerformanceImpl implements Mutable<ParticipatingTeam> {
+  opponents: Map<TeamKey, number[]> = new Map();
+  matchCount: number = 0;
+  pauseCount: number = 0;
+
+  constructor(
+    readonly player1Id: PlayerId,
+    readonly player2Id: PlayerId,
+  ) {
+    super();
+  }
+
+  get teamKey(): TeamKey {
+    return createTeamKey(this.player1Id, this.player2Id);
+  }
+
+  deepCopy(): ParticipatingTeamImpl {
+    const copy = new ParticipatingTeamImpl(this.player1Id, this.player2Id);
+
+    // Copy performance
+    copy.wins = this.wins;
+    copy.losses = this.losses;
+    copy.draws = this.draws;
+    copy.pointsFor = this.pointsFor;
+    copy.pointsAgainst = this.pointsAgainst;
+
+    // Copy team matchings and participation
+    copy.opponents = new Map([...this.opponents].map(([key, value]) => [key, [...value]]));
+    copy.matchCount = this.matchCount;
+    copy.pauseCount = this.pauseCount;
 
     return copy;
   }

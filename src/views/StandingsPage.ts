@@ -21,6 +21,7 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
   view: ({ state }) => {
     const { state: appState, showToast, changeRound, changeStandingsFilters } = appContext;
     const { tournament, roundIndex, filters: { standings: standingsFilters } } = appState;
+    const viewMode = standingsFilters.viewMode;
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
@@ -49,8 +50,15 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
       }
       return undefined;
     };
-    const standings = round ? round.standings(selectedGroups) : [];
-    const allStandings = selectedGroups && selectedGroups.length > 0
+
+    // Conditional data fetching based on viewMode
+    const standings = viewMode === 'individual'
+      ? (round ? round.standings(selectedGroups) : [])
+      : [];
+    const teamStandings = viewMode === 'team'
+      ? (round ? round.teamStandings() : [])
+      : [];
+    const allStandings = viewMode === 'individual' && selectedGroups && selectedGroups.length > 0
       ? (round ? round.standings(undefined) : [])
       : standings;
     const [
@@ -83,11 +91,23 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
     // Build actions for header overflow menu
     const actions: HeaderAction[] = [
       {
+        icon: "👥",
+        label: viewMode === 'team' ? "Individual View" : "Team View",
+        pressed: viewMode === 'team',
+        disabled: (viewMode === 'individual' ? standings.length : teamStandings.length) === 0,
+        onclick: () => {
+          const newMode = viewMode === 'team' ? 'individual' : 'team';
+          changeStandingsFilters({ ...standingsFilters, viewMode: newMode });
+        }
+      },
+      {
         icon: "⤴",
         label: "Share Standings",
-        disabled: standings.length === 0,
+        disabled: (viewMode === 'individual' ? standings.length : teamStandings.length) === 0,
         onclick: async () => {
-          const text = tournament.exportStandingsText(roundIndex, selectedGroups);
+          const text = viewMode === 'team'
+            ? tournament.exportTeamStandingsText(roundIndex)
+            : tournament.exportStandingsText(roundIndex, selectedGroups);
 
           try {
             await navigator.share({ text });
@@ -131,12 +151,12 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
               }
               : undefined,
         },
-        showGroupFilter && allStandings.length > 0
+        showGroupFilter && viewMode === 'individual' && allStandings.length > 0
           ? m("section.filter-section",
             m(GroupFilter, {
               groups: groups,
               selectedGroups: standingsFilters.groups,
-              onGroupsChange: (groups) => changeStandingsFilters({ groups }),
+              onGroupsChange: (groups) => changeStandingsFilters({ ...standingsFilters, groups }),
               getGroupCount: (group) => {
                 if (!round) return 0;
                 return round.standings([group]).length;
@@ -144,10 +164,10 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
             })
           )
           : null,
-        allStandings.length > 0
+        (viewMode === 'individual' ? allStandings.length : teamStandings.length) > 0
           ? m("div.standings-grid", [
-            // Group total row (if filtered)
-            showGroupFilter && standingsFilters.groups.length > 0
+            // Group total row (only for individual mode, if filtered)
+            showGroupFilter && viewMode === 'individual' && standingsFilters.groups.length > 0
               ? m("div.standings-row.group-total",
                 // Cell 1: Empty rank cell (keeps grid alignment)
                 m("div.standings-cell.rank-cell", ""),
@@ -173,35 +193,75 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
                 )
               )
               : null,
-            // Player rows
-            ...standings.map((ranked) => {
-              return m("div.standings-row",
-                // Cell 1: Rank (right-aligned)
-                m("div.standings-cell.rank-cell",
-                  `${ranked.rank}.`
-                ),
-                // Cell 2: PlayerCard (centered)
-                m("div.standings-cell.player-cell",
-                  m(ParticipatingPlayerCard, {
-                    player: ranked.player,
-                    badge: award(ranked.rank),
-                    onClick: () => openPlayerModal(ranked.player)
-                  })
-                ),
-                // Cell 3: All stats combined
-                m("div.standings-cell.stats-cell",
-                  m("p",
-                    m("strong", `${(ranked.player.winRatio * 100).toFixed(0)}%`)
+            // Conditional rows based on viewMode
+            ...(viewMode === 'individual'
+              ? // Individual standings rows
+              standings.map((ranked) => {
+                return m("div.standings-row",
+                  // Cell 1: Rank (right-aligned)
+                  m("div.standings-cell.rank-cell",
+                    `${ranked.rank}.`
                   ),
-                  m("p",
-                    m("small", `${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses}`)
+                  // Cell 2: PlayerCard (centered)
+                  m("div.standings-cell.player-cell",
+                    m(ParticipatingPlayerCard, {
+                      player: ranked.player,
+                      badge: award(ranked.rank),
+                      onClick: () => openPlayerModal(ranked.player)
+                    })
                   ),
-                  m("p",
-                    m("strong", `${(ranked.player.plusMinus >= 0 ? "+" : "") + ranked.player.plusMinus}`)
+                  // Cell 3: All stats combined
+                  m("div.standings-cell.stats-cell",
+                    m("p",
+                      m("strong", `${(ranked.player.winRatio * 100).toFixed(0)}%`)
+                    ),
+                    m("p",
+                      m("small", `${ranked.player.wins}-${ranked.player.draws}-${ranked.player.losses}`)
+                    ),
+                    m("p",
+                      m("strong", `${(ranked.player.plusMinus >= 0 ? "+" : "") + ranked.player.plusMinus}`)
+                    )
                   )
-                )
-              );
-            })
+                );
+              })
+              : // Team standings rows
+              teamStandings.map((ranked) => {
+                const player1 = round!.playerMap.get(ranked.team.player1Id)!;
+                const player2 = round!.playerMap.get(ranked.team.player2Id)!;
+
+                return m("div.standings-row.team",
+                  // Cell 1: Rank (right-aligned)
+                  m("div.standings-cell.rank-cell",
+                    `${ranked.rank}.`
+                  ),
+                  // Cell 2: Team display (two player cards side-by-side)
+                  m("div.standings-cell.player-cell",
+                    m(ParticipatingPlayerCard, {
+                      player: player1,
+                      badge: award(ranked.rank),
+                      onClick: () => openPlayerModal(player1)
+                    }),
+                    m(ParticipatingPlayerCard, {
+                      player: player2,
+                      badge: award(ranked.rank),
+                      onClick: () => openPlayerModal(player2)
+                    })
+                  ),
+                  // Cell 3: Team stats
+                  m("div.standings-cell.stats-cell",
+                    m("p",
+                      m("strong", `${(ranked.team.winRatio * 100).toFixed(0)}%`)
+                    ),
+                    m("p",
+                      m("small", `${ranked.team.wins}-${ranked.team.draws}-${ranked.team.losses}`)
+                    ),
+                    m("p",
+                      m("strong", `${(ranked.team.plusMinus >= 0 ? "+" : "") + ranked.team.plusMinus}`)
+                    )
+                  )
+                );
+              })
+            )
           ])
           : m(HelpCard, {
             title: tournament.rounds.length === 0

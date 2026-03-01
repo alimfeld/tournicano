@@ -22,10 +22,10 @@ import {
   createInfoResult,
 } from "../core/OperationResult.ts";
 import { TournamentContext } from "./Context.ts";
-import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
+import { PlayerImpl, ParticipatingPlayerImpl, ParticipatingTeamImpl } from "./Players.impl.ts";
 import { RoundImpl } from "./Rounds.impl.ts";
 import { serializeTournament, deserializeTournament } from "./Serialization.ts";
-import { exportStandingsText, exportBackup } from "./Export.ts";
+import { exportStandingsText, exportTeamStandingsText, exportBackup } from "./Export.ts";
 import { importBackup as importBackupFunction } from "./Import.ts";
 
 export const tournamentFactory: TournamentFactory = {
@@ -45,8 +45,8 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
         serialized,
         this,
         (id, name, group, active) => new PlayerImpl(this, id, name, group, active),
-        (index, participating, matched, paused, inactive) =>
-          new RoundImpl(this, index, participating, matched, paused, inactive)
+        (index, participating, participatingTeams, matched, paused, inactive) =>
+          new RoundImpl(this, index, participating, participatingTeams, matched, paused, inactive)
       );
     }
   }
@@ -111,12 +111,12 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     let allDuplicates: string[] = [];
     const groupsUsed = new Set<number>();
     let ignoredPlayersCount = 0;
-    
+
     let currentGroup = 0;
-    
+
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       if (trimmed === '') {
         // Empty line: advance to next group
         currentGroup++;
@@ -423,6 +423,16 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     return { participating, active, inactive };
   }
 
+  private getTeamsForNextRound(): ParticipatingTeamImpl[] {
+    // Teams are extracted from the previous round
+    // For round 1, return empty array (teams will be created on-demand during buildRound)
+    const previousRound = this.rounds[this.rounds.length - 1];
+    if (previousRound) {
+      return previousRound.getParticipatingTeams() as ParticipatingTeamImpl[];
+    }
+    return [];
+  }
+
   getNextRoundInfo(spec?: MatchingSpec, maxMatches?: number): RoundInfo {
     const { active } = this.getPlayersForNextRound(false); // no shuffle needed for info
     const effectiveSpec = spec || Americano;
@@ -460,7 +470,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     }
 
     // Check for group configuration mismatch
-    const specUsesGroups = effectiveSpec.teamUp.groupFactor > 0 ||
+    const specUsesGroups = effectiveSpec.teamUp && effectiveSpec.teamUp.groupFactor > 0 ||
       effectiveSpec.matchUp.groupFactor > 0;
     const groupCount = roundInfo.groupDistribution.size;
 
@@ -485,11 +495,26 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
   createRound(spec?: MatchingSpec, maxMatches?: number): RoundImpl {
     const { participating, active, inactive } = this.getPlayersForNextRound(true); // shuffle new players
-    const [matched, paused] = matching(active, spec || Americano, this.rounds.length, maxMatches);
+    const participatingTeams = this.getTeamsForNextRound();
+
+    // For fixed teams mode, pass team pairings to matching
+    const teamPairings = participatingTeams.map((t) => ({
+      player1Id: t.player1Id,
+      player2Id: t.player2Id,
+    }));
+
+    const [matched, paused] = matching(
+      active,
+      spec || Americano,
+      this.rounds.length,
+      maxMatches,
+      teamPairings,
+    );
     const round = new RoundImpl(
       this,
       this.rounds.length,
       participating,
+      participatingTeams,
       matched.map((m) => [
         [m[0][0].id, m[0][1].id],
         [m[1][0].id, m[1][1].id],
@@ -529,6 +554,12 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     return exportStandingsText(this.rounds, roundIndex, groups);
   }
 
+  exportTeamStandingsText(roundIndex: number): string {
+    return exportTeamStandingsText(this.rounds, roundIndex, (playerId) => {
+      return this.getPlayer(playerId)?.name || playerId;
+    });
+  }
+
   exportBackup(settings: Settings): string {
     return exportBackup(settings, this.players(), this.rounds);
   }
@@ -541,8 +572,8 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       () => this.reset(),
       () => this.notifyChange(),
       (id, name, group, active) => new PlayerImpl(this, id, name, group, active),
-      (index, participating, matched, paused, inactive) =>
-        new RoundImpl(this, index, participating, matched, paused, inactive)
+      (index, participating, participatingTeams, matched, paused, inactive) =>
+        new RoundImpl(this, index, participating, participatingTeams, matched, paused, inactive)
     );
   }
 }

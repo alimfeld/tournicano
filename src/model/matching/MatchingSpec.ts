@@ -32,7 +32,7 @@ interface MatchUpSpec {
 }
 
 export interface MatchingSpec {
-  teamUp: TeamUpSpec;
+  teamUp?: TeamUpSpec; // Optional, if not provided, fixed teams will be used
   matchUp: MatchUpSpec;
   balanceGroups?: boolean;
 }
@@ -87,6 +87,15 @@ export const AmericanoMixedBalanced: MatchingSpec = {
   balanceGroups: true,
 };
 
+export const TeamAmericano: MatchingSpec = {
+  matchUp: {
+    varietyFactor: 100,
+    performanceFactor: 0,
+    groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
+  },
+};
+
 export const Mexicano: MatchingSpec = {
   teamUp: {
     varietyFactor: 0,
@@ -95,6 +104,15 @@ export const Mexicano: MatchingSpec = {
     groupFactor: 0,
     groupMode: TeamUpGroupMode.PAIRED, // not relevant
   },
+  matchUp: {
+    varietyFactor: 0,
+    performanceFactor: 100,
+    groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
+  },
+};
+
+export const TeamMexicano: MatchingSpec = {
   matchUp: {
     varietyFactor: 0,
     performanceFactor: 100,
@@ -158,7 +176,9 @@ const PREDEFINED_MODES = [
   { name: "Americano", spec: Americano },
   { name: "Americano Mixed", spec: AmericanoMixed },
   { name: "Americano Mixed Balanced", spec: AmericanoMixedBalanced },
+  { name: "Team Americano", spec: TeamAmericano },
   { name: "Mexicano", spec: Mexicano },
+  { name: "Team Mexicano", spec: TeamMexicano },
   { name: "Tournicano", spec: Tournicano },
   { name: "Group Battle", spec: GroupBattle },
   { name: "Group Battle Mixed", spec: GroupBattleMixed },
@@ -168,18 +188,19 @@ const PREDEFINED_MODES = [
 
 // Deep equality check for MatchingSpec
 export function matchingSpecEquals(a: MatchingSpec, b: MatchingSpec): boolean {
-  return (
-    a.teamUp.varietyFactor === b.teamUp.varietyFactor &&
-    a.teamUp.performanceFactor === b.teamUp.performanceFactor &&
-    a.teamUp.performanceMode === b.teamUp.performanceMode &&
-    a.teamUp.groupFactor === b.teamUp.groupFactor &&
-    a.teamUp.groupMode === b.teamUp.groupMode &&
+  const teamUpEquals = (a.teamUp === undefined && b.teamUp === undefined) ||
+    (a.teamUp !== undefined && b.teamUp !== undefined &&
+      a.teamUp.varietyFactor === b.teamUp.varietyFactor &&
+      a.teamUp.performanceFactor === b.teamUp.performanceFactor &&
+      a.teamUp.performanceMode === b.teamUp.performanceMode &&
+      a.teamUp.groupFactor === b.teamUp.groupFactor &&
+      a.teamUp.groupMode === b.teamUp.groupMode);
+  return teamUpEquals &&
     a.matchUp.varietyFactor === b.matchUp.varietyFactor &&
     a.matchUp.performanceFactor === b.matchUp.performanceFactor &&
     a.matchUp.groupFactor === b.matchUp.groupFactor &&
     a.matchUp.groupMode === b.matchUp.groupMode &&
-    (a.balanceGroups ?? false) === (b.balanceGroups ?? false)
-  );
+    (a.balanceGroups ?? false) === (b.balanceGroups ?? false);
 }
 
 // Get mode name from spec configuration

@@ -6,7 +6,7 @@
  * Use the exportStandingsText/exportBackup methods on the Tournament interface instead.
  */
 
-import { ParticipatingPlayer, Player, Score, Round } from "./Tournament.ts";
+import { ParticipatingPlayer, Player, Score, Round, RankedTeam } from "./Tournament.ts";
 import { Settings } from "../settings/Settings.ts";
 import { MatchingSpec } from "../matching/MatchingSpec.ts";
 
@@ -130,6 +130,90 @@ export function exportStandingsText(
     } else {
       result += formatStandingsTable(standings);
     }
+  }
+
+  return result;
+}
+
+/**
+ * Format team standings table as text
+ */
+function formatTeamStandingsTable(
+  standings: RankedTeam[],
+  getPlayerName: (playerId: string) => string
+): string {
+  if (standings.length === 0) {
+    return "";
+  }
+
+  let result = "";
+
+  // Calculate padding based on data
+  const maxRank = standings.length;
+  const rankPad = String(maxRank).length;
+  
+  // Calculate max team name length (Player1 & Player2)
+  const maxTeamNameLength = Math.max(...standings.map(rt => {
+    const p1Name = getPlayerName(rt.team.player1Id);
+    const p2Name = getPlayerName(rt.team.player2Id);
+    return `${p1Name} & ${p2Name}`.length;
+  }));
+  const teamNamePad = Math.max(maxTeamNameLength, 15); // At least 15 chars
+  
+  const maxPlusMinus = Math.max(...standings.map(rt => Math.abs(rt.team.plusMinus)));
+  const plusMinusPad = String(maxPlusMinus).length + 1; // +1 for sign
+
+  standings.forEach((ranked) => {
+    const p1Name = getPlayerName(ranked.team.player1Id);
+    const p2Name = getPlayerName(ranked.team.player2Id);
+    const teamName = `${p1Name} & ${p2Name}`;
+    const winRatioPercent = Math.round(ranked.team.winRatio * 100);
+    const plusMinus = ranked.team.plusMinus >= 0 ? `+${ranked.team.plusMinus}` : `${ranked.team.plusMinus}`;
+    const wdl = `(${ranked.team.wins}-${ranked.team.draws}-${ranked.team.losses})`;
+    
+    result += `${String(ranked.rank).padStart(rankPad, " ")}. ${teamName.padEnd(teamNamePad, " ")} ${String(winRatioPercent).padStart(3, " ")}% ${wdl.padEnd(9, " ")} ${plusMinus.padStart(plusMinusPad, " ")}\n`;
+  });
+
+  return result;
+}
+
+/**
+ * Export team standings as formatted text
+ */
+export function exportTeamStandingsText(
+  rounds: Round[],
+  roundIndex: number,
+  getPlayerName: (playerId: string) => string
+): string {
+  // Validate roundIndex
+  const targetRoundIndex = Math.max(0, Math.min(roundIndex, rounds.length - 1));
+  const targetRound = rounds[targetRoundIndex];
+
+  if (!targetRound) {
+    return "No standings available";
+  }
+
+  let result = "";
+  
+  // Header title
+  const headerTitle = "TEAM STANDINGS";
+
+  // Add round info - show "of Y" only if not on final round
+  const isLastRound = targetRoundIndex + 1 === rounds.length;
+  const roundInfo = isLastRound
+    ? ` - Round ${targetRoundIndex + 1}`
+    : ` - Round ${targetRoundIndex + 1} of ${rounds.length}`;
+
+  result += `${headerTitle}${roundInfo}\n`;
+  result += "\n";
+
+  // Get team standings
+  const teamStandings = targetRound.teamStandings();
+  
+  if (teamStandings.length === 0) {
+    result += "No standings available\n";
+  } else {
+    result += formatTeamStandingsTable(teamStandings, getPlayerName);
   }
 
   return result;

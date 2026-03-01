@@ -1,4 +1,4 @@
-import { Player } from "./Matching.ts";
+import { Player, Team, PlayerId } from "./Matching.ts";
 import { MatchingSpec } from "./MatchingSpec.ts";
 import { shuffle } from "../core/Util.ts";
 
@@ -18,7 +18,7 @@ const playRatio = (p: Player) => {
 };
 
 const usesGroupFactors = (spec: MatchingSpec): boolean => {
-  return spec.teamUp.groupFactor > 0 || spec.matchUp.groupFactor > 0;
+  return spec.teamUp && spec.teamUp.groupFactor > 0 || spec.matchUp.groupFactor > 0;
 };
 
 const groupCounts = (players: Player[]) => {
@@ -30,22 +30,22 @@ const groupCounts = (players: Player[]) => {
 
 /**
  * Recursively searches for a valid group distribution that satisfies all constraints.
- * 
+ *
  * This function tries to find how many players from each group should be selected
  * such that:
  * - Each group contributes a multiple of `multipleOf` players (e.g., 0, 2, 4, 6...)
  * - The total across all groups equals `sum` (target competing count)
  * - No group exceeds its `max` available players
- * 
+ *
  * The recursive search explores different distribution combinations to find one that
  * satisfies all constraints. This is used in group-aware partitioning to ensure
  * proper group representation for matching algorithms.
- * 
+ *
  * @param constraints - The distribution constraints
  * @param proposal - Current proposal being tested (array indexed by group number)
  * @param next - Internal parameter for recursive iteration
  * @returns Valid distribution array, or null if impossible
- * 
+ *
  * Example:
  *   max: [7, 3], multipleOf: 2, sum: 8
  *   → [6, 2] ✓ (6 from group 0, 2 from group 1 = 8 total, both multiples of 2)
@@ -95,13 +95,13 @@ const findGroupDistribution = (
 /**
  * Partitions players with group awareness for matching formats that use group factors
  * (e.g., AmericanoMixed, Tournicano) but don't require strict group balancing.
- * 
+ *
  * Key behaviors:
  * - Prioritizes individual fairness: players with lower playRatio compete first
  * - Ensures competing players are in valid group multiples (for proper match formation)
  * - Does NOT enforce equal representation per group (use balanceGroups for that)
  * - Paused players are selected WITHOUT group awareness (just by playRatio)
- * 
+ *
  * Algorithm:
  * 1. Sort all players by playRatio (group-agnostic)
  * 2. Split into three buckets based on playRatio at competingCount cutoff:
@@ -112,7 +112,7 @@ const findGroupDistribution = (
  *    - Use multiples-of-2 per group to ensure proper team formation
  *    - Uses recursive search to find valid distribution
  * 4. Unselected players from maybePaused + definitelyPaused become paused
- * 
+ *
  * Note: We only use multiples-of-2 (not multiples-of-4) because unbalanced distributions
  * like 4M+8F would force inter-group partnerships (e.g., F-F pairs) which violate the
  * PAIRED constraint in mixed formats. This ensures all partnerships follow group rules.
@@ -129,7 +129,7 @@ const partitionGroupAware = (
   if (players.length > competingCount) {
     // We need to pause some players - use group-aware selection
     sorted = players.toSorted((p, q) => playRatio(p) - playRatio(q));
-    
+
     // Split players into three buckets based on their playRatio relative to cutoff:
     const definitelyPlaying = [];  // playRatio < cutoff: will definitely compete
     const maybePaused = [];         // playRatio == cutoff: need group-aware selection
@@ -148,7 +148,7 @@ const partitionGroupAware = (
     if (definitelyPlaying.length + maybePaused.length > competingCount) {
       const maxGroupCounts = groupCounts(definitelyPlaying.concat(maybePaused));
       const minGroupCounts = groupCounts(definitelyPlaying);
-      
+
       // Use multiples-of-2 per group to ensure proper team formation.
       // We don't use multiples-of-4 because it can create unbalanced distributions
       // (e.g., 4M+8F) which force inter-group partnerships (e.g., F-F pairs) that
@@ -161,12 +161,12 @@ const partitionGroupAware = (
         },
         minGroupCounts,
       );
-      
+
       if (distribution !== null) {
         sorted = definitelyPlaying;
         const currentCounts = minGroupCounts.slice();
         const tail = [];
-        
+
         // Select from maybePaused candidates to fill remaining spots:
         // - Shuffle first to break any patterns and introduce fairness
         // - Then sort by lastPause (descending) to avoid back-to-back pauses
@@ -204,16 +204,16 @@ const partitionSimple = (
   if (players.length < competingCount) {
     competingCount = players.length - (players.length % PLAYERS_PER_MATCH);
   }
-  
+
   if (competingCount === players.length) {
     // All players can compete
     return [players, []];
   }
-  
+
   // We need to pause some players - use simple playRatio + lastPause logic
   // Shuffle first to introduce randomness for tiebreaking
   const shuffled = shuffle(players.slice());
-  
+
   // Sort by playRatio (ascending - lower ratio plays first)
   // For equal playRatio, sort by lastPause (descending - MORE RECENT pause plays first)
   // This matches the existing behavior in partitionGroupAware and prevents back-to-back pauses
@@ -225,7 +225,7 @@ const partitionSimple = (
     }
     return q.lastPause - p.lastPause; // Higher lastPause first (paused more recently)
   });
-  
+
   return [sorted.slice(0, competingCount), sorted.slice(competingCount)];
 };
 
@@ -298,6 +298,105 @@ const partitionBalanced = (
   }
 
   return [competing, paused];
+};
+
+/**
+ * Calculate team play ratio from the average of both players.
+ * Uses the same smoothing factor as individual players to avoid division by zero.
+ */
+const teamPlayRatio = (p1: Player, p2: Player): number => {
+  const ratio1 = p1.matchCount / (p1.pauseCount + p1.matchCount + PLAY_RATIO_SMOOTHING);
+  const ratio2 = p2.matchCount / (p2.pauseCount + p2.matchCount + PLAY_RATIO_SMOOTHING);
+  return (ratio1 + ratio2) / 2;
+};
+
+/**
+ * Get team's most recent pause (max of both players).
+ * Higher value = more recent pause = should play first.
+ */
+const teamLastPause = (p1: Player, p2: Player): number => {
+  return Math.max(p1.lastPause, p2.lastPause);
+};
+
+/**
+ * Partitions fixed teams using player-level participation stats.
+ * In fixed teams mode (TeamAmericano, TeamMexicano), the same pairs stay together
+ * throughout the tournament, so we use individual player stats to determine fairness.
+ *
+ * Algorithm:
+ * 1. Build player lookup map
+ * 2. Filter teams where both players are active
+ * 3. Sort by teamPlayRatio (ascending), then teamLastPause (descending)
+ * 4. Round down to even number of teams, respect maxMatches constraint
+ * 5. Return competing teams + paused players (including solo orphaned players)
+ *
+ * @param teams - Fixed team pairings (player1Id, player2Id)
+ * @param players - All active players
+ * @param spec - Matching specification (unused, for consistency with partitionPlayers)
+ * @param maxMatches - Maximum number of matches (optional)
+ * @returns Competing teams and paused players
+ */
+export const partitionFixedTeams = (
+  teams: Array<{ player1Id: PlayerId; player2Id: PlayerId }>,
+  players: Player[],
+  _spec: MatchingSpec,
+  maxMatches?: number,
+): { competing: Team[]; paused: Player[] } => {
+  // Build player lookup map
+  const playerMap = new Map<PlayerId, Player>();
+  for (const player of players) {
+    playerMap.set(player.id, player);
+  }
+
+  // Filter teams where both players are active and build Team tuples
+  const validTeams: Array<{ team: Team; ratio: number; lastPause: number }> = [];
+  for (const { player1Id, player2Id } of teams) {
+    const p1 = playerMap.get(player1Id);
+    const p2 = playerMap.get(player2Id);
+
+    if (p1 && p2) {
+      validTeams.push({
+        team: [p1, p2],
+        ratio: teamPlayRatio(p1, p2),
+        lastPause: teamLastPause(p1, p2),
+      });
+      // Remove from map so we can track paused players
+      playerMap.delete(player1Id);
+      playerMap.delete(player2Id);
+    }
+  }
+
+  // Sort teams by playRatio (ascending), then by lastPause (descending)
+  validTeams.sort((a, b) => {
+    if (a.ratio !== b.ratio) {
+      return a.ratio - b.ratio; // Lower ratio plays first (less play time)
+    }
+    return b.lastPause - a.lastPause; // Higher lastPause plays first (more recent pause)
+  });
+
+  // Determine how many teams can compete
+  const effectiveMaxMatches = maxMatches ?? Math.floor(validTeams.length / 2);
+  let competingTeamCount = Math.min(validTeams.length, effectiveMaxMatches * 2);
+
+  // Round down to even number of teams (need pairs for matches)
+  competingTeamCount = competingTeamCount - (competingTeamCount % 2);
+
+  // Split into competing and paused teams
+  const competing = validTeams.slice(0, competingTeamCount).map((t) => t.team);
+  const pausedTeams = validTeams.slice(competingTeamCount).map((t) => t.team);
+
+  // Collect paused players: from paused teams + solo orphaned players
+  const paused: Player[] = [];
+  for (const [p1, p2] of pausedTeams) {
+    paused.push(p1, p2);
+  }
+
+  // Add solo orphaned players (not in any team) to paused list
+  for (const player of playerMap.values()) {
+    paused.push(player);
+  }
+
+  return { competing, paused };
 };
 
 export const partitionPlayers = (

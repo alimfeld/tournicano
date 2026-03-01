@@ -15,17 +15,6 @@ section.filter-section {
   border-bottom: var(--pico-border-width) solid var(--pico-table-border-color);
 }
 
-@media (min-width: 768px) {
-
-  .standings-row article.player {
-    margin-right: calc(var(--pico-spacing) / 2);
-  }
-
-  .standings-row {
-    grid-template-columns: 2fr 1fr 2fr;
-  }
-}
-
 /* Group total row - distinct styling */
 .standings-row.group-total {
   background-color: var(--pico-table-row-stripped-background-color);
@@ -48,6 +37,12 @@ section.filter-section {
 /* Player cell - centered (default), no padding */
 .standings-cell.player-cell {
   padding: 0;
+}
+
+.standings-row.team .standings-cell.player-cell {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .standings-row article.player {
@@ -87,4 +82,20 @@ section.filter-section {
 /* Strong tags in stats - ensure they stand out */
 .standings-cell.stats-cell strong {
   font-weight: bold;
+}
+
+@media (min-width: 768px) {
+  .standings-row {
+    grid-template-columns: 2fr 1fr 2fr;
+  }
+
+  .standings-row.team {
+    grid-template-columns: 1.5fr 2fr 1.5fr;
+  }
+
+  .standings-row.team .standings-cell.player-cell {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
 }

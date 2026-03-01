@@ -196,7 +196,7 @@ test("should pair by performance in Mexicano mode", ({ players }) => {
     console.log(`  Player ${p.id}: wr=${p.winRatio}, pm=${p.plusMinus}`);
   });
 
-  const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 0, 2, true);
+  const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 0, 2, undefined, true);
 
   // Actual ranking by winRatio (descending):
   // Rank 1: player 0 (1.0)
@@ -307,7 +307,7 @@ test("debug Mexicano rank calculation", ({ players }) => {
   console.log("Player 3: winRatio=0.25, plusMinus=-5 (expected rank 4)");
   console.log("\nExpected Mexicano pairing: 0-2 (rank 1-3) and 1-3 (rank 2-4)");
 
-  const [matches, _paused] = matching(players.slice(0, 4), Mexicano, 0, 1, true);
+  const [matches, _paused] = matching(players.slice(0, 4), Mexicano, 0, 1, undefined, true);
 
   const teams = matches.flatMap(m => m);
   console.log("\nActual pairing:");

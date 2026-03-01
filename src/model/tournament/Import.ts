@@ -10,7 +10,7 @@ import { PlayerId, Score } from "./Tournament.ts";
 import { Settings } from "../settings/Settings.ts";
 import { TournamentBackup } from "./Export.ts";
 import { TournamentContext } from "./Context.ts";
-import { PlayerImpl, ParticipatingPlayerImpl } from "./Players.impl.ts";
+import { PlayerImpl, ParticipatingPlayerImpl, ParticipatingTeamImpl } from "./Players.impl.ts";
 import { RoundImpl } from "./Rounds.impl.ts";
 import { pluralizeWithCount } from "../core/Util.ts";
 
@@ -27,6 +27,7 @@ export function importBackup(
   createRound: (
     index: number,
     participating: ParticipatingPlayerImpl[],
+    participatingTeams: ParticipatingTeamImpl[],
     matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
     paused: PlayerId[],
     inactive: PlayerId[]
@@ -185,6 +186,9 @@ export function importBackup(
     const participating: ParticipatingPlayerImpl[] = previousRound
       ? previousRound.getParticipatingPlayers() as ParticipatingPlayerImpl[]
       : [];
+    const participatingTeams: ParticipatingTeamImpl[] = previousRound
+      ? previousRound.getParticipatingTeams() as ParticipatingTeamImpl[]
+      : [];
 
     // Build set of all participating player IDs for this round
     const participatingIds = new Set<PlayerId>();
@@ -222,6 +226,7 @@ export function importBackup(
     const round = createRound(
       roundIndex,
       participating,
+      participatingTeams,
       matched,
       pausedIds,
       inactiveIds,
