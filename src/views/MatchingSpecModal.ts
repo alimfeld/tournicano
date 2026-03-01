@@ -5,6 +5,7 @@ import {
   MatchUpGroupMode,
   TeamUpGroupMode,
   TeamUpPerformanceMode,
+  Americano,
 } from "../model/matching/MatchingSpec.ts";
 import "./MatchingSpecModal.css";
 import { Modal } from "./Modal.ts";
@@ -33,6 +34,7 @@ export interface MatchingSpecModalAttrs {
 }
 
 interface MatchingSpecModalState {
+  fixedTeams: boolean;
   teamUpVarietyFactor: number;
   teamUpPerformanceFactor: number;
   teamUpPerformanceMode: number;
@@ -48,11 +50,16 @@ interface MatchingSpecModalState {
 export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpecModalState> = {
   oninit: ({ state, attrs }) => {
     // Initialize state from matchingSpec
-    state.teamUpVarietyFactor = attrs.matchingSpec.teamUp.varietyFactor;
-    state.teamUpPerformanceFactor = attrs.matchingSpec.teamUp.performanceFactor;
-    state.teamUpPerformanceMode = attrs.matchingSpec.teamUp.performanceMode;
-    state.teamUpGroupFactor = attrs.matchingSpec.teamUp.groupFactor;
-    state.teamUpGroupMode = attrs.matchingSpec.teamUp.groupMode;
+    state.fixedTeams = attrs.matchingSpec.teamUp === undefined;
+
+    const defaultTeamUp = Americano.teamUp!;
+    const teamUp = attrs.matchingSpec.teamUp ?? defaultTeamUp;
+
+    state.teamUpVarietyFactor = teamUp.varietyFactor;
+    state.teamUpPerformanceFactor = teamUp.performanceFactor;
+    state.teamUpPerformanceMode = teamUp.performanceMode;
+    state.teamUpGroupFactor = teamUp.groupFactor;
+    state.teamUpGroupMode = teamUp.groupMode;
     state.matchUpVarietyFactor = attrs.matchingSpec.matchUp.varietyFactor;
     state.matchUpPerformanceFactor = attrs.matchingSpec.matchUp.performanceFactor;
     state.matchUpGroupFactor = attrs.matchingSpec.matchUp.groupFactor;
@@ -63,13 +70,15 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
   view: ({ attrs: { onconfirm, onClose, matchingSpec }, state }) => {
     const hasChanges = () => {
       const currentSpec: MatchingSpec = {
-        teamUp: {
-          varietyFactor: state.teamUpVarietyFactor,
-          performanceFactor: state.teamUpPerformanceFactor,
-          performanceMode: state.teamUpPerformanceMode,
-          groupFactor: state.teamUpGroupFactor,
-          groupMode: state.teamUpGroupMode,
-        },
+        ...(state.fixedTeams ? { teamUp: undefined } : {
+          teamUp: {
+            varietyFactor: state.teamUpVarietyFactor,
+            performanceFactor: state.teamUpPerformanceFactor,
+            performanceMode: state.teamUpPerformanceMode,
+            groupFactor: state.teamUpGroupFactor,
+            groupMode: state.teamUpGroupMode,
+          }
+        }),
         matchUp: {
           varietyFactor: state.matchUpVarietyFactor,
           performanceFactor: state.matchUpPerformanceFactor,
@@ -83,13 +92,15 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
 
     const handleApply = () => {
       const spec = {
-        teamUp: {
-          varietyFactor: state.teamUpVarietyFactor,
-          performanceFactor: state.teamUpPerformanceFactor,
-          performanceMode: state.teamUpPerformanceMode,
-          groupFactor: state.teamUpGroupFactor,
-          groupMode: state.teamUpGroupMode,
-        },
+        ...(state.fixedTeams ? { teamUp: undefined } : {
+          teamUp: {
+            varietyFactor: state.teamUpVarietyFactor,
+            performanceFactor: state.teamUpPerformanceFactor,
+            performanceMode: state.teamUpPerformanceMode,
+            groupFactor: state.teamUpGroupFactor,
+            groupMode: state.teamUpGroupMode,
+          }
+        }),
         matchUp: {
           varietyFactor: state.matchUpVarietyFactor,
           performanceFactor: state.matchUpPerformanceFactor,
@@ -138,95 +149,110 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
           m("details",
             m("summary.secondary.outline[role=button]",
               m("div", "Team up"),
-              m("small", `${SYMBOL_VARIETY} ${state.teamUpVarietyFactor}%${SEPARATOR}${SYMBOL_PERFORMANCE} ${state.teamUpPerformanceFactor}% ${getTeamUpPerformanceModeSymbol()}${SEPARATOR}${SYMBOL_GROUPS} ${state.teamUpGroupFactor}% ${getTeamUpGroupModeSymbol()}`)
+              m("small", state.fixedTeams ? "Fixed teams" : `${SYMBOL_VARIETY} ${state.teamUpVarietyFactor}%${SEPARATOR}${SYMBOL_PERFORMANCE} ${state.teamUpPerformanceFactor}% ${getTeamUpPerformanceModeSymbol()}${SEPARATOR}${SYMBOL_GROUPS} ${state.teamUpGroupFactor}% ${getTeamUpGroupModeSymbol()}`)
             ),
-            m(
-              "label.slider-label",
-              { for: "team-up-variety-factor" },
-              "Rotate partners",
-              m("small.slider-label-text", state.teamUpVarietyFactor + "%"),
-            ),
-            m("input", {
-              type: "range",
-              id: "team-up-variety-factor",
-              name: "team-up-variety-factor",
-              step: 10,
-              value: state.teamUpVarietyFactor,
-              oninput: (e: Event) => {
-                state.teamUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
-              },
-            }),
-            m(
-              "label.slider-label",
-              { for: "team-up-performance-factor" },
-              "Match by performance",
-              m("small.slider-label-text", state.teamUpPerformanceFactor + "%"),
-            ),
-            m("input", {
-              type: "range",
-              id: "team-up-performance-factor",
-              name: "team-up-performance-factor",
-              step: 10,
-              value: state.teamUpPerformanceFactor,
-              oninput: (e: Event) => {
-                state.teamUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
-              },
-            }),
-            m(
-              "fieldset",
-              [
-                { value: TeamUpPerformanceMode.AVERAGE, label: `${MODE_BALANCED} Balanced teams` },
-                { value: TeamUpPerformanceMode.EQUAL, label: `${MODE_EQUAL} Equal performance` },
-                { value: TeamUpPerformanceMode.MEXICANO, label: `${MODE_MEXICANO} Mexicano (1+3, 2+4)` }
-              ].map(option =>
-                m("label",
-                  m("input", {
-                    type: "radio",
-                    name: "team-up-performance-mode",
-                    value: option.value,
-                    checked: state.teamUpPerformanceMode === option.value,
-                    disabled: state.teamUpPerformanceFactor === 0,
-                    onchange: () => { state.teamUpPerformanceMode = option.value; }
-                  }),
-                  option.label
+            m("label", [
+              m("input[type=checkbox]", {
+                checked: state.fixedTeams,
+                onchange: (e: Event) => {
+                  state.fixedTeams = (e.target as HTMLInputElement).checked;
+                }
+              }),
+              "Fixed Teams"
+            ]),
+            m("small", "Preserve teams from round 1. Settings below are ignored when enabled."),
+            m("hr"),
+            m("fieldset", {
+              disabled: state.fixedTeams
+            }, [
+              m(
+                "label.slider-label",
+                { for: "team-up-variety-factor" },
+                "Rotate partners",
+                m("small.slider-label-text", state.teamUpVarietyFactor + "%"),
+              ),
+              m("input", {
+                type: "range",
+                id: "team-up-variety-factor",
+                name: "team-up-variety-factor",
+                step: 10,
+                value: state.teamUpVarietyFactor,
+                oninput: (e: Event) => {
+                  state.teamUpVarietyFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
+              m(
+                "label.slider-label",
+                { for: "team-up-performance-factor" },
+                "Match by performance",
+                m("small.slider-label-text", state.teamUpPerformanceFactor + "%"),
+              ),
+              m("input", {
+                type: "range",
+                id: "team-up-performance-factor",
+                name: "team-up-performance-factor",
+                step: 10,
+                value: state.teamUpPerformanceFactor,
+                oninput: (e: Event) => {
+                  state.teamUpPerformanceFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
+              m(
+                "fieldset",
+                [
+                  { value: TeamUpPerformanceMode.AVERAGE, label: `${MODE_BALANCED} Balanced teams` },
+                  { value: TeamUpPerformanceMode.EQUAL, label: `${MODE_EQUAL} Equal performance` },
+                  { value: TeamUpPerformanceMode.MEXICANO, label: `${MODE_MEXICANO} Mexicano (1+3, 2+4)` }
+                ].map(option =>
+                  m("label",
+                    m("input", {
+                      type: "radio",
+                      name: "team-up-performance-mode",
+                      value: option.value,
+                      checked: state.teamUpPerformanceMode === option.value,
+                      disabled: state.teamUpPerformanceFactor === 0,
+                      onchange: () => { state.teamUpPerformanceMode = option.value; }
+                    }),
+                    option.label
+                  )
+                )
+              ),
+              m(
+                "label.slider-label",
+                { for: "team-up-group-factor" },
+                "Group factor",
+                m("small.slider-label-text", state.teamUpGroupFactor + "%"),
+              ),
+              m("input", {
+                type: "range",
+                id: "team-up-group-factor",
+                name: "team-up-group-factor",
+                step: 10,
+                value: state.teamUpGroupFactor,
+                oninput: (e: Event) => {
+                  state.teamUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
+                },
+              }),
+              m(
+                "fieldset",
+                [
+                  { value: TeamUpGroupMode.PAIRED, label: `${MODE_GROUP_CROSS} Pair groups (A&B, C&D)` },
+                  { value: TeamUpGroupMode.SAME, label: `${MODE_GROUP_SAME} Same group only` }
+                ].map(option =>
+                  m("label",
+                    m("input", {
+                      type: "radio",
+                      name: "team-up-group-mode",
+                      value: option.value,
+                      checked: state.teamUpGroupMode === option.value,
+                      disabled: state.teamUpGroupFactor === 0,
+                      onchange: () => { state.teamUpGroupMode = option.value; }
+                    }),
+                    option.label
+                  )
                 )
               )
-            ),
-            m(
-              "label.slider-label",
-              { for: "team-up-group-factor" },
-              "Group factor",
-              m("small.slider-label-text", state.teamUpGroupFactor + "%"),
-            ),
-            m("input", {
-              type: "range",
-              id: "team-up-group-factor",
-              name: "team-up-group-factor",
-              step: 10,
-              value: state.teamUpGroupFactor,
-              oninput: (e: Event) => {
-                state.teamUpGroupFactor = parseInt((e.target as HTMLInputElement).value);
-              },
-            }),
-            m(
-              "fieldset",
-              [
-                { value: TeamUpGroupMode.PAIRED, label: `${MODE_GROUP_CROSS} Pair groups (A&B, C&D)` },
-                { value: TeamUpGroupMode.SAME, label: `${MODE_GROUP_SAME} Same group only` }
-              ].map(option =>
-                m("label",
-                  m("input", {
-                    type: "radio",
-                    name: "team-up-group-mode",
-                    value: option.value,
-                    checked: state.teamUpGroupMode === option.value,
-                    disabled: state.teamUpGroupFactor === 0,
-                    onchange: () => { state.teamUpGroupMode = option.value; }
-                  }),
-                  option.label
-                )
-              )
-            )
+            ])
           ),
           m("details",
             m("summary.secondary.outline[role=button]",

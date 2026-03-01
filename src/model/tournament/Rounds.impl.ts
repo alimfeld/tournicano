@@ -14,9 +14,11 @@ import {
   Round,
   Score,
   Team,
+  TeamKey,
+  createTeamKey,
 } from "./Tournament.ts";
 import { TournamentContext, RoundContext } from "./Context.ts";
-import { ParticipatingPlayerImpl, PerformanceImpl } from "./Players.impl.ts";
+import { ParticipatingPlayerImpl, ParticipatingTeamImpl, PerformanceImpl } from "./Players.impl.ts";
 
 /**
  * @internal - Implementation class, not part of public API
@@ -57,6 +59,13 @@ export class MatchImpl implements Mutable<Match> {
     this.round.addPerformance(this.teamA.player2.id, diffA);
     this.round.addPerformance(this.teamB.player1.id, diffB);
     this.round.addPerformance(this.teamB.player2.id, diffB);
+    
+    // Track team performance
+    const teamAKey = createTeamKey(this.teamA.player1.id, this.teamA.player2.id);
+    const teamBKey = createTeamKey(this.teamB.player1.id, this.teamB.player2.id);
+    this.round.addTeamPerformance(teamAKey, diffA);
+    this.round.addTeamPerformance(teamBKey, diffB);
+    
     this.round.tournament.notifyChange();
   }
 }
@@ -70,9 +79,11 @@ export class RoundImpl implements Round, RoundContext {
   paused!: ParticipatingPlayerImpl[];
   inactive!: ParticipatingPlayerImpl[];
   playerMap!: Map<PlayerId, ParticipatingPlayerImpl>;
+  teamMap!: Map<TeamKey, ParticipatingTeamImpl>;
   
-  // Store reference to original participating players for round reconstruction
+  // Store references for round reconstruction (used by switchPlayers)
   private originalParticipating: ParticipatingPlayerImpl[];
+  private originalParticipatingTeams: ParticipatingTeamImpl[];
 
   /**
    * Creates a new round with the given matches and participating players.
@@ -82,6 +93,8 @@ export class RoundImpl implements Round, RoundContext {
    * @param participating - Players participating from previous rounds (carries over stats).
    *                        For round 1 during deserialization, this may be empty and players
    *                        will be created on-demand from matched/paused/inactive arrays.
+   * @param participatingTeams - Teams from previous rounds (carries over stats).
+   *                             For round 1, this will be empty and teams created on-demand.
    * @param matched - Array of matched teams as player ID pairs: [[teamA], [teamB]]
    * @param paused - Player IDs who were ACTIVE but unmatched at round creation time.
    *                 These players wanted to play but couldn't be matched (e.g., odd number out).
@@ -105,12 +118,14 @@ export class RoundImpl implements Round, RoundContext {
     readonly tournament: TournamentContext,
     readonly index: number,
     participating: ParticipatingPlayerImpl[],
+    participatingTeams: ParticipatingTeamImpl[],
     matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
     paused: PlayerId[],
     inactive: PlayerId[],
   ) {
     this.originalParticipating = participating;
-    this.buildRound(participating, matched, paused, inactive);
+    this.originalParticipatingTeams = participatingTeams;
+    this.buildRound(participating, participatingTeams, matched, paused, inactive);
   }
 
   /**
@@ -119,16 +134,33 @@ export class RoundImpl implements Round, RoundContext {
    */
   private buildRound(
     participating: ParticipatingPlayerImpl[],
+    participatingTeams: ParticipatingTeamImpl[],
     matched: [[PlayerId, PlayerId], [PlayerId, PlayerId]][],
     paused: PlayerId[],
     inactive: PlayerId[]
   ): void {
+    // Deep copy player stats from previous round
     this.playerMap = new Map(participating.map((p) => [p.id, p.deepCopy()]));
+    
+    // Deep copy team stats from previous round
+    this.teamMap = new Map(participatingTeams.map((t) => [t.teamKey, t.deepCopy()]));
+    
     const getOrCreate = (id: PlayerId) => {
       let result = this.playerMap.get(id);
       if (!result) {
         result = new ParticipatingPlayerImpl(this.tournament, id);
         this.playerMap.set(id, result);
+      }
+      return result;
+    };
+    
+    const getOrCreateTeam = (p1Id: PlayerId, p2Id: PlayerId) => {
+      const key = createTeamKey(p1Id, p2Id);
+      let result = this.teamMap.get(key);
+      if (!result) {
+        // Team doesn't exist from previous rounds, create new
+        result = new ParticipatingTeamImpl(p1Id, p2Id);
+        this.teamMap.set(key, result);
       }
       return result;
     };
@@ -147,13 +179,26 @@ export class RoundImpl implements Round, RoundContext {
       const a2 = getOrCreate(m[0][1]);
       const b1 = getOrCreate(m[1][0]);
       const b2 = getOrCreate(m[1][1]);
+      
+      // Build team A
       const teamA = new TeamImpl(a1, a2);
       a1.incPartner(a2.id, this.index);
       a2.incPartner(a1.id, this.index);
+      
+      // Track team A (for performance tracking)
+      getOrCreateTeam(a1.id, a2.id);
+      
+      // Build team B
+      const teamB = new TeamImpl(b1, b2);
       b1.incPartner(b2.id, this.index);
       b2.incPartner(b1.id, this.index);
-      const teamB = new TeamImpl(b1, b2);
+      
+      // Track team B (for performance tracking)
+      getOrCreateTeam(b1.id, b2.id);
+      
       const match = new MatchImpl(this, teamA, teamB);
+      
+      // Track player stats
       [a1, a2, b1, b2].forEach((p) => (p.matchCount += 1));
       [a1, a2].forEach((p) => {
         [b1, b2].forEach((q) => {
@@ -161,6 +206,7 @@ export class RoundImpl implements Round, RoundContext {
           q.incOpponent(p.id, this.index);
         });
       });
+      
       return match;
     });
   }
@@ -231,6 +277,7 @@ export class RoundImpl implements Round, RoundContext {
     const matched = matchesWithScores.map(m => [m.teamA, m.teamB] as [[PlayerId, PlayerId], [PlayerId, PlayerId]]);
     this.buildRound(
       this.originalParticipating,
+      this.originalParticipatingTeams,
       matched,
       paused,
       this.inactive.map(p => p.id)
@@ -256,6 +303,10 @@ export class RoundImpl implements Round, RoundContext {
     return Array.from(this.playerMap.values());
   }
 
+  getParticipatingTeams(): ParticipatingTeamImpl[] {
+    return Array.from(this.teamMap.values());
+  }
+
   standings(groups?: number[]) {
     const players = Array.from(this.playerMap.values())
       .filter((player) => !groups || groups.length === 0 || groups.includes(player.group))
@@ -278,11 +329,47 @@ export class RoundImpl implements Round, RoundContext {
     });
   }
 
+  teamStandings() {
+    const teams = Array.from(this.teamMap.values())
+      .filter((team) => team.wins + team.draws + team.losses > 0)
+      .toSorted((t1, t2) => {
+        const result = t1.compare(t2);
+        if (result === 0) {
+          // Tiebreaker: sort by team name (player1 & player2 names)
+          const t1Player1 = this.tournament.getPlayer(t1.player1Id)!;
+          const t1Player2 = this.tournament.getPlayer(t1.player2Id)!;
+          const t2Player1 = this.tournament.getPlayer(t2.player1Id)!;
+          const t2Player2 = this.tournament.getPlayer(t2.player2Id)!;
+          const t1Name = `${t1Player1.name} & ${t1Player2.name}`;
+          const t2Name = `${t2Player1.name} & ${t2Player2.name}`;
+          return t1Name < t2Name ? -1 : t1Name > t2Name ? 1 : 0;
+        }
+        return result;
+      });
+    let rank = 1;
+    return teams.map((team, i) => {
+      if (i === 0 || teams[i - 1].compare(teams[i]) === 0) {
+        return { rank, team };
+      } else {
+        rank = i + 1;
+        return { rank, team };
+      }
+    });
+  }
+
   addPerformance(id: PlayerId, performance: Performance) {
     this.playerMap.get(id)!.add(performance);
     if (this.index + 1 < this.tournament.rounds.length) {
       const nextRound = this.tournament.rounds[this.index + 1];
       nextRound?.addPerformance(id, performance);
+    }
+  }
+
+  addTeamPerformance(teamKey: TeamKey, performance: Performance) {
+    this.teamMap.get(teamKey)!.add(performance);
+    if (this.index + 1 < this.tournament.rounds.length) {
+      const nextRound = this.tournament.rounds[this.index + 1];
+      nextRound?.addTeamPerformance(teamKey, performance);
     }
   }
 }

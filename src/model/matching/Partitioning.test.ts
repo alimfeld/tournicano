@@ -182,7 +182,7 @@ test("GroupBattle mode should balance groups", ({ players }) => {
 // AmericanoMixedBalanced preset tests
 test("AmericanoMixedBalanced should have balanceGroups enabled", () => {
   expect(AmericanoMixedBalanced.balanceGroups).toBe(true);
-  expect(AmericanoMixedBalanced.teamUp.groupMode).toBe(TeamUpGroupMode.PAIRED);
+  expect(AmericanoMixedBalanced.teamUp!.groupMode).toBe(TeamUpGroupMode.PAIRED);
   expect(AmericanoMixedBalanced.matchUp.groupMode).toBe(MatchUpGroupMode.SAME);
 });
 

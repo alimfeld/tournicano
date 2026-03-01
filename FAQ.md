@@ -152,9 +152,38 @@ Active in: Americano Mixed Balanced, Group Battle modes
 - **Social/casual** → Americano
 - **Mixed doubles (men/women)** → Americano Mixed (Balanced)
 - **Competitive/ranked** → Mexicano
+- **Fixed team pairs** → Team Americano / Team Mexicano
 - **Variety + competition** → Tournicano
 - **Team competition** → Group Battle (Mixed)
 - **Custom needs** → Custom Mode
+
+### How do fixed team modes (Team Americano / Team Mexicano) work?
+
+**Team Americano** and **Team Mexicano** use **fixed team pairs** - the same partners stay together throughout the tournament.
+
+**Team formation:**
+- When you create the first round, active players are **randomly paired** into teams
+- These pairings become your fixed teams for the tournament, unless adjusted
+- New players added mid-tournament are automatically paired with other new players
+
+**Adjusting team pairings:**
+
+Use the **Switch Players** feature to modify team compositions:
+1. Go to the **Round page**
+2. Tap the **pencil icon (✎)** in the header
+3. Select two players to swap
+4. Changes persist to future rounds
+
+**Mode differences:**
+- **Team Americano:** Focuses on variety of opponents
+- **Team Mexicano:** Matches teams by skill level
+
+**Viewing team standings:**
+
+The Standings page includes a toggle (👥) to switch between individual player standings and team standings:
+- **Individual view:** Shows stats for each player separately
+- **Team view:** Shows combined stats for each team pair
+- Team standings display both partners' names and the team's total wins, losses, and points
 
 ### Why does Americano Mixed use Variety 50 instead of 100?
 

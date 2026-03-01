@@ -1,4 +1,4 @@
-import { PlayerId, Player, Performance, ParticipatingPlayer } from "./Tournament.ts";
+import { PlayerId, Player, Performance, ParticipatingPlayer, ParticipatingTeam, TeamKey } from "./Tournament.ts";
 
 /**
  * Context interface for Round implementation.
@@ -9,7 +9,9 @@ export interface RoundContext {
   readonly index: number;
   hasParticipant(id: PlayerId): boolean;
   getParticipatingPlayers(): ParticipatingPlayer[];
+  getParticipatingTeams(): ParticipatingTeam[];
   addPerformance(id: PlayerId, performance: Performance): void;
+  addTeamPerformance(teamKey: TeamKey, performance: Performance): void;
 }
 
 /**

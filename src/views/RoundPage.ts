@@ -421,7 +421,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
         disabled: nextRoundInfo.matchCount === 0,
         onclick: () => {
           const spec = settings.matchingSpec;
-          const usesPerformanceFactors = spec.teamUp.performanceFactor > 0 || spec.matchUp.performanceFactor > 0;
+          const usesPerformanceFactors = (spec.teamUp?.performanceFactor ?? 0) > 0 || spec.matchUp.performanceFactor > 0;
           if (tournament.rounds.length > 0 && usesPerformanceFactors && !tournament.hasAllScoresSubmitted) {
             showToast("Not all scores were entered in previous rounds", { type: "error", position: "middle" });
           }

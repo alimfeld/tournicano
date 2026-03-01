@@ -48,9 +48,45 @@ export interface ParticipatingPlayer
   readonly plusMinus: number;
 }
 
+// ============= TEAM TYPES AND INTERFACES =============
+
+export type TeamKey = string; // Format: "playerId1:playerId2" (lexicographically sorted)
+
+/**
+ * Helper to create a deterministic team key from two player IDs
+ */
+export function createTeamKey(player1Id: PlayerId, player2Id: PlayerId): TeamKey {
+  return player1Id < player2Id
+    ? `${player1Id}:${player2Id}`
+    : `${player2Id}:${player1Id}`;
+}
+
+/**
+ * Represents a team's accumulated statistics across rounds.
+ * Tracked for ALL tournament modes (rotating and fixed teams).
+ *
+ * Composition mirrors ParticipatingPlayer:
+ * - Performance: wins/losses/draws/points (inherited)
+ * - TeamMatchings: opponent history
+ * - Participation: matchCount/pauseCount (reused from player interface)
+ */
+export interface ParticipatingTeam
+  extends Performance {
+  readonly player1Id: PlayerId;
+  readonly player2Id: PlayerId;
+  readonly teamKey: TeamKey;
+  readonly winRatio: number;
+  readonly plusMinus: number;
+}
+
 export interface RankedPlayer {
   rank: number;
   player: ParticipatingPlayer;
+}
+
+export interface RankedTeam {
+  rank: number;
+  team: ParticipatingTeam;
 }
 
 export interface Team {
@@ -73,7 +109,9 @@ export interface Round {
   readonly inactive: ParticipatingPlayer[];
   readonly playerMap: ReadonlyMap<PlayerId, ParticipatingPlayer>;
   standings(groups?: number[]): RankedPlayer[];
+  teamStandings(): RankedTeam[];
   getParticipatingPlayers(): ParticipatingPlayer[];
+  getParticipatingTeams(): ParticipatingTeam[];
   isLast(): boolean;
   delete(): boolean;
   switchPlayers(playerId1: PlayerId, playerId2: PlayerId): boolean;
@@ -160,6 +198,7 @@ export interface Tournament {
   serialize(): string;
   addListener(listener: TournamentListener): void;
   exportStandingsText(roundIndex: number, groups?: number[]): string;
+  exportTeamStandingsText(roundIndex: number): string;
   exportBackup(settings: Settings): string;
   importBackup(backupJson: string, settings: Settings): { success: boolean; error?: string; summary?: string };
   validateConfiguration(spec: MatchingSpec, maxMatches?: number): ConfigurationWarning[];
@@ -170,11 +209,11 @@ export interface Tournament {
  */
 export function validatePlayerName(name: string): NameValidationResult {
   const trimmed = name.trim();
-  
+
   if (!trimmed) {
     return { valid: false, error: "Name is required" };
   }
-  
+
   return { valid: true };
 }
 

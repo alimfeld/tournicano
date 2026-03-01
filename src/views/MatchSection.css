@@ -2,6 +2,7 @@
 
 h2.match {
   text-align: center;
+  margin: 0;
 }
 
 section.match {
@@ -53,16 +54,7 @@ section.vs input.score-text {
   margin-bottom: 0;
 }
 
-section.team {
-  row-gap: calc(var(--pico-spacing) / 2);
-}
-
 @media (min-width: 768px) {
-
-  section.team {
-    row-gap: 0;
-    column-gap: calc(var(--pico-spacing) / 2);
-  }
 
   section.match {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 2fr);

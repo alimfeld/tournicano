@@ -12,6 +12,7 @@ const TOURNAMENT_KEY = "tournament";
 
 export interface StandingsFilters {
   groups: number[]; // empty array means all groups
+  viewMode: 'individual' | 'team';
 }
 
 interface ToastState {
@@ -75,7 +76,11 @@ const createState: () => State = () => {
     tournament,
     settings,
     filters: {
-      standings: { groups: [] },
+      standings: { 
+        groups: [],
+        // Auto-detect viewMode: if teamUp is undefined -> fixed teams mode -> default to 'team'
+        viewMode: (settings.matchingSpec.teamUp === undefined ? 'team' : 'individual') as 'individual' | 'team'
+      },
       players: {}
     },
     // Default to last round if tournament has rounds, otherwise -1
@@ -243,7 +248,10 @@ export const App = () => {
   };
 
   const resetFilters = () => {
-    state.filters.standings = { groups: [] };
+    state.filters.standings = { 
+      groups: [],
+      viewMode: (state.settings.matchingSpec.teamUp === undefined ? 'team' : 'individual') as 'individual' | 'team'
+    };
     state.filters.players = {};
   };
 
