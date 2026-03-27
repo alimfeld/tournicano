@@ -124,16 +124,16 @@ export const TeamMexicano: MatchingSpec = {
 export const Tournicano: MatchingSpec = {
   teamUp: {
     varietyFactor: 100,
-    performanceFactor: 100,
-    performanceMode: TeamUpPerformanceMode.MEXICANO,
-    groupFactor: 100,
-    groupMode: TeamUpGroupMode.PAIRED,
+    performanceFactor: 50,
+    performanceMode: TeamUpPerformanceMode.EQUAL,
+    groupFactor: 0,
+    groupMode: TeamUpGroupMode.PAIRED, // not relevant
   },
   matchUp: {
-    varietyFactor: 100,
+    varietyFactor: 0,
     performanceFactor: 100,
-    groupFactor: 100,
-    groupMode: MatchUpGroupMode.SAME,
+    groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
   },
 };
 

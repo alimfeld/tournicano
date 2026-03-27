@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "typecheck": "tsc",
-    "typecheck:watch": "tsc --watch"
+    "typecheck:watch": "tsc --watch",
+    "simulate": "npx vitest run --reporter=verbose src/simulate.test.ts"
   },
   "dependencies": {
     "@dicebear/collection": "^9.2.4",

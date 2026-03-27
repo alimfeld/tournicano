@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import { test } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
 import { Tournament, ParticipatingPlayer } from "./Tournament.ts";
-import { Americano, AmericanoMixed, MatchingSpec } from "../matching/MatchingSpec.ts";
+import { Americano, AmericanoMixed, Tournicano, MatchingSpec } from "../matching/MatchingSpec.ts";
 
 // ===== HELPER FUNCTIONS =====
 
@@ -827,5 +827,134 @@ mixedScenarios.forEach((scenario) => {
       expect(avgPartnerRate).toBeLessThan(scenario.backToBack.maxPartnerRate);
       expect(avgMatchupRate).toBeLessThan(scenario.backToBack.maxMatchupRate);
     }
+  });
+});
+
+// ===== TOURNICANO SCENARIOS =====
+
+// Tournicano scenarios: key player counts (8, 12, 16, 20)
+// Tournicano = Americano-level partner variety + Mexicano-level match competitiveness
+// teamUp: varietyFactor=100, performanceFactor=50, performanceMode=EQUAL
+// matchUp: varietyFactor=0,  performanceFactor=100
+const tournicanoScenarios: TournamentScenario[] = [
+  {
+    name: "8p Tournicano",
+    playerCount: 8,
+    matchingSpec: Tournicano,
+    courts: 2,
+    rounds: 7,
+    runsToTest: 15,
+    category: 'ideal',
+    partner: { minUniqueRate: 1.0, maxRepeats: 1, maxCV: 0.001 },
+    opponent: { maxRange: 6, maxCV: 0.60 },
+    notes: "28 slots = C(8,2) → perfect partner variety like Americano"
+  },
+  {
+    name: "12p Tournicano",
+    playerCount: 12,
+    matchingSpec: Tournicano,
+    courts: 3,
+    rounds: 11,
+    runsToTest: 15,
+    category: 'ideal',
+    partner: { minUniqueRate: 1.0, maxRepeats: 1, maxCV: 0.001 },
+    opponent: { maxRange: 8, maxCV: 0.65 },
+    notes: "66 slots = C(12,2) → perfect partner variety like Americano"
+  },
+  {
+    name: "16p Tournicano",
+    playerCount: 16,
+    matchingSpec: Tournicano,
+    courts: 4,
+    rounds: 15,
+    runsToTest: 12,
+    category: 'ideal',
+    partner: { minUniqueRate: 1.0, maxRepeats: 1, maxCV: 0.001 },
+    opponent: { maxRange: 9, maxCV: 0.75 },
+    notes: "120 slots = C(16,2) → perfect partner variety like Americano"
+  },
+  {
+    name: "20p Tournicano",
+    playerCount: 20,
+    matchingSpec: Tournicano,
+    courts: 5,
+    rounds: 19,
+    runsToTest: 10,
+    category: 'ideal',
+    partner: { minUniqueRate: 0.97, maxRepeats: 2, maxCV: 0.12 },
+    opponent: { maxRange: 10, maxCV: 0.75 },
+    notes: "190 slots = C(20,2) → near-perfect partner variety"
+  },
+];
+
+// Tournicano Partner Distribution Tests
+tournicanoScenarios.forEach((scenario) => {
+  test(`${scenario.name} - Partner Distribution (${scenario.runsToTest} runs)`, () => {
+    const allAnalyses: DistributionAnalysis[] = [];
+
+    for (let run = 0; run < scenario.runsToTest; run++) {
+      const tournament = createTournament(scenario.playerCount);
+      const players = runScenario(
+        tournament,
+        scenario.matchingSpec,
+        scenario.rounds,
+        scenario.courts
+      );
+      const analysis = analyzeDistribution(players);
+      allAnalyses.push(analysis);
+    }
+
+    const avgUniqueRate = allAnalyses.reduce((sum, a) => sum + a.uniqueRate, 0) / scenario.runsToTest;
+    const avgMaxRepeats = allAnalyses.reduce((sum, a) => sum + a.maxRepeats, 0) / scenario.runsToTest;
+    const maxRepeatsOverall = Math.max(...allAnalyses.map(a => a.maxRepeats));
+    const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / scenario.runsToTest;
+
+    console.log(`\n=== ${scenario.name.toUpperCase()} - PARTNER DISTRIBUTION ===`);
+    console.log(`Category: ${scenario.category}`);
+    console.log(`Configuration: ${scenario.playerCount}p, ${scenario.rounds} rounds, ${scenario.courts} courts`);
+    console.log(`Average unique partnership rate: ${(avgUniqueRate * 100).toFixed(1)}%`);
+    console.log(`Average max repeats per pair: ${avgMaxRepeats.toFixed(2)}`);
+    console.log(`Max repeats across all runs: ${maxRepeatsOverall}`);
+    console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
+    if (scenario.notes) console.log(`Notes: ${scenario.notes}`);
+
+    expect(avgUniqueRate).toBeGreaterThanOrEqual(scenario.partner.minUniqueRate);
+    expect(maxRepeatsOverall).toBeLessThanOrEqual(scenario.partner.maxRepeats);
+    expect(avgCV).toBeLessThan(scenario.partner.maxCV);
+  });
+});
+
+// Tournicano Opponent Distribution Tests
+tournicanoScenarios.forEach((scenario) => {
+  test(`${scenario.name} - Opponent Distribution (${scenario.runsToTest} runs)`, () => {
+    const allAnalyses: OpponentDistributionAnalysis[] = [];
+
+    for (let run = 0; run < scenario.runsToTest; run++) {
+      const tournament = createTournament(scenario.playerCount);
+      const players = runScenario(
+        tournament,
+        scenario.matchingSpec,
+        scenario.rounds,
+        scenario.courts
+      );
+      const analysis = analyzeOpponentDistribution(players);
+      allAnalyses.push(analysis);
+    }
+
+    const avgRange = allAnalyses.reduce((sum, a) => sum + a.range, 0) / scenario.runsToTest;
+    const maxRange = Math.max(...allAnalyses.map(a => a.range));
+    const avgCV = allAnalyses.reduce((sum, a) => sum + a.cv, 0) / scenario.runsToTest;
+    const avgMinOpponents = allAnalyses.reduce((sum, a) => sum + a.minOpponents, 0) / scenario.runsToTest;
+    const avgMaxOpponents = allAnalyses.reduce((sum, a) => sum + a.maxOpponents, 0) / scenario.runsToTest;
+
+    console.log(`\n=== ${scenario.name.toUpperCase()} - OPPONENT DISTRIBUTION ===`);
+    console.log(`Average range (max-min): ${avgRange.toFixed(2)}`);
+    console.log(`Max range across all runs: ${maxRange}`);
+    console.log(`Average min opponents: ${avgMinOpponents.toFixed(2)}`);
+    console.log(`Average max opponents: ${avgMaxOpponents.toFixed(2)}`);
+    console.log(`Average coefficient of variation: ${avgCV.toFixed(3)}`);
+
+    expect(maxRange).toBeLessThanOrEqual(scenario.opponent.maxRange);
+    expect(avgCV).toBeLessThan(scenario.opponent.maxCV);
   });
 });
