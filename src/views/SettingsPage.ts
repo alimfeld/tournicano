@@ -216,7 +216,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
               onchange: () => handleMatchingSpecChange(Tournicano),
             }),
             "Tournicano",
-            m("small", "Balances variety, performance, and group mix."),
+            m("small", "Maximum partner variety with competitive, skill-based matchups."),
           ),
           m(
             "label",
