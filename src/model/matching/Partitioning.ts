@@ -1,5 +1,5 @@
 import { Player, Team, PlayerId } from "./Matching.ts";
-import { MatchingSpec } from "./MatchingSpec.ts";
+import { MatchingSpec, TeamUpGroupMode, MatchUpGroupMode } from "./MatchingSpec.ts";
 import { shuffle } from "../core/Util.ts";
 
 // Constants for match structure
@@ -18,7 +18,7 @@ const playRatio = (p: Player) => {
 };
 
 const usesGroupFactors = (spec: MatchingSpec): boolean => {
-  return spec.teamUp && spec.teamUp.groupFactor > 0 || spec.matchUp.groupFactor > 0;
+  return !!(spec.teamUp && spec.teamUp.groupFactor > 0 || spec.matchUp.groupFactor > 0);
 };
 
 const groupCounts = (players: Player[]) => {
@@ -26,6 +26,30 @@ const groupCounts = (players: Player[]) => {
     acc[player.group] = (acc[player.group] || 0) + 1;
     return acc;
   }, []);
+};
+
+/**
+ * Determines the required player-count multiple per group for balanced partitioning,
+ * based on how many players from a single group end up in one match.
+ *
+ * | teamUp.groupMode | matchUp.groupMode | Players per group per match | Multiple |
+ * |------------------|-------------------|-----------------------------|----------|
+ * | SAME             | SAME              | 4 (all from one group)      | 4        |
+ * | SAME             | CROSS             | 2 (cross-group match)       | 2        |
+ * | PAIRED           | SAME              | 2 (each group in both teams)| 2        |
+ * | PAIRED           | CROSS             | 1 (one per group per match) | 1        |
+ *
+ * SAME+SAME is the only mode where equal group sizes are NOT required — unequal
+ * multiples-of-4 splits (e.g. 8+12 for 5 courts) are valid since every match is
+ * entirely within one group.
+ */
+const computeMultipleRequired = (spec: MatchingSpec): number => {
+  if (!spec.teamUp) return 1;
+  const teamUpSame = spec.teamUp.groupMode === TeamUpGroupMode.SAME;
+  const matchUpSame = spec.matchUp.groupMode === MatchUpGroupMode.SAME;
+  if (teamUpSame && matchUpSame) return PLAYERS_PER_MATCH; // 4: whole match is one group
+  if (teamUpSame || matchUpSame) return PLAYERS_PER_TEAM;  // 2: half a match per group
+  return 1;                                                 // PAIRED+CROSS: 1 per group per match
 };
 
 /**
@@ -81,6 +105,15 @@ const findGroupDistribution = (
       const g = (i + next) % constraints.max.length;
       const nextProposal = proposal.slice();
       nextProposal[g] = (nextProposal[g] || 0) + constraints.multipleOf;
+      // Snap down to the nearest multiple of multipleOf. This is a no-op when
+      // the initial proposal is all-zeros (as in the partitionBalanced/SAME+SAME
+      // call), but is load-bearing when the initial proposal contains non-multiple
+      // values (as in partitionGroupAware, which passes minGroupCounts — raw
+      // player counts that may be odd). Without the snap, adding multipleOf to an
+      // odd base (e.g. 3+2=5) would produce a non-multiple that fails the
+      // satisfiesMultipleOf check and recurse again, reaching the correct value
+      // one step later but via a different search path that changes which valid
+      // solution is found first, degrading partnership-distribution quality.
       nextProposal[g] =
         nextProposal[g] - (nextProposal[g] % constraints.multipleOf);
       const result = findGroupDistribution(constraints, nextProposal, next + 1);
@@ -229,8 +262,62 @@ const partitionSimple = (
   return [sorted.slice(0, competingCount), sorted.slice(competingCount)];
 };
 
+/**
+ * Selects `count` fairest players from a group, sorted by playRatio ascending
+ * then lastPause descending. Returns [competing, paused].
+ *
+ * Note: unlike `partitionSimple`, no pre-shuffle is applied here. Within
+ * `partitionBalanced` the group allocation is already fixed by
+ * `findGroupDistribution`, so additional randomness at the intra-group level
+ * would degrade partnership-distribution quality without fairness benefit.
+ */
+const selectFromGroup = (
+  groupPlayers: Player[],
+  count: number,
+): [competing: Player[], paused: Player[]] => {
+  const sorted = groupPlayers.toSorted((p, q) => {
+    const ratioP = playRatio(p);
+    const ratioQ = playRatio(q);
+    if (ratioP !== ratioQ) {
+      return ratioP - ratioQ; // Lower ratio first (played less)
+    }
+    return q.lastPause - p.lastPause; // More recent pause plays first
+  });
+  return [sorted.slice(0, count), sorted.slice(count)];
+};
+
+/**
+ * Partitions players ensuring group constraints are satisfied for balanced group modes.
+ *
+ * The required player multiple per group depends on the matching spec:
+ * - SAME+SAME: each match is entirely within one group → multiple of 4 per group
+ *   Groups do NOT need to be equal: e.g., 5 courts with 2 groups → 8+12 is valid.
+ *   The group with the lower average playRatio receives the larger allocation,
+ *   which naturally alternates the split across rounds without extra state.
+ * - SAME+CROSS: each match is one group vs another → multiple of 2 per group, equal groups
+ * - PAIRED+SAME: each team has one player from each paired group → multiple of 2 per group, equal groups
+ *   Note: 4-group PAIRED+SAME (pair-blocks {g0,g1} vs {g2,g3}) is a known limitation —
+ *   pair-blocks would need multiples of 4 with unequal splits for odd courts, analogous
+ *   to SAME+SAME. This case is out of scope and falls back to equal-groups logic.
+ * - PAIRED+CROSS: one player per group per match → multiple of 1 per group, equal groups
+ *
+ * Algorithm for SAME+SAME (unequal groups):
+ * 1. Compute max players per group (snapped to multiple of 4)
+ * 2. Total competing = min(sum of maxes, maxMatches * 4), snapped to multiple of 4
+ * 3. Sort groups by ascending average playRatio so low-ratio groups are expanded first
+ *    in the recursive search, naturally giving the larger share to the group that has
+ *    played less
+ * 4. Use findGroupDistribution() to find a valid unequal split
+ * 5. Select the fairest players within each group by playRatio / lastPause
+ *
+ * Algorithm for equal-group modes:
+ * 1. Find the minimum max across all groups (snapped to required multiple)
+ * 2. Cap by court constraint
+ * 3. Select that many from each group by playRatio / lastPause
+ */
 const partitionBalanced = (
   players: Player[],
+  spec: MatchingSpec,
   maxMatches: number,
 ): [competing: Player[], paused: Player[]] => {
   // Step 1: Group players by their group number
@@ -243,61 +330,108 @@ const partitionBalanced = (
 
   const numberOfGroups = playersByGroup.size;
 
-  // Only support 2 or 4 groups with balancing
-  // - Single group: no balancing needed, use simple partition logic
-  // - 3 groups: not supported (would require 3 courts minimum and 12 players per match)
-  // - 5+ groups: not supported (adds complexity without clear use case)
+  // Single group: no balancing needed
   if (numberOfGroups === 1) {
-    // Single group - no balancing needed, use simple partition
     return partitionSimple(players, maxMatches);
   }
+
+  // Only 2 or 4 groups are supported with balancing
   if (numberOfGroups !== 2 && numberOfGroups !== 4) {
     return [[], players]; // Everyone paused
   }
 
-  // Step 2: Determine required multiple per group
-  // - 2 groups: need 2 players per group (min 4 total for 1 match)
-  // - 4 groups: need 1 player per group (min 4 total for 1 match)
-  const multipleRequired = numberOfGroups === 2 ? 2 : 1;
+  const multipleRequired = computeMultipleRequired(spec);
+  const allowUnequalGroups = multipleRequired === PLAYERS_PER_MATCH;
 
-  // Step 3: Find max players per group (as a multiple)
-  let playersPerGroup = Infinity;
-  for (const groupPlayers of playersByGroup.values()) {
-    const maxFromThisGroup = Math.floor(groupPlayers.length / multipleRequired) * multipleRequired;
-    playersPerGroup = Math.min(playersPerGroup, maxFromThisGroup);
+  // Ordered list of group IDs for stable iteration
+  const groupIds = Array.from(playersByGroup.keys());
+
+  // Max players per group snapped down to the required multiple
+  const maxPerGroup = new Map<number, number>();
+  for (const [groupId, groupPlayers] of playersByGroup) {
+    maxPerGroup.set(groupId, Math.floor(groupPlayers.length / multipleRequired) * multipleRequired);
   }
 
-  // Step 4: Apply maxMatches constraint
-  const maxTotalPlayers = maxMatches * PLAYERS_PER_MATCH;
-  const maxPlayersPerGroupFromCourts =
-    Math.floor(maxTotalPlayers / numberOfGroups / multipleRequired) * multipleRequired;
-  playersPerGroup = Math.min(playersPerGroup, maxPlayersPerGroupFromCourts);
+  if (allowUnequalGroups) {
+    // SAME+SAME: unequal group sizes are valid since every match is self-contained
+    // within one group. Distribute courts fairly by giving more to the group that has
+    // played proportionally less (lower average playRatio).
 
-  // Step 5: If playersPerGroup is 0 or invalid, everyone paused
-  if (!isFinite(playersPerGroup) || playersPerGroup <= 0) {
-    return [[], players];
+    // Total competing players, capped by courts. Both totalMaxFromGroups (sum of
+    // multiples of 4) and totalMaxFromCourts (maxMatches * 4) are already multiples
+    // of 4, so no extra snap is needed.
+    const totalMaxFromGroups = groupIds.reduce((s, id) => s + maxPerGroup.get(id)!, 0);
+    const totalMaxFromCourts = maxMatches * PLAYERS_PER_MATCH;
+    const totalCompeting = Math.min(totalMaxFromGroups, totalMaxFromCourts);
+
+    if (totalCompeting <= 0) {
+      return [[], players];
+    }
+
+    // Sort groups by ASCENDING average playRatio so the recursive search tries
+    // low-ratio groups first. Since findGroupDistribution increments groups in
+    // round-robin order starting from the first entry, the first group fills up
+    // to its max first, naturally giving the larger share to the group that has
+    // played less.
+    const avgPlayRatio = (groupId: number) => {
+      const groupPlayers = playersByGroup.get(groupId)!;
+      return groupPlayers.reduce((s, p) => s + playRatio(p), 0) / groupPlayers.length;
+    };
+    const sortedGroupIds = groupIds.toSorted((a, b) => avgPlayRatio(a) - avgPlayRatio(b));
+
+    // Build flat arrays indexed by sorted position for findGroupDistribution
+    const maxArray = sortedGroupIds.map(id => maxPerGroup.get(id)!);
+
+    const distribution = findGroupDistribution(
+      { max: maxArray, multipleOf: PLAYERS_PER_MATCH, sum: totalCompeting },
+      [],
+    );
+
+    if (distribution === null) {
+      return [[], players];
+    }
+
+    // Select players within each group according to the distribution
+    const competing: Player[] = [];
+    const paused: Player[] = [];
+    for (let i = 0; i < sortedGroupIds.length; i++) {
+      const groupId = sortedGroupIds[i];
+      const count = distribution[i] ?? 0;
+      const [c, p] = selectFromGroup(playersByGroup.get(groupId)!, count);
+      competing.push(...c);
+      paused.push(...p);
+    }
+    return [competing, paused];
+
+  } else {
+    // Equal-group modes (SAME+CROSS, PAIRED+SAME, PAIRED+CROSS):
+    // every match requires the same number of players from each group,
+    // so all groups must contribute exactly the same amount.
+
+    // Find the minimum max across all groups (bottlenecked by the smallest group)
+    let playersPerGroup = Infinity;
+    for (const max of maxPerGroup.values()) {
+      playersPerGroup = Math.min(playersPerGroup, max);
+    }
+
+    // Apply maxMatches constraint (divide courts equally among groups)
+    const maxFromCourts =
+      Math.floor(maxMatches * PLAYERS_PER_MATCH / numberOfGroups / multipleRequired) * multipleRequired;
+    playersPerGroup = Math.min(playersPerGroup, maxFromCourts);
+
+    if (!isFinite(playersPerGroup) || playersPerGroup <= 0) {
+      return [[], players];
+    }
+
+    const competing: Player[] = [];
+    const paused: Player[] = [];
+    for (const [_groupId, groupPlayers] of playersByGroup) {
+      const [c, p] = selectFromGroup(groupPlayers, playersPerGroup);
+      competing.push(...c);
+      paused.push(...p);
+    }
+    return [competing, paused];
   }
-
-  // Step 6: Select players from each group by playRatio
-  const competing: Player[] = [];
-  const paused: Player[] = [];
-
-  for (const groupPlayers of playersByGroup.values()) {
-    // Sort by playRatio (ascending), then by lastPause (descending)
-    const sorted = groupPlayers.toSorted((p, q) => {
-      const ratioP = playRatio(p);
-      const ratioQ = playRatio(q);
-      if (ratioP !== ratioQ) {
-        return ratioP - ratioQ; // Lower ratio first (played less)
-      }
-      return q.lastPause - p.lastPause; // Paused longer ago first
-    });
-
-    competing.push(...sorted.slice(0, playersPerGroup));
-    paused.push(...sorted.slice(playersPerGroup));
-  }
-
-  return [competing, paused];
 };
 
 /**
@@ -407,7 +541,7 @@ export const partitionPlayers = (
   const effectiveMaxMatches = maxMatches ? maxMatches : Math.floor(players.length / 4);
 
   const [competing, paused] = spec.balanceGroups
-    ? partitionBalanced(players, effectiveMaxMatches)
+    ? partitionBalanced(players, spec, effectiveMaxMatches)
     : !usesGroupFactors(spec)
       ? partitionSimple(players, effectiveMaxMatches)
       : partitionGroupAware(players, effectiveMaxMatches);

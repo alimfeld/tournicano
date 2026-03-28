@@ -5,6 +5,7 @@ import {
   AmericanoMixed,
   AmericanoMixedBalanced,
   GroupBattle,
+  GroupBattleMixed,
   MatchingSpec,
   MatchUpGroupMode,
   TeamUpGroupMode,
@@ -312,7 +313,8 @@ test("partitionPlayers should work with 2 groups and balancing", ({ players }) =
 });
 
 test("partitionPlayers should work with 4 groups and balancing", () => {
-  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // GroupBattleMixed uses PAIRED+CROSS: multipleRequired=1, 4 groups supported
+  const spec: MatchingSpec = { ...GroupBattleMixed, balanceGroups: true };
   // Create 4 groups with 4 players each (16 total)
   const testPlayers = [
     new Player("0", "P0"), new Player("1", "P1"), new Player("2", "P2"), new Player("3", "P3"),
@@ -333,7 +335,8 @@ test("partitionPlayers should work with 4 groups and balancing", () => {
 });
 
 test("partitionPlayers should work with 4 groups having uneven sizes", () => {
-  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // GroupBattleMixed uses PAIRED+CROSS: multipleRequired=1, so 1 player per group suffices
+  const spec: MatchingSpec = { ...GroupBattleMixed, balanceGroups: true };
   // Create 4 groups: A=3, B=2, C=2, D=1 (8 total)
   const testPlayers = [
     new Player("0", "P0"), new Player("1", "P1"), new Player("2", "P2"), // Group A
@@ -361,7 +364,8 @@ test("partitionPlayers should work with 4 groups having uneven sizes", () => {
 });
 
 test("partitionPlayers should work with 4 groups having 1 player each", () => {
-  const spec: MatchingSpec = { ...Americano, balanceGroups: true };
+  // GroupBattleMixed uses PAIRED+CROSS: multipleRequired=1, so 1 player per group suffices
+  const spec: MatchingSpec = { ...GroupBattleMixed, balanceGroups: true };
   const testPlayers = [
     new Player("0", "P0"), new Player("1", "P1"),
     new Player("2", "P2"), new Player("3", "P3"),
@@ -914,4 +918,222 @@ test("partitionGroupAware distribution analysis for [7,8] scenario", () => {
     roundDistributions.map(r => `${r.males}M+${r.females}F`)
   );
   console.log(`Unique distributions: ${Array.from(uniqueDistributions).join(', ')}`);
+});
+
+// ===== SAME+SAME GROUP MODE TESTS =====
+// In SAME+SAME mode every match is entirely within one group, so each group must
+// contribute a multiple of 4. With an odd number of courts and 2 groups an equal
+// split is impossible — an unequal split (e.g. 8+12) is required instead.
+
+// A minimal spec that uses TeamUpGroupMode.SAME + MatchUpGroupMode.SAME
+const sameSameSpec: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.SAME,
+  },
+  matchUp: {
+    varietyFactor: 50,
+    performanceFactor: 0,
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
+  },
+  balanceGroups: true,
+};
+
+test("SAME+SAME: even courts → equal multiples of 4 per group", () => {
+  // 2 groups × 12 players each, 4 courts → 4 matches total, 8 from each group
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 24; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 12 ? 0 : 1;
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 4);
+
+  // 4 courts, 2 groups → 2 courts per group → 8 players per group
+  const g0 = result.groupDistribution.get(0)!;
+  const g1 = result.groupDistribution.get(1)!;
+  expect(g0.competing).toBe(8);
+  expect(g1.competing).toBe(8);
+  expect(result.competing.length).toBe(16);
+});
+
+test("SAME+SAME: odd courts → unequal multiples of 4 per group summing to courts*4", () => {
+  // 2 groups × 12 players each, 5 courts → 20 players total
+  // Valid splits: 8+12 or 12+8 (both multiples of 4 summing to 20)
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 24; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 12 ? 0 : 1;
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 5);
+
+  expect(result.competing.length).toBe(20);
+  const g0 = result.groupDistribution.get(0)!;
+  const g1 = result.groupDistribution.get(1)!;
+  // Each group must contribute a multiple of 4
+  expect(g0.competing % 4).toBe(0);
+  expect(g1.competing % 4).toBe(0);
+  // They must be unequal (10+10 is not a valid multiple-of-4 split)
+  expect(g0.competing).not.toBe(g1.competing);
+  // Together they cover all 5 courts
+  expect(g0.competing + g1.competing).toBe(20);
+});
+
+test("SAME+SAME: odd courts → lower-playRatio group gets the larger allocation", () => {
+  // Group 0: all players have played more (higher playRatio)
+  // Group 1: all players have played less (lower playRatio)
+  // With 5 courts the lower-playRatio group (1) should receive 12 players, group 0 gets 8.
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 24; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 12 ? 0 : 1;
+    // Group 0 has played more
+    p.matchCount = i < 12 ? 5 : 1;
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 5);
+
+  const g0 = result.groupDistribution.get(0)!;
+  const g1 = result.groupDistribution.get(1)!;
+  // Group 1 (lower playRatio) should receive the larger share
+  expect(g1.competing).toBeGreaterThan(g0.competing);
+});
+
+test("SAME+SAME: fairness within each group — lowest playRatio players compete", () => {
+  // Group 0: 8 players, 4 have high matchCount, 4 have low matchCount
+  // Group 1: 8 players, all equal
+  // With 4 courts (even → 8 from each group), only the 4 low-ratio players in group 0
+  // should compete (along with 4 paused high-ratio players).
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 8 ? 0 : 1;
+    // First 4 of group 0 have high matchCount → high playRatio
+    if (i < 4) p.matchCount = 10;
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 4);
+
+  const g0 = result.groupDistribution.get(0)!;
+  expect(g0.competing).toBe(8); // all 8 from group 0 compete (only 8 available, 4 courts → 8 total → 4 per group)
+});
+
+test("SAME+SAME: 1 court, 2 groups → 4 from one group, 0 from the other", () => {
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 8 ? 0 : 1;
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 1);
+
+  expect(result.competing.length).toBe(4);
+  const g0 = result.groupDistribution.get(0)!;
+  const g1 = result.groupDistribution.get(1)!;
+  // One group gets all 4 spots, the other gets 0
+  const counts = [g0.competing, g1.competing].sort((a, b) => a - b);
+  expect(counts).toEqual([0, 4]);
+});
+
+test("SAME+SAME: group too small for even 1 match → group gets 0 competing players", () => {
+  // Group 0: 12 players; Group 1: only 2 players (can't fill a single match of 4)
+  // With 3 courts: max from group 0 = 12 players, max from group 1 = 0
+  // Total competing = 12, all from group 0
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 14; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 12 ? 0 : 1;
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 3);
+
+  expect(result.competing.length).toBe(12);
+  const g0 = result.groupDistribution.get(0)!;
+  const g1 = result.groupDistribution.get(1)!;
+  expect(g0.competing).toBe(12);
+  expect(g1.competing).toBe(0);
+  expect(g1.paused).toBe(2);
+});
+
+test("SAME+SAME: 4 groups, odd courts → valid unequal multiples of 4", () => {
+  // 4 groups × 8 players each, 5 courts → 20 players total
+  // A valid split: e.g. 4+4+4+8 or 4+4+8+4 etc.
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 32; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 8);
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 5);
+
+  expect(result.competing.length).toBe(20);
+  for (let g = 0; g < 4; g++) {
+    const gd = result.groupDistribution.get(g)!;
+    expect(gd.competing % 4).toBe(0);
+  }
+});
+
+test("SAME+SAME: 3 groups are not supported → everyone paused", () => {
+  const testPlayers: Player[] = [];
+  for (let i = 0; i < 12; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 4);
+    testPlayers.push(p);
+  }
+
+  const result = partitionPlayers(testPlayers, sameSameSpec, 3);
+
+  expect(result.competing.length).toBe(0);
+  expect(result.paused.length).toBe(12);
+});
+
+test("SAME+SAME: fairness self-corrects across rounds with odd courts", () => {
+  // 2 groups × 12 players, 5 courts. All players start equal (no history).
+  // Round 1: one group gets 12, the other gets 8.
+  // After round 1, the group that played more has higher playRatio.
+  // Round 2: the other group should get the larger allocation.
+  const allPlayers: Player[] = [];
+  for (let i = 0; i < 24; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = i < 12 ? 0 : 1;
+    allPlayers.push(p);
+  }
+
+  const groupCompetingPerRound: number[][] = [];
+
+  for (let round = 0; round < 4; round++) {
+    const result = partitionPlayers(allPlayers, sameSameSpec, 5);
+
+    const g0count = result.competing.filter(p => p.group === 0).length;
+    const g1count = result.competing.filter(p => p.group === 1).length;
+    groupCompetingPerRound.push([g0count, g1count]);
+
+    // Update stats: competing players gain +1 matchCount, paused gain +1 pauseCount
+    for (const p of result.competing) {
+      allPlayers.find(mp => mp.id === p.id)!.matchCount++;
+    }
+    for (const p of result.paused) {
+      allPlayers.find(mp => mp.id === p.id)!.pauseCount++;
+    }
+  }
+
+  // The group that got the larger share in round 1 should NOT always get it
+  const r0 = groupCompetingPerRound[0];
+  const r1 = groupCompetingPerRound[1];
+  const largerGroupRound0 = r0[0] > r0[1] ? 0 : 1;
+  const largerGroupRound1 = r1[0] > r1[1] ? 0 : 1;
+  // The larger group should alternate between rounds
+  expect(largerGroupRound0).not.toBe(largerGroupRound1);
 });

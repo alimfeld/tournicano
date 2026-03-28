@@ -343,7 +343,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
               }),
               "Balance groups"
             ),
-            m("small", "Equal player counts from each group will be selected for every round.")
+            m("small", "Players are selected each round so that group constraints can be satisfied (equal counts per group for most modes, multiples of 4 per group for same-group-only matches).")
           ),
         ),
 
