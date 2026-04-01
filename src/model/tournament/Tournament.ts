@@ -190,6 +190,7 @@ export interface Tournament {
   activatePlayers(players: Player[], active: boolean): number;
   toggleActivePlayers(players: Player[]): OperationResult;
   movePlayers(players: Player[], group: number): number;
+  assignGroupsByStandings(groups: 2 | 4, extraPlayerInLastGroup?: boolean): number;
   deletePlayers(players: Player[]): number;
   createRound(spec?: MatchingSpec, maxMatches?: number): Round;
   getNextRoundInfo(spec?: MatchingSpec, maxMatches?: number): RoundInfo;

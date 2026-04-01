@@ -369,6 +369,53 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     return players.length;
   }
 
+  assignGroupsByStandings(groups: 2 | 4, extraPlayerInLastGroup: boolean = false): number {
+    const lastRound = this.rounds[this.rounds.length - 1];
+    if (!lastRound) {
+      return 0;
+    }
+
+    const ranked = lastRound.standings();
+    const n = ranked.length;
+    if (n === 0) {
+      return 0;
+    }
+
+    // Distribute players into `groups` buckets by rank order.
+    // Base size per group; remainder (n % groups) groups get one extra player.
+    const baseSize = Math.floor(n / groups);
+    const remainder = n % groups;
+
+    // Build array of group sizes
+    const sizes: number[] = [];
+    for (let g = 0; g < groups; g++) {
+      sizes.push(baseSize);
+    }
+    if (remainder > 0) {
+      // Extra player(s) go to last group when extraPlayerInLastGroup=true, otherwise first group
+      const targetGroup = extraPlayerInLastGroup ? groups - 1 : 0;
+      sizes[targetGroup] += remainder;
+    }
+
+    // Assign players to groups according to sizes
+    let playerIndex = 0;
+    let totalAssigned = 0;
+    for (let g = 0; g < groups; g++) {
+      const groupPlayers: Player[] = [];
+      for (let i = 0; i < sizes[g]; i++) {
+        const participatingPlayer = ranked[playerIndex++].player;
+        const player = this.getPlayer(participatingPlayer.id);
+        if (player) {
+          groupPlayers.push(player);
+        }
+      }
+      this.movePlayers(groupPlayers, g);
+      totalAssigned += groupPlayers.length;
+    }
+
+    return totalAssigned;
+  }
+
   deletePlayers(players: Player[]): number {
     let count = 0;
     players.forEach((player) => {

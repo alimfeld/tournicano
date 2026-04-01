@@ -650,3 +650,138 @@ validationTest("validateConfiguration with insufficient players", ({ tournament 
   // With < 4 players, no group mismatch warning should appear
   expect(warnings).toEqual([]);
 });
+
+vitest("assignGroupsByStandings - no rounds returns 0", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
+
+  const assigned = tournament.assignGroupsByStandings(2);
+  expect(assigned).toBe(0);
+  // All players remain in group 0 (default)
+  tournament.players().forEach(p => expect(p.group).toBe(0));
+});
+
+vitest("assignGroupsByStandings - no scores submitted returns 0", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
+  tournament.createRound(Americano);
+  // No scores submitted — standings() returns empty array
+
+  const assigned = tournament.assignGroupsByStandings(2);
+  expect(assigned).toBe(0);
+});
+
+vitest("assignGroupsByStandings - even split into 2 groups", () => {
+  const tournament = tournamentFactory.create();
+  // 8 players: P0..P7
+  tournament.addPlayers(["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]);
+
+  // Create a round and submit scores so all players have standings
+  const round = tournament.createRound(Americano, 2);
+  round.matches.forEach((match, i) => {
+    // Give team A a clear win with escalating scores to spread plus/minus
+    match.submitScore([21 - i, 0]);
+  });
+
+  const assigned = tournament.assignGroupsByStandings(2);
+  expect(assigned).toBe(8);
+
+  // Top 4 ranked players → group 0; bottom 4 → group 1
+  const lastRound = tournament.rounds[tournament.rounds.length - 1];
+  const ranked = lastRound.standings();
+  expect(ranked).toHaveLength(8);
+
+  ranked.slice(0, 4).forEach(({ player }) => {
+    const p = tournament.getPlayer(player.id)!;
+    expect(p.group).toBe(0);
+  });
+  ranked.slice(4, 8).forEach(({ player }) => {
+    const p = tournament.getPlayer(player.id)!;
+    expect(p.group).toBe(1);
+  });
+});
+
+vitest("assignGroupsByStandings - even split into 4 groups", () => {
+  const tournament = tournamentFactory.create();
+  tournament.addPlayers(["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]);
+
+  const round = tournament.createRound(Americano, 2);
+  round.matches.forEach((match, i) => {
+    match.submitScore([21 - i, 0]);
+  });
+
+  const assigned = tournament.assignGroupsByStandings(4);
+  expect(assigned).toBe(8);
+
+  const lastRound = tournament.rounds[tournament.rounds.length - 1];
+  const ranked = lastRound.standings();
+  expect(ranked).toHaveLength(8);
+
+  // Each group should contain exactly 2 players
+  [0, 1, 2, 3].forEach(group => {
+    ranked.slice(group * 2, group * 2 + 2).forEach(({ player }) => {
+      const p = tournament.getPlayer(player.id)!;
+      expect(p.group).toBe(group);
+    });
+  });
+});
+
+vitest("assignGroupsByStandings - odd split extra player in first group (default)", () => {
+  const tournament = tournamentFactory.create();
+  // 9 players → split into 2: first group gets 5, second gets 4
+  tournament.addPlayers(["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"]);
+
+  // Run 2 rounds so all 9 players get standings (each round benches 1, rotating)
+  const round1 = tournament.createRound(Americano);
+  round1.matches.forEach((match, i) => match.submitScore([21 - i, 0]));
+  const round2 = tournament.createRound(Americano);
+  round2.matches.forEach((match, i) => match.submitScore([21 - i, 0]));
+
+  const lastRound = tournament.rounds[tournament.rounds.length - 1];
+  const ranked = lastRound.standings();
+  expect(ranked).toHaveLength(9);
+
+  const assigned = tournament.assignGroupsByStandings(2, false);
+  expect(assigned).toBe(9);
+
+  // Top 5 → group 0
+  ranked.slice(0, 5).forEach(({ player }) => {
+    const p = tournament.getPlayer(player.id)!;
+    expect(p.group).toBe(0);
+  });
+  // Bottom 4 → group 1
+  ranked.slice(5, 9).forEach(({ player }) => {
+    const p = tournament.getPlayer(player.id)!;
+    expect(p.group).toBe(1);
+  });
+});
+
+vitest("assignGroupsByStandings - odd split extra player in last group", () => {
+  const tournament = tournamentFactory.create();
+  // 9 players → split into 2: first group gets 4, second gets 5
+  tournament.addPlayers(["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"]);
+
+  // Run 2 rounds so all 9 players get standings (each round benches 1, rotating)
+  const round1 = tournament.createRound(Americano);
+  round1.matches.forEach((match, i) => match.submitScore([21 - i, 0]));
+  const round2 = tournament.createRound(Americano);
+  round2.matches.forEach((match, i) => match.submitScore([21 - i, 0]));
+
+  const lastRound = tournament.rounds[tournament.rounds.length - 1];
+  const ranked = lastRound.standings();
+  expect(ranked).toHaveLength(9);
+
+  const assigned = tournament.assignGroupsByStandings(2, true);
+  expect(assigned).toBe(9);
+
+  // Top 4 → group 0
+  ranked.slice(0, 4).forEach(({ player }) => {
+    const p = tournament.getPlayer(player.id)!;
+    expect(p.group).toBe(0);
+  });
+  // Bottom 5 → group 1
+  ranked.slice(4, 9).forEach(({ player }) => {
+    const p = tournament.getPlayer(player.id)!;
+    expect(p.group).toBe(1);
+  });
+});

@@ -8,15 +8,18 @@ import { Header, HeaderAction } from "./Header.ts";
 import { GroupSymbol } from "./GroupSymbol.ts";
 import { GroupFilter } from "./GroupFilter.ts";
 import { ParticipatingPlayerModal } from "./ParticipatingPlayerModal.ts";
+import { SplitGroupsModal } from "./SplitGroupsModal.ts";
 import { appContext } from "../Layout.ts";
 
 interface StandingsState {
   selectedPlayer?: ParticipatingPlayer;
+  showSplitModal: boolean;
 }
 
 export const StandingsPage: m.Component<{}, StandingsState> = {
   oninit: ({ state }) => {
     state.selectedPlayer = undefined;
+    state.showSplitModal = false;
   },
   view: ({ state }) => {
     const { state: appState, showToast, changeRound, changeStandingsFilters } = appContext;
@@ -123,6 +126,12 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
             // If user cancelled, don't show any message
           }
         },
+      },
+      {
+        icon: "÷",
+        label: "Split into Groups",
+        disabled: roundCount === 0 || standings.length === 0,
+        onclick: () => { state.showSplitModal = true; }
       },
     ];
 
@@ -282,6 +291,12 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
       state.selectedPlayer ? m(ParticipatingPlayerModal, {
         player: state.selectedPlayer,
         onClose: closePlayerModal
+      }) : null,
+      // Split groups modal (conditionally rendered)
+      state.showSplitModal ? m(SplitGroupsModal, {
+        tournament,
+        onClose: () => { state.showSplitModal = false; },
+        showToast,
       }) : null,
     ];
   },
