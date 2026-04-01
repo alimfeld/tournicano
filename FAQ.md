@@ -185,6 +185,29 @@ The Standings page includes a toggle (👥) to switch between individual player 
 - **Team view:** Shows combined stats for each team pair
 - Team standings display both partners' names and the team's total wins, losses, and points
 
+### How do I run a multi-stage tournament (qualification + group play)?
+
+**Overview:** Tournicano supports two-phase formats where you run an open qualification round, then split players into groups for a second competitive phase.
+
+**Phase 1 — Qualification:**
+Use any rotating mode (Americano, Mexicano, Tournicano) with all players in a single group. Run as many rounds as needed.
+
+**Phase 2 — Split into groups:**
+1. Go to the **Standings page**
+2. Tap the **÷ icon** in the header
+3. Choose 2 or 4 groups and confirm
+4. Players are automatically assigned to groups by their current rank (top players → Group A, etc.)
+
+**Phase 3 — Group play:**
+Change the matching mode (Settings) to one of the **Groups** presets:
+- **Americano Groups** — max rotation, within-group only
+- **Mexicano Groups** — skill-based, within-group only
+- **Tournicano Groups** — variety + competition, within-group only
+
+Create new rounds — all pairings will stay within groups.
+
+**Note:** Stats are cumulative across all phases. Players not yet in any round are ignored by the split.
+
 ### Why does Americano Mixed use Variety 50 instead of 100?
 
 **Short answer:** Group constraints compete with variety. Setting variety to 50
