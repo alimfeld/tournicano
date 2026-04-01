@@ -1,6 +1,7 @@
 import m from "mithril";
 import {
   Americano,
+  AmericanoGroups,
   AmericanoMixed,
   AmericanoMixedBalanced,
   TeamAmericano,
@@ -8,6 +9,7 @@ import {
   GroupBattleMixed,
   matchingSpecEquals,
   Mexicano,
+  MexicanoGroups,
   TeamMexicano,
   Tournicano,
   TournicanoGroups,
@@ -43,6 +45,8 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
     const isTeamMexicano = isMatchingSpecMode(settings.matchingSpec, TeamMexicano);
     const isTournicano = isMatchingSpecMode(settings.matchingSpec, Tournicano);
     const isTournicanoGroups = isMatchingSpecMode(settings.matchingSpec, TournicanoGroups);
+    const isAmericanoGroups = isMatchingSpecMode(settings.matchingSpec, AmericanoGroups);
+    const isMexicanoGroups = isMatchingSpecMode(settings.matchingSpec, MexicanoGroups);
     const isGroupBattle = isMatchingSpecMode(settings.matchingSpec, GroupBattle);
     const isGroupBattleMixed = isMatchingSpecMode(settings.matchingSpec, GroupBattleMixed);
 
@@ -177,6 +181,18 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             m("input", {
               type: "radio",
               name: "matching-spec",
+              id: "americano-groups",
+              checked: isAmericanoGroups,
+              onchange: () => handleMatchingSpecChange(AmericanoGroups),
+            }),
+            "Americano Groups",
+            m("small", "Americano within groups. Works with 2 or 4 groups."),
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
               id: "team-americano",
               checked: isTeamAmericano,
               onchange: () => handleMatchingSpecChange(TeamAmericano),
@@ -195,6 +211,18 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             }),
             "Mexicano",
             m("small", "Skill-based team formation and competitive balance."),
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
+              id: "mexicano-groups",
+              checked: isMexicanoGroups,
+              onchange: () => handleMatchingSpecChange(MexicanoGroups),
+            }),
+            "Mexicano Groups",
+            m("small", "Mexicano within groups. Works with 2 or 4 groups."),
           ),
           m(
             "label",
@@ -271,6 +299,8 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
                 !isTeamMexicano &&
                 !isTournicano &&
                 !isTournicanoGroups &&
+                !isAmericanoGroups &&
+                !isMexicanoGroups &&
                 !isGroupBattle &&
                 !isGroupBattleMixed,
               disabled: true,

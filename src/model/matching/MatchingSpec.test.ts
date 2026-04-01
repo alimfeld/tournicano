@@ -1,12 +1,14 @@
 import { expect, test } from "vitest";
 import {
   Americano,
+  AmericanoGroups,
   AmericanoMixed,
   GroupBattle,
   GroupBattleMixed,
   MatchingSpec,
   MatchUpGroupMode,
   Mexicano,
+  MexicanoGroups,
   TeamUpGroupMode,
   TeamUpPerformanceMode,
   Tournicano,
@@ -60,6 +62,8 @@ test("matchingSpecEquals should return true for predefined modes", () => {
   expect(matchingSpecEquals(Mexicano, Mexicano)).toBe(true);
   expect(matchingSpecEquals(Tournicano, Tournicano)).toBe(true);
   expect(matchingSpecEquals(TournicanoGroups, TournicanoGroups)).toBe(true);
+  expect(matchingSpecEquals(AmericanoGroups, AmericanoGroups)).toBe(true);
+  expect(matchingSpecEquals(MexicanoGroups, MexicanoGroups)).toBe(true);
 });
 
 test("matchingSpecEquals should return false when teamUp.varietyFactor differs", () => {
@@ -148,6 +152,8 @@ test("matchingSpecEquals should distinguish between different predefined modes",
   expect(matchingSpecEquals(Americano, AmericanoMixed)).toBe(false);
   expect(matchingSpecEquals(Mexicano, Tournicano)).toBe(false);
   expect(matchingSpecEquals(Tournicano, TournicanoGroups)).toBe(false);
+  expect(matchingSpecEquals(TournicanoGroups, AmericanoGroups)).toBe(false);
+  expect(matchingSpecEquals(AmericanoGroups, MexicanoGroups)).toBe(false);
   expect(matchingSpecEquals(GroupBattle, GroupBattleMixed)).toBe(false);
 });
 
