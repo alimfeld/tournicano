@@ -63,7 +63,7 @@ export const AmericanoMixed: MatchingSpec = {
     groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
-    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
+    varietyFactor: 40, // SAME mode: must be < 50, since mixed vs non-mixed scores 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     groupFactor: 100,
     groupMode: MatchUpGroupMode.SAME,
@@ -79,7 +79,7 @@ export const AmericanoMixedBalanced: MatchingSpec = {
     groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
-    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
+    varietyFactor: 40, // SAME mode: must be < 50, since mixed vs non-mixed scores 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     groupFactor: 100,
     groupMode: MatchUpGroupMode.SAME,
