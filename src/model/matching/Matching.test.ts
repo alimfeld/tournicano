@@ -644,6 +644,92 @@ test("should prevent cross-pair violations over multiple rounds with 4 groups", 
   }
 });
 
+test("should prevent group violations over multiple rounds in GroupBattle", () => {
+  // Create 16 players in 2 groups: 0,1
+  const allPlayers = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 8); // 8 players per group
+    allPlayers.push(p);
+  }
+
+  // Simulate 5 rounds - teammates must be from the same group, opponents from different groups
+  for (let round = 0; round < 5; round++) {
+    const [matches, _paused] = matching(allPlayers, GroupBattle, round, 4);
+
+    matches.forEach((match) => {
+      // Team up: same group
+      match.forEach((team) => {
+        expect(team[0].group).toBe(team[1].group);
+      });
+      // Match up: different groups (CROSS)
+      expect(match[0][0].group).not.toBe(match[1][0].group);
+    });
+
+    // Update player stats after each round
+    matches.forEach((match) => {
+      match.forEach((team) => {
+        team.forEach((player) => {
+          const partner = team[0].id === player.id ? team[1] : team[0];
+          const partnerRounds = player.partners.get(partner.id) || [];
+          partnerRounds.push(round);
+          player.partners.set(partner.id, partnerRounds);
+          const opponentTeam = match[0] === team ? match[1] : match[0];
+          opponentTeam.forEach((opponent) => {
+            const oppRounds = player.opponents.get(opponent.id) || [];
+            oppRounds.push(round);
+            player.opponents.set(opponent.id, oppRounds);
+          });
+        });
+      });
+    });
+  }
+});
+
+test("should prevent group violations over multiple rounds in GroupBattleMixed", () => {
+  // 16 players: groups 0+1 are Side 1, groups 2+3 are Side 2
+  // Valid teams: group 0 + group 1, or group 2 + group 3
+  const allPlayers = [];
+  for (let i = 0; i < 16; i++) {
+    const p = new Player(`${i}`, `Player${i}`);
+    p.group = Math.floor(i / 4); // 4 players per group
+    allPlayers.push(p);
+  }
+
+  // Simulate 5 rounds
+  for (let round = 0; round < 5; round++) {
+    const [matches, _paused] = matching(allPlayers, GroupBattleMixed, round, 4);
+
+    matches.forEach((match) => {
+      match.forEach((team) => {
+        const groupDiff = Math.abs(team[0].group - team[1].group);
+        const sameBlock = Math.floor(team[0].group / 2) === Math.floor(team[1].group / 2);
+        const pairOffset = Math.abs((team[0].group % 2) - (team[1].group % 2));
+        const isValidPair = groupDiff === 1 && pairOffset === 1 && sameBlock;
+        expect(isValidPair).toBe(true);
+      });
+    });
+
+    // Update player stats after each round
+    matches.forEach((match) => {
+      match.forEach((team) => {
+        team.forEach((player) => {
+          const partner = team[0].id === player.id ? team[1] : team[0];
+          const partnerRounds = player.partners.get(partner.id) || [];
+          partnerRounds.push(round);
+          player.partners.set(partner.id, partnerRounds);
+          const opponentTeam = match[0] === team ? match[1] : match[0];
+          opponentTeam.forEach((opponent) => {
+            const oppRounds = player.opponents.get(opponent.id) || [];
+            oppRounds.push(round);
+            player.opponents.set(opponent.id, oppRounds);
+          });
+        });
+      });
+    });
+  }
+});
+
 test("should support TournicanoGroups mode with 2 groups of 4", ({ players }) => {
   // Group 0: players 0-3, Group 1: players 4-7
   for (let i = 0; i < 4; i++) players[i].group = 0;

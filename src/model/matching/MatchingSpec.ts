@@ -56,14 +56,14 @@ export const Americano: MatchingSpec = {
 
 export const AmericanoMixed: MatchingSpec = {
   teamUp: {
-    varietyFactor: 50,
+    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 100,
     groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
-    varietyFactor: 50,
+    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     groupFactor: 100,
     groupMode: MatchUpGroupMode.SAME,
@@ -72,14 +72,14 @@ export const AmericanoMixed: MatchingSpec = {
 
 export const AmericanoMixedBalanced: MatchingSpec = {
   teamUp: {
-    varietyFactor: 50,
+    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE,
     groupFactor: 100,
     groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
-    varietyFactor: 50,
+    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     groupFactor: 100,
     groupMode: MatchUpGroupMode.SAME,
@@ -190,14 +190,14 @@ export const MexicanoGroups: MatchingSpec = {
 
 export const GroupBattle: MatchingSpec = {
   teamUp: {
-    varietyFactor: 50,
+    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE,
     groupFactor: 100,
     groupMode: TeamUpGroupMode.SAME,
   },
   matchUp: {
-    varietyFactor: 50,
+    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
     performanceFactor: 0,
     groupFactor: 100,
     groupMode: MatchUpGroupMode.CROSS,
@@ -207,14 +207,14 @@ export const GroupBattle: MatchingSpec = {
 
 export const GroupBattleMixed: MatchingSpec = {
   teamUp: {
-    varietyFactor: 50,
+    varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
     performanceFactor: 0,
     performanceMode: TeamUpPerformanceMode.AVERAGE,
     groupFactor: 100,
     groupMode: TeamUpGroupMode.PAIRED,
   },
   matchUp: {
-    varietyFactor: 50,
+    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
     performanceFactor: 0,
     groupFactor: 100,
     groupMode: MatchUpGroupMode.CROSS,

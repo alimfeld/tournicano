@@ -208,17 +208,22 @@ Create new rounds — all pairings will stay within groups.
 
 **Note:** Stats are cumulative across all phases. Players not yet in any round are ignored by the split.
 
-### Why does Americano Mixed use Variety 50 instead of 100?
+### How are group constraints enforced in group-based modes?
 
-**Short answer:** Group constraints compete with variety. Setting variety to 50
-ensures group rules are enforced first (groupFactor: 100) while still
-maximizing variety within those constraints.
+In group-based modes, the algorithm scores every possible pairing and picks the best overall combination. Group rules are enforced by giving group-correct pairings a much higher score than group-incorrect ones — high enough that no amount of variety or performance pressure can override them.
 
-**Technical explanation:**
-- Regular Americano: variety=100, no group constraints
-- Americano Mixed: variety=50, group=100 (paired groups)
-- If both were 100, the algorithm couldn't prioritize → unpredictable results
-- At 50, you still get excellent variety with guaranteed group mixing
+The required margin depends on the mode:
+
+- **Regular group modes** (Americano Groups, Mexicano Groups, Tournicano Groups, Group Battle): a wrong pairing scores 0, so variety just needs to be below 100. These modes use `variety=90` or `performance=90`.
+- **Mixed group modes** (Americano Mixed, Group Battle Mixed): teams must pair across specific groups (e.g. men with women). Here, a same-group pairing scores 50 — not 0 — so variety must also stay below 50. These modes use `variety=40`.
+
+**Examples:**
+- **Americano Groups / Group Battle:** `variety=90, group=100` — group always wins
+- **Mexicano Groups:** `performance=90, group=100` — group always wins
+- **Tournicano Groups:** `variety=60, performance=30, group=100` — group always wins (60+30=90 < 100)
+- **Americano Mixed / Group Battle Mixed:** `variety=40, group=100` — group always wins (40 < 50)
+
+The Tournicano Groups split of 60/30 mirrors the regular Tournicano ratio of variety=100/performance=50, keeping the same balance between partner rotation and skill-based matchups.
 
 ---
 
