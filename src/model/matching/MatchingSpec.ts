@@ -137,6 +137,23 @@ export const Tournicano: MatchingSpec = {
   },
 };
 
+export const TournicanoGroups: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 60,
+    performanceFactor: 30, // 60 + 30 = 90 < 100 → groupFactor always dominates
+    performanceMode: TeamUpPerformanceMode.EQUAL,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.SAME,
+  },
+  matchUp: {
+    varietyFactor: 0,
+    performanceFactor: 90, // 90 < 100 → groupFactor always dominates
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
+  },
+  balanceGroups: true,
+};
+
 export const GroupBattle: MatchingSpec = {
   teamUp: {
     varietyFactor: 50,
@@ -180,6 +197,7 @@ const PREDEFINED_MODES = [
   { name: "Mexicano", spec: Mexicano },
   { name: "Team Mexicano", spec: TeamMexicano },
   { name: "Tournicano", spec: Tournicano },
+  { name: "Tournicano Groups", spec: TournicanoGroups },
   { name: "Group Battle", spec: GroupBattle },
   { name: "Group Battle Mixed", spec: GroupBattleMixed },
 ] as const;

@@ -11,6 +11,7 @@ import {
   TeamUpGroupMode,
   TeamUpPerformanceMode,
   Tournicano,
+  TournicanoGroups,
 } from "./MatchingSpec.ts";
 import { matching } from "./Matching.ts";
 
@@ -639,5 +640,30 @@ test("should prevent cross-pair violations over multiple rounds with 4 groups", 
       });
     });
   }
+});
+
+test("should support TournicanoGroups mode with 2 groups of 4", ({ players }) => {
+  // Group 0: players 0-3, Group 1: players 4-7
+  for (let i = 0; i < 4; i++) players[i].group = 0;
+  for (let i = 4; i < 8; i++) players[i].group = 1;
+
+  const [matches, paused] = matching(players.slice(0, 8), TournicanoGroups, 0, 2);
+
+  expect(paused).toHaveLength(0);
+  expect(matches).toHaveLength(2);
+
+  // Team up: teammates must be from the same group
+  matches.forEach(match => {
+    match.forEach(team => {
+      expect(team[0].group).toBe(team[1].group);
+    });
+  });
+
+  // Match up: both teams in each match must be from the same group (SAME mode)
+  matches.forEach(match => {
+    const group0 = match[0][0].group;
+    const group1 = match[1][0].group;
+    expect(group0).toBe(group1);
+  });
 });
 

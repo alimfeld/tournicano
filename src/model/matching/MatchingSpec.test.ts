@@ -10,6 +10,7 @@ import {
   TeamUpGroupMode,
   TeamUpPerformanceMode,
   Tournicano,
+  TournicanoGroups,
   matchingSpecEquals,
 } from "./MatchingSpec.ts";
 
@@ -58,6 +59,7 @@ test("matchingSpecEquals should return true for predefined modes", () => {
   expect(matchingSpecEquals(Americano, Americano)).toBe(true);
   expect(matchingSpecEquals(Mexicano, Mexicano)).toBe(true);
   expect(matchingSpecEquals(Tournicano, Tournicano)).toBe(true);
+  expect(matchingSpecEquals(TournicanoGroups, TournicanoGroups)).toBe(true);
 });
 
 test("matchingSpecEquals should return false when teamUp.varietyFactor differs", () => {
@@ -145,6 +147,7 @@ test("matchingSpecEquals should distinguish between different predefined modes",
   expect(matchingSpecEquals(Americano, Mexicano)).toBe(false);
   expect(matchingSpecEquals(Americano, AmericanoMixed)).toBe(false);
   expect(matchingSpecEquals(Mexicano, Tournicano)).toBe(false);
+  expect(matchingSpecEquals(Tournicano, TournicanoGroups)).toBe(false);
   expect(matchingSpecEquals(GroupBattle, GroupBattleMixed)).toBe(false);
 });
 

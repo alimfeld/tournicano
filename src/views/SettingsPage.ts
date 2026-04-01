@@ -10,6 +10,7 @@ import {
   Mexicano,
   TeamMexicano,
   Tournicano,
+  TournicanoGroups,
   isMatchingSpecMode,
 } from "../model/matching/MatchingSpec.ts";
 import { MatchingSpecModal } from "./MatchingSpecModal.ts";
@@ -41,6 +42,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
     const isMexicano = isMatchingSpecMode(settings.matchingSpec, Mexicano);
     const isTeamMexicano = isMatchingSpecMode(settings.matchingSpec, TeamMexicano);
     const isTournicano = isMatchingSpecMode(settings.matchingSpec, Tournicano);
+    const isTournicanoGroups = isMatchingSpecMode(settings.matchingSpec, TournicanoGroups);
     const isGroupBattle = isMatchingSpecMode(settings.matchingSpec, GroupBattle);
     const isGroupBattleMixed = isMatchingSpecMode(settings.matchingSpec, GroupBattleMixed);
 
@@ -223,6 +225,18 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             m("input", {
               type: "radio",
               name: "matching-spec",
+              id: "tournicano-groups",
+              checked: isTournicanoGroups,
+              onchange: () => handleMatchingSpecChange(TournicanoGroups),
+            }),
+            "Tournicano Groups",
+            m("small", "Tournicano within groups. Works with 2 or 4 groups."),
+          ),
+          m(
+            "label",
+            m("input", {
+              type: "radio",
+              name: "matching-spec",
               id: "group-battle",
               checked: isGroupBattle,
               onchange: () => handleMatchingSpecChange(GroupBattle),
@@ -256,6 +270,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
                 !isMexicano &&
                 !isTeamMexicano &&
                 !isTournicano &&
+                !isTournicanoGroups &&
                 !isGroupBattle &&
                 !isGroupBattleMixed,
               disabled: true,
