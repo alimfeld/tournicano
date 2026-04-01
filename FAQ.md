@@ -130,18 +130,25 @@ The algorithm uses **maximum weighted graph matching** with three factors:
 **Priority order:**
 1. **Play ratio** - Players who've played less get priority
 2. **Last pause time** - Tiebreaker for equal play ratios
-3. **Group balancing** (if enabled) - Equal participation per group
+3. **Group balancing** (if enabled) - Fair participation across groups
 4. **Court limit** - Max players = courts × 4
 
 ### What is "Group Balancing"?
 
-Ensures equal participation from each group per round.
+Ensures fair participation across groups. The exact behaviour depends on the mode:
+
+**Modes where every match stays within one group** (Americano/Mexicano/Tournicano Groups): groups don't need to contribute equally each round. The algorithm gives more courts to whichever group has played less, evening things out over time.
+
+**Example (5 courts, 12 players from A + 12 from B):**
+- Some rounds: 12 from A play (3 courts), 8 from B play (2 courts)
+- Other rounds: 8 from A play (2 courts), 12 from B play (3 courts)
+- The algorithm alternates the larger share to keep overall play time equal
+
+**Modes where matches cross groups** (Americano Mixed Balanced, Group Battle modes): equal numbers from each group must play every round.
 
 **Example (2 courts, 12 players: 6 from A, 6 from B):**
-- Without balancing: Could be 7 from A, 1 from B
-- With balancing: Guaranteed 4 from A, 4 from B
-
-Active in: Americano Mixed Balanced, Group Battle modes
+- Without balancing: Could be 7 from A, 1 from B on court
+- With balancing: Guaranteed 4 from A, 4 from B every round
 
 ---
 
