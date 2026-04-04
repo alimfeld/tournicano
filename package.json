@@ -10,7 +10,8 @@
     "test": "vitest",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
-    "simulate": "npx vitest run --reporter=verbose src/simulate.test.ts"
+    "//simulate": "Run all simulations, or target one by name: npm run simulate -- matching  |  npm run simulate -- two-stage",
+    "simulate": "npx vitest run --reporter=verbose --config vitest.simulate.config.ts"
   },
   "dependencies": {
     "@dicebear/collection": "^9.2.4",

@@ -13,11 +13,13 @@
  *   - Standings accuracy: Spearman rank correlation between skill order and final standings
  *   - Rank convergence: how many rounds until standings reach target correlation
  *
- * Usage: npm run simulate
+ * Usage:
+ *   npm run simulate               (run all simulations)
+ *   npm run simulate -- matching   (run this file only)
  */
 
 import { test } from "vitest";
-import { tournamentFactory } from "./model/tournament/Tournament.impl.ts";
+import { tournamentFactory } from "../model/tournament/Tournament.impl.ts";
 import {
   MatchingSpec,
   TeamUpPerformanceMode,
@@ -25,8 +27,16 @@ import {
   MatchUpGroupMode,
   Americano,
   Mexicano,
-} from "./model/matching/MatchingSpec.ts";
-import { Tournament, ParticipatingPlayer, Score } from "./model/tournament/Tournament.ts";
+} from "../model/matching/MatchingSpec.ts";
+import {
+  assignSkills,
+  generateScore,
+  spearmanCorrelation,
+  analyzePartnerVariety,
+  analyzeMatchCompetitiveness,
+  printSeparator,
+  pad,
+} from "./simulate-utils.ts";
 
 // ============================================================================
 // Simulation configuration
@@ -189,136 +199,7 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
   },
 ];
 
-// ============================================================================
-// Skill model and score generation
-// ============================================================================
 
-/**
- * Assign skill levels 1..N to players in the tournament.
- * Player index 0 = weakest (skill 1), player index N-1 = strongest (skill N).
- * Returns a map: playerId -> skill (1..N)
- */
-function assignSkills(tournament: Tournament): Map<string, number> {
-  const players = tournament.players();
-  const skills = new Map<string, number>();
-  players.forEach((player, i) => {
-    skills.set(player.id, i + 1); // skill 1..N
-  });
-  return skills;
-}
-
-/**
- * Generate a deterministic score based on combined skill difference.
- * Winner gets 11 points. Loser gets max(0, 11 - diff).
- * teamA wins if its combined skill >= teamB combined skill.
- * Returns [teamA score, teamB score].
- */
-function generateScore(
-  teamASkill: number,
-  teamBSkill: number,
-): Score {
-  const diff = teamASkill - teamBSkill;
-  if (diff >= 0) {
-    // Team A wins or draws
-    const loserScore = Math.max(0, 11 - diff);
-    return [11, loserScore];
-  } else {
-    // Team B wins
-    const loserScore = Math.max(0, 11 + diff); // diff is negative
-    return [loserScore, 11];
-  }
-}
-
-// ============================================================================
-// Metric computation
-// ============================================================================
-
-/**
- * Spearman rank correlation between skill ranking and tournament standings.
- *
- * skillOrderDesc: player IDs sorted strongest-first (index 0 = best player)
- * standingOrderDesc: player IDs sorted by tournament standing, best-first (index 0 = rank 1)
- *
- * Both arrays use the same ordering convention: index 0 = rank 1 (best).
- * Returns value in [-1, 1]. 1 = perfect correlation.
- */
-function spearmanCorrelation(skillOrderDesc: string[], standingOrderDesc: string[]): number {
-  const n = skillOrderDesc.length;
-  if (n < 2) return 1;
-
-  // Build skill rank map: index 0 = rank 1 (best), index N-1 = rank N (worst)
-  const skillRankMap = new Map<string, number>();
-  skillOrderDesc.forEach((playerId, i) => {
-    skillRankMap.set(playerId, i + 1);
-  });
-
-  let dSquaredSum = 0;
-  standingOrderDesc.forEach((playerId, i) => {
-    const skillRank = skillRankMap.get(playerId) ?? 0;
-    const standingRank = i + 1;
-    const d = skillRank - standingRank;
-    dSquaredSum += d * d;
-  });
-
-  return 1 - (6 * dSquaredSum) / (n * (n * n - 1));
-}
-
-/**
- * Analyze partner variety: unique partner rate and max repeat count
- */
-function analyzePartnerVariety(players: ParticipatingPlayer[]): {
-  uniqueRate: number;
-  maxRepeats: number;
-} {
-  const partnerCounts = new Map<string, number>();
-  players.forEach((p) => {
-    p.partners.forEach((rounds, partnerId) => {
-      const pairKey = [p.id, partnerId].sort().join("-");
-      partnerCounts.set(pairKey, rounds.length);
-    });
-  });
-
-  const counts = Array.from(partnerCounts.values());
-  if (counts.length === 0) return { uniqueRate: 1, maxRepeats: 0 };
-
-  const uniqueCount = counts.filter((c) => c === 1).length;
-  const uniqueRate = uniqueCount / counts.length;
-  const maxRepeats = Math.max(...counts);
-  return { uniqueRate, maxRepeats };
-}
-
-/**
- * Analyze match competitiveness:
- * For each match, compute absolute difference in combined plusMinus between teams.
- * Returns average across all matches and rounds.
- *
- * We track this per-round by looking at the round's matches directly.
- * Since scores are submitted deterministically, we can compute on the fly.
- */
-function analyzeMatchCompetitiveness(
-  rounds: Array<Array<{ teamACombinedSkill: number; teamBCombinedSkill: number }>>,
-): {
-  avgSkillDiff: number;
-  pctBalancedMatches: number; // % of matches where skill diff <= 2
-} {
-  let totalDiff = 0;
-  let balancedCount = 0;
-  let totalMatches = 0;
-
-  for (const round of rounds) {
-    for (const match of round) {
-      const diff = Math.abs(match.teamACombinedSkill - match.teamBCombinedSkill);
-      totalDiff += diff;
-      if (diff <= 2) balancedCount++;
-      totalMatches++;
-    }
-  }
-
-  return {
-    avgSkillDiff: totalMatches > 0 ? totalDiff / totalMatches : 0,
-    pctBalancedMatches: totalMatches > 0 ? balancedCount / totalMatches : 0,
-  };
-}
 
 // ============================================================================
 // Simulation runner
@@ -464,15 +345,6 @@ function aggregateResults(specName: string, results: RunResult[]): AggregatedRes
 // ============================================================================
 // Output formatting
 // ============================================================================
-
-function printSeparator(width: number) {
-  console.log("─".repeat(width));
-}
-
-function pad(str: string, width: number, align: "left" | "right" = "left"): string {
-  if (align === "right") return str.padStart(width);
-  return str.padEnd(width);
-}
 
 function printResultsTable(results: AggregatedResult[], scenario: Scenario) {
   const { playerCount, courts, rounds, runsPerSpec } = scenario;
