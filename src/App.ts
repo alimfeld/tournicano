@@ -6,6 +6,7 @@ import { tournamentFactory } from "./model/tournament/Tournament.impl.ts";
 import { settingsFactory } from "./model/settings/Settings.impl.ts";
 import { debounce } from "./model/core/Util.ts";
 import { registerSW } from "virtual:pwa-register";
+import { setAvatarSpec } from "./views/AvatarCache.ts";
 
 const SETTINGS_KEY = "settings";
 const TOURNAMENT_KEY = "tournament";
@@ -101,12 +102,15 @@ const createState: () => State = () => {
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
+  // avatar spec is synced to the avatar cache
+  setAvatarSpec(state.settings.avatarSpec);
   return state;
 };
 
 const debouncedSettingsSave = debounce((settings: Settings) => {
   localStorage.setItem(SETTINGS_KEY, settings.serialize());
   syncTheme(settings.theme);
+  setAvatarSpec(settings.avatarSpec);
 }, 500);
 
 const settingsListener: SettingsListener = {

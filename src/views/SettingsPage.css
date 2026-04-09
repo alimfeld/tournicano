@@ -1,6 +1,7 @@
 /* Indent small descriptions under matching radio buttons to align with label text */
 
-fieldset.matching small {
+fieldset.matching small,
+fieldset.avatars small {
   width: auto;
   margin-left: 1.75rem;
   margin-top: calc(var(--pico-spacing) * 0.25);

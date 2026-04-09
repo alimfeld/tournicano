@@ -1,5 +1,6 @@
 import { Mutable } from "../core/Mutable.ts";
 import {
+  AvatarSpec,
   Settings,
   SettingsData,
   SettingsFactory,
@@ -20,6 +21,7 @@ class SettingsImpl implements Mutable<Settings> {
   theme: Theme = "auto";
   wakeLock: boolean = false;
   matchingSpec: MatchingSpec = Americano;
+  avatarSpec: AvatarSpec = "bottts";
 
   constructor(serialized?: string) {
     if (serialized) {
@@ -28,6 +30,7 @@ class SettingsImpl implements Mutable<Settings> {
       this.theme = data.theme;
       this.wakeLock = data.wakeLock;
       this.matchingSpec = data.matchingSpec;
+      this.avatarSpec = data.avatarSpec ?? "bottts";
     }
   }
 
@@ -37,6 +40,7 @@ class SettingsImpl implements Mutable<Settings> {
       theme: this.theme,
       wakeLock: this.wakeLock,
       matchingSpec: this.matchingSpec,
+      avatarSpec: this.avatarSpec,
     } as SettingsData);
   }
 
@@ -57,6 +61,11 @@ class SettingsImpl implements Mutable<Settings> {
 
   setMatchingSpec(matchingSpec: MatchingSpec): void {
     this.matchingSpec = matchingSpec;
+    this.notifyChange();
+  }
+
+  setAvatarSpec(spec: AvatarSpec): void {
+    this.avatarSpec = spec;
     this.notifyChange();
   }
 

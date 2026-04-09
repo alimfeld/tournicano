@@ -53,7 +53,6 @@ section.filter-section {
 .avatar-cell img {
   width: var(--player-list-avatar-size);
   height: var(--player-list-avatar-size);
-  border-radius: 50%;
   display: block;
 }
 

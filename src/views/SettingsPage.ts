@@ -19,7 +19,32 @@ import { MatchingSpecModal } from "./MatchingSpecModal.ts";
 import { BUILD_VERSION } from "../version.ts";
 import { Header } from "./Header.ts";
 import { appContext } from "../Layout.ts";
+import { AvatarSpec } from "../model/settings/Settings.ts";
 import "./SettingsPage.css";
+
+interface AvatarSpecOption {
+  id: AvatarSpec;
+  name: string;
+  description: string;
+}
+
+const AVATAR_SPECS: AvatarSpecOption[] = [
+  {
+    id: "bottts-clean",
+    name: "Bottts Clean",
+    description: "Robots with curated set of styles.",
+  },
+  {
+    id: "bottts",
+    name: "Bottts Original",
+    description: "Original robot avatars.",
+  },
+  {
+    id: "bottts-neutral",
+    name: "Bottts Neutral",
+    description: "Robots with clean geometric shape.",
+  },
+];
 
 interface SettingsPageState {
   showMatchingSpecModal: boolean;
@@ -347,6 +372,27 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             },
           }),
           m("label", { htmlFor: "light" }, "Light"),
+        ),
+        m("hr"),
+        m("h2", "Avatars"),
+        m(
+          "fieldset.avatars",
+          AVATAR_SPECS.map(({ id, name, description }) =>
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "avatar-spec",
+                id: `avatar-spec-${id}`,
+                checked: settings.avatarSpec === id,
+                onchange: () => {
+                  settings.setAvatarSpec(id);
+                },
+              }),
+              name,
+              m("small", description),
+            )
+          ),
         ),
         m("hr"),
         m("h2", "Version"),
