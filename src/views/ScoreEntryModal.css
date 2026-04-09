@@ -1,5 +1,15 @@
 /* ScoreEntryModal component - score entry keyboard in bottom-aligned dialog */
 
+/* Hidden input that captures physical keyboard events */
+dialog.score-entry-modal input.keyboard-capture {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* Dialog positioning - bottom-aligned, full-width */
 dialog.score-entry-modal {
   display: flex;
@@ -34,11 +44,6 @@ dialog.score-entry-modal div.action-row {
   gap: var(--pico-spacing);
 }
 
-dialog.score-entry-modal section.keyboard button.clear {
-  background: var(--pico-form-element-invalid-focus-color);
-  border-color: var(--pico-form-element-invalid-border-color);
-}
-
 dialog.score-entry-modal section.keyboard button.accept {
   background: var(--pico-form-element-valid-focus-color);
   border-color: var(--pico-form-element-valid-border-color);
@@ -47,6 +52,33 @@ dialog.score-entry-modal section.keyboard button.accept {
 dialog.score-entry-modal section.keyboard button.backspace {
   background: var(--pico-form-element-invalid-focus-color);
   border-color: var(--pico-form-element-invalid-border-color);
+}
+
+/* Score span styled as a focused input field in the modal */
+dialog.score-entry-modal section.vs span.score {
+  border: var(--pico-border-width) solid var(--pico-form-element-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
+  background: var(--pico-form-element-background-color);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 var(--pico-outline-width) var(--pico-form-element-focus-color);
+}
+
+dialog.score-entry-modal section.vs span.score::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 1em;
+  border-left: 1px solid currentColor;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 /* Button press feedback */

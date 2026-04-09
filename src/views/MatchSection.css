@@ -1,18 +1,10 @@
 /* MatchSection component - shared layout for match display */
 
-h2.match {
-  text-align: center;
-  margin: 0;
-}
-
 section.match {
   width: 100%;
   display: grid;
   column-gap: var(--pico-spacing);
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-section.match {
   border-bottom: var(--pico-border-width) solid;
   border-color: var(--pico-muted-border-color);
 }
@@ -33,25 +25,27 @@ section.vs {
   align-items: center;
 }
 
-section.vs button.score {
+section.vs small.match {
   text-align: center;
-  width: 100%;
+  border: var(--pico-border-width) solid var(--pico-form-element-border-color);
+  border-radius: 999px;
+  padding: 0.1em 0.5em;
+  line-height: 1.4;
 }
 
-section.vs button.score.invalid {
-  border-color: var(--pico-form-element-invalid-border-color);
-  color: var(--pico-form-element-color);
-}
-
-section.vs button.score.valid {
+section.vs small.match.valid {
+  color: var(--pico-form-element-valid-border-color);
   border-color: var(--pico-form-element-valid-border-color);
-  color: var(--pico-form-element-color);
 }
 
-/* Score display in display mode */
-section.vs input.score-text {
+section.vs.interactive {
+  cursor: pointer;
+  border-radius: var(--pico-border-radius);
+  border: var(--pico-border-width) dashed var(--pico-muted-border-color);
+}
+
+section.vs span.score {
   text-align: center;
-  margin-bottom: 0;
 }
 
 @media (min-width: 768px) {

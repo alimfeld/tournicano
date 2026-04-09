@@ -344,9 +344,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 roundIndex,
                 match,
                 matchIndex,
-                mode: state.switchMode?.active ? "display" : "interactive",
-                showRoundIndex: fullscreen,
-                openScoreEntry,
+                matchLabel: fullscreen ? `R${roundIndex + 1}-M${matchIndex + 1}` : `M${matchIndex + 1}`,
+                openScoreEntry: state.switchMode?.active ? undefined : openScoreEntry,
                 openPlayerModal: handlePlayerClick,
                 playerCardClass: (player: ParticipatingPlayer) => getPlayerCardClass(player),
                 playerBadge: (player: ParticipatingPlayer) => getPlayerBadge(player)

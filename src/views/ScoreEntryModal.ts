@@ -1,6 +1,5 @@
 import m from "mithril";
 import "./ScoreEntryModal.css";
-import "./MatchSection.css";
 import { MatchSection } from "./MatchSection.ts";
 import { Match, Score } from "../model/tournament/Tournament.ts";
 import { Modal } from "./Modal.ts";
@@ -74,12 +73,35 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
       onClose();
     };
 
-    const cancel = () => {
-      onClose();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle numeric keys 0-9
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        addDigit(e.key);
+      }
+      // Handle colon or spacebar
+      else if (e.key === ':' || e.key === ' ') {
+        e.preventDefault();
+        addColon();
+      }
+      // Handle backspace
+      else if (e.key === 'Backspace') {
+        e.preventDefault();
+        backspace();
+      }
+      // Handle Enter to submit
+      else if (e.key === 'Enter' && isValid) {
+        e.preventDefault();
+        accept();
+      }
+      // Handle Escape to cancel
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
     };
 
-    // Format score display using Score module
-    const formatScore = () => formatScoreDisplay(state.scoreInput);
+    const scoreDisplay = formatScoreDisplay(state.scoreInput);
 
     // Determine button states using validation
     const validation = validateScoreInput(state.scoreInput);
@@ -90,47 +112,28 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
 
     return m(Modal, { onClose, className: 'score-entry-modal' },
       m("article",
+        // Hidden input to capture physical keyboard events
+        m("input.keyboard-capture", {
+          type: "text",
+          value: scoreDisplay,
+          readonly: true,
+          tabindex: 0,
+          onkeydown: handleKeyDown,
+          oncreate: (vnode) => {
+            (vnode.dom as HTMLElement).focus();
+          },
+        }),
         m(MatchSection, {
           roundIndex,
           match,
           matchIndex,
-          mode: "display",
-          showRoundIndex: true,
-          displayScore: formatScore(),
-          autoFocus: true,
-          onKeyDown: (e: KeyboardEvent) => {
-            // Handle numeric keys 0-9
-            if (/^[0-9]$/.test(e.key)) {
-              e.preventDefault();
-              addDigit(e.key);
-            }
-            // Handle colon or spacebar
-            else if (e.key === ':' || e.key === ' ') {
-              e.preventDefault();
-              addColon();
-            }
-            // Handle backspace
-            else if (e.key === 'Backspace') {
-              e.preventDefault();
-              backspace();
-            }
-            // Handle Enter to submit
-            else if (e.key === 'Enter' && isValid) {
-              e.preventDefault();
-              accept();
-            }
-            // Handle Escape to cancel
-            else if (e.key === 'Escape') {
-              e.preventDefault();
-              cancel();
-            }
-          }
+          scoreDisplay,
         }),
 
         m("section.keyboard", [
           // Row 0: Actions (Cancel and Submit at 50% each)
           m("div.action-row", [
-            m("button.secondary", { onclick: cancel }, "Cancel"),
+            m("button.secondary", { onclick: onClose }, "Cancel"),
             m(
               "button.accept",
               {

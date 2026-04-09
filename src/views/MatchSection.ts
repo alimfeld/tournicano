@@ -8,18 +8,14 @@ export interface MatchSectionAttrs {
   match: Match;
   matchIndex: number;
 
-  // Mode toggle
-  mode?: "interactive" | "display";  // Default: "interactive"
-  showRoundIndex?: boolean;  // Control title format (replaces fullscreen)
+  matchLabel?: string;
 
-  // Interactive mode only
+  // Interactive mode (score entry triggered by tapping the vs section)
   openScoreEntry?: (roundIndex: number, matchIndex: number, match: Match) => void;
   openPlayerModal?: (player: ParticipatingPlayer) => void;
 
-  // Display mode only
-  displayScore?: string;  // Override score text in display mode
-  autoFocus?: boolean;  // Auto-focus the score display when mounted
-  onKeyDown?: (e: KeyboardEvent) => void;  // Keyboard event handler
+  // Override displayed score (e.g. live preview during score entry)
+  scoreDisplay?: string;
 
   // Switch mode support
   playerCardClass?: (player: ParticipatingPlayer) => string | undefined;
@@ -27,11 +23,21 @@ export interface MatchSectionAttrs {
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, mode, showRoundIndex, openScoreEntry, openPlayerModal, displayScore, autoFocus, onKeyDown, playerCardClass, playerBadge } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, matchLabel, openScoreEntry, openPlayerModal, scoreDisplay, playerCardClass, playerBadge } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : undefined;
-    const isValid = !!match.score;
+    const displayText = scoreDisplay !== undefined
+      ? scoreDisplay
+      : (scoreString || "--:--");
+    const isInteractive = !!openScoreEntry;
+
+    const winner = match.score
+      ? match.score[0] > match.score[1] ? "A"
+      : match.score[0] < match.score[1] ? "B"
+      : "draw"
+      : undefined;
+
     const renderPlayer = (player: ParticipatingPlayer) => {
       return m(ParticipatingPlayerCard, {
         key: `player-${player.id}`,
@@ -40,7 +46,8 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
         class: playerCardClass?.(player),
         onClick: openPlayerModal ? () => openPlayerModal(player) : undefined
       });
-    }
+    };
+
     const renderTeam = (team: Team) => {
       return m(
         "section.team",
@@ -48,6 +55,7 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
         renderPlayer(team.player2),
       );
     };
+
     return m.fragment({ key: `match-${matchIndex}` },
       [
         m(
@@ -55,25 +63,16 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
           renderTeam(match.teamA),
           m(
             "section.vs",
-            showRoundIndex ?
-              m("h2.match", `R${roundIndex + 1}-M${matchIndex + 1}`) :
-              m("h2.match", `M${matchIndex + 1}`),
-            mode === "display" ?
-              m("input.score-text", {
-                type: "text",
-                value: displayScore ?? scoreString ?? "--:--",
-                tabindex: autoFocus ? 0 : undefined,
-                readonly: true,
-                disabled: !autoFocus,
-                onkeydown: onKeyDown,
-                oncreate: autoFocus ? (vnode) => {
-                  (vnode.dom as HTMLElement).focus();
-                } : undefined
-              }) :
-              m("button.outline.score", {
-                class: isValid ? "valid" : "invalid",
-                onclick: () => openScoreEntry!(roundIndex, matchIndex, match),
-              }, scoreString || "--:--"),
+            {
+              class: isInteractive ? "interactive" : undefined,
+              onclick: isInteractive ? () => openScoreEntry(roundIndex, matchIndex, match) : undefined,
+            },
+            matchLabel ? m("small.match", { class: !scoreDisplay && match.score ? "valid" : undefined },
+              !scoreDisplay && winner === "A" ? `◀ ${matchLabel}` :
+              !scoreDisplay && winner === "B" ? `${matchLabel} ▶` :
+              matchLabel
+            ) : null,
+            m("span.score", displayText),
           ),
           renderTeam(match.teamB),
         ),
