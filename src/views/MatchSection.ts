@@ -20,10 +20,13 @@ export interface MatchSectionAttrs {
   // Switch mode support
   playerCardClass?: (player: ParticipatingPlayer) => string | undefined;
   playerBadge?: (player: ParticipatingPlayer) => string | undefined;
+
+  // Show winner/draw/loser styling on team sections
+  showResult?: boolean;
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, matchLabel, openScoreEntry, openPlayerModal, scoreDisplay, playerCardClass, playerBadge } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, matchLabel, openScoreEntry, openPlayerModal, scoreDisplay, playerCardClass, playerBadge, showResult } }) => {
     const scoreString = match.score
       ? `${match.score[0]}:${match.score[1]}`
       : undefined;
@@ -34,8 +37,8 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
 
     const winner = match.score
       ? match.score[0] > match.score[1] ? "A"
-      : match.score[0] < match.score[1] ? "B"
-      : "draw"
+        : match.score[0] < match.score[1] ? "B"
+          : "draw"
       : undefined;
 
     const renderPlayer = (player: ParticipatingPlayer) => {
@@ -48,9 +51,16 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       });
     };
 
-    const renderTeam = (team: Team) => {
+    const renderTeam = (team: Team, side: "A" | "B") => {
+      const teamClass = showResult
+        ? winner === side ? "winner"
+          : winner === "draw" ? "draw"
+            : winner !== undefined ? "loser"
+              : undefined
+        : undefined;
       return m(
         "section.team",
+        { class: teamClass },
         renderPlayer(team.player1),
         renderPlayer(team.player2),
       );
@@ -60,7 +70,7 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       [
         m(
           "section.match",
-          renderTeam(match.teamA),
+          renderTeam(match.teamA, "A"),
           m(
             "section.vs",
             {
@@ -68,13 +78,11 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
               onclick: isInteractive ? () => openScoreEntry(roundIndex, matchIndex, match) : undefined,
             },
             matchLabel ? m("small.match", { class: !scoreDisplay && match.score ? "valid" : undefined },
-              !scoreDisplay && winner === "A" ? `◀ ${matchLabel}` :
-              !scoreDisplay && winner === "B" ? `${matchLabel} ▶` :
               matchLabel
             ) : null,
             m("span.score", displayText),
           ),
-          renderTeam(match.teamB),
+          renderTeam(match.teamB, "B"),
         ),
       ]);
   },

@@ -50,13 +50,6 @@
   --score-entry-keyboard-max-width: 100%;
 }
 
-[data-theme=dark] {
-  --pico-box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    0.2ex 0.2ex 0.5ex rgba(255, 255, 255, 0.08),
-    0.5ex 0.5ex 1ex rgba(0, 0, 0, 0.9);
-}
-
 /* Apply multiplier to all Pico CSS responsive breakpoints */
 @media (min-width: 576px) {
 

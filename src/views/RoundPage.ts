@@ -348,7 +348,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 openScoreEntry: state.switchMode?.active ? undefined : openScoreEntry,
                 openPlayerModal: handlePlayerClick,
                 playerCardClass: (player: ParticipatingPlayer) => getPlayerCardClass(player),
-                playerBadge: (player: ParticipatingPlayer) => getPlayerBadge(player)
+                playerBadge: (player: ParticipatingPlayer) => getPlayerBadge(player),
+                showResult: true,
               }),
             ),
             round.paused.length > 0 || round.inactive.length > 0
