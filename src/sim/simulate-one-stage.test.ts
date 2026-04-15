@@ -73,8 +73,8 @@ const specs: SpecEntry[] = [
 
 interface RunResult {
   competitiveness: { avgSkillDiff: number; pctBalancedMatches: number };
-  variety: { uniqueRate: number; maxRepeats: number };
-  opponentVariety: { uniqueRate: number; maxRepeats: number };
+  variety: { avgRepeats: number; maxRepeats: number };
+  opponentVariety: { avgRepeats: number; maxRepeats: number };
   correlationsPerRound: number[]; // length = ROUNDS
 }
 
@@ -83,8 +83,8 @@ interface MeanStd { mean: number; std: number }
 interface AveragedSpecResult {
   specName: string;
   competitiveness: { avgSkillDiff: MeanStd; pctBalancedMatches: MeanStd };
-  variety: { uniqueRate: MeanStd; maxRepeats: MeanStd };
-  opponentVariety: { uniqueRate: MeanStd; maxRepeats: MeanStd };
+  variety: { avgRepeats: MeanStd; maxRepeats: MeanStd };
+  opponentVariety: { avgRepeats: MeanStd; maxRepeats: MeanStd };
   correlationsPerRound: MeanStd[]; // length = ROUNDS
 }
 
@@ -169,18 +169,18 @@ function runOnce(spec: MatchingSpec): RunResult {
 function averageRuns(specName: string, runs: RunResult[]): AveragedSpecResult {
   const avgSkillDiffs: number[] = [];
   const pctBalanced: number[] = [];
-  const uniqueRates: number[] = [];
+  const avgRepeats: number[] = [];
   const maxRepeats: number[] = [];
-  const oppUniqueRates: number[] = [];
+  const oppAvgRepeats: number[] = [];
   const oppMaxRepeats: number[] = [];
   const corrsPerRound: number[][] = Array.from({ length: ROUNDS }, () => []);
 
   for (const run of runs) {
     avgSkillDiffs.push(run.competitiveness.avgSkillDiff);
     pctBalanced.push(run.competitiveness.pctBalancedMatches);
-    uniqueRates.push(run.variety.uniqueRate);
+    avgRepeats.push(run.variety.avgRepeats);
     maxRepeats.push(run.variety.maxRepeats);
-    oppUniqueRates.push(run.opponentVariety.uniqueRate);
+    oppAvgRepeats.push(run.opponentVariety.avgRepeats);
     oppMaxRepeats.push(run.opponentVariety.maxRepeats);
     run.correlationsPerRound.forEach((c, i) => corrsPerRound[i].push(c));
   }
@@ -192,11 +192,11 @@ function averageRuns(specName: string, runs: RunResult[]): AveragedSpecResult {
       pctBalancedMatches: meanStd(pctBalanced),
     },
     variety: {
-      uniqueRate: meanStd(uniqueRates),
+      avgRepeats: meanStd(avgRepeats),
       maxRepeats: meanStd(maxRepeats),
     },
     opponentVariety: {
-      uniqueRate: meanStd(oppUniqueRates),
+      avgRepeats: meanStd(oppAvgRepeats),
       maxRepeats: meanStd(oppMaxRepeats),
     },
     correlationsPerRound: corrsPerRound.map(meanStd),
@@ -235,9 +235,9 @@ function printSpecReport(r: AveragedSpecResult): void {
   printSubHeader("METRICS");
   console.log(`  AvgSkillDiff    : ${fmt(r.competitiveness.avgSkillDiff, 2)}`);
   console.log(`  Balanced%       : ${fmtPct(r.competitiveness.pctBalancedMatches)}  (skill diff ≤ 2)`);
-  console.log(`  UniquePartner%  : ${fmtPct(r.variety.uniqueRate)}`);
+  console.log(`  AvgPartRepeats  : ${fmt(r.variety.avgRepeats, 2)}`);
   console.log(`  PartMaxRepeats  : ${fmt(r.variety.maxRepeats, 1)}`);
-  console.log(`  UniqueOpponent% : ${fmtPct(r.opponentVariety.uniqueRate)}`);
+  console.log(`  AvgOppRepeats   : ${fmt(r.opponentVariety.avgRepeats, 2)}`);
   console.log(`  OppMaxRepeats   : ${fmt(r.opponentVariety.maxRepeats, 1)}`);
 
   printSubHeader("Standings Correlation per Round (Spearman mean ± σ)");
@@ -265,8 +265,8 @@ function printSummaryTable(results: AveragedSpecResult[]): void {
     pad("Spec",        COL_SPEC),
     pad("AvgDiff",     COL_N, "right"),
     pad("Balanced%",   COL_N, "right"),
-    pad("UniqPart%",   COL_N, "right"),
-    pad("UniqOpp%",    COL_N, "right"),
+    pad("AvgPartRep",  COL_N, "right"),
+    pad("AvgOppRep",   COL_N, "right"),
     pad("MaxRep",      COL_N, "right"),
     pad(`R${MID_ROUND}Spear`,  COL_N, "right"),
     pad("FinalSpear",  COL_N, "right"),
@@ -281,8 +281,8 @@ function printSummaryTable(results: AveragedSpecResult[]): void {
       pad(r.specName,                                              COL_SPEC),
       pad(r.competitiveness.avgSkillDiff.mean.toFixed(2),          COL_N, "right"),
       pad((r.competitiveness.pctBalancedMatches.mean * 100).toFixed(1) + "%", COL_N, "right"),
-      pad((r.variety.uniqueRate.mean * 100).toFixed(1) + "%",      COL_N, "right"),
-      pad((r.opponentVariety.uniqueRate.mean * 100).toFixed(1) + "%", COL_N, "right"),
+      pad(r.variety.avgRepeats.mean.toFixed(2),                    COL_N, "right"),
+      pad(r.opponentVariety.avgRepeats.mean.toFixed(2),             COL_N, "right"),
       pad(r.variety.maxRepeats.mean.toFixed(1),                    COL_N, "right"),
       pad(midCorr.mean.toFixed(3),                                 COL_N, "right"),
       pad(finalCorr.mean.toFixed(3),                               COL_N, "right"),
@@ -294,8 +294,8 @@ function printSummaryTable(results: AveragedSpecResult[]): void {
   printSubHeader("Column Explanations");
   console.log(`  AvgDiff    : mean absolute combined team skill difference per match (lower = more competitive)`);
   console.log(`  Balanced%  : mean % of matches where skill diff ≤ 2 (higher = more balanced)`);
-  console.log(`  UniqPart%  : mean % of partner pairs that were unique across all rounds (higher = more variety)`);
-  console.log(`  UniqOpp%   : mean % of opponent pairs that were unique across all rounds (higher = more variety)`);
+  console.log(`  AvgPartRep : mean avg times any two players were partners (lower = more variety)`);
+  console.log(`  AvgOppRep  : mean avg times any two players faced each other (lower = more variety)`);
   console.log(`  MaxRep     : mean max times any two players were partners (lower = better variety)`);
   console.log(`  R${MID_ROUND}Spear    : mean Spearman correlation of standings vs true skill at round ${MID_ROUND}`);
   console.log(`  FinalSpear : mean Spearman correlation of standings vs true skill at round ${ROUNDS}`);
@@ -308,9 +308,9 @@ function printSummaryTable(results: AveragedSpecResult[]): void {
 
 function printMetricExplanations(): void {
   printSubHeader("Metric Explanations");
-  console.log("  UniquePartner%  : % of all partner pairs that occurred exactly once (higher = more variety)");
+  console.log("  AvgPartRepeats  : avg times any two players were partners (lower = more variety)");
   console.log("  PartMaxRepeats  : max times any two players were partners (lower = better variety)");
-  console.log("  UniqueOpponent% : % of all opponent pairs that occurred exactly once (higher = more variety)");
+  console.log("  AvgOppRepeats   : avg times any two players faced each other (lower = more variety)");
   console.log("  OppMaxRepeats   : max times any two players faced each other (lower = better variety)");
   console.log("  AvgSkillDiff    : avg absolute combined team skill difference per match (lower = more competitive)");
   console.log("  Balanced%       : % of matches where skill diff ≤ 2 (higher = more balanced)");

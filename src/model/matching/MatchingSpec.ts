@@ -74,7 +74,7 @@ export const AmericanoMixedBalanced: MatchingSpec = {
   teamUp: {
     varietyFactor: 40, // PAIRED mode: must be < 50, since same-group pairs score 50/100 → 40+50=90 < 100
     performanceFactor: 0,
-    performanceMode: TeamUpPerformanceMode.AVERAGE,
+    performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 100,
     groupMode: TeamUpGroupMode.PAIRED,
   },
@@ -124,8 +124,8 @@ export const TeamMexicano: MatchingSpec = {
 export const Tournicano: MatchingSpec = {
   teamUp: {
     varietyFactor: 100,
-    performanceFactor: 50,
-    performanceMode: TeamUpPerformanceMode.EQUAL,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 0,
     groupMode: TeamUpGroupMode.PAIRED, // not relevant
   },
@@ -139,9 +139,9 @@ export const Tournicano: MatchingSpec = {
 
 export const TournicanoGroups: MatchingSpec = {
   teamUp: {
-    varietyFactor: 60,
-    performanceFactor: 30, // 60 + 30 = 90 < 100 → groupFactor always dominates
-    performanceMode: TeamUpPerformanceMode.EQUAL,
+    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
     groupFactor: 100,
     groupMode: TeamUpGroupMode.SAME,
   },

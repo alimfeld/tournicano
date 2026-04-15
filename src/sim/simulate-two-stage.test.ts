@@ -97,8 +97,8 @@ const scenarios: TwoStageScenario[] = stage1Specs.flatMap((s1) =>
 
 interface Stage1Result {
   competitiveness: { avgSkillDiff: number; pctBalancedMatches: number };
-  variety: { uniqueRate: number; maxRepeats: number };
-  opponentVariety: { uniqueRate: number; maxRepeats: number };
+  variety: { avgRepeats: number; maxRepeats: number };
+  opponentVariety: { avgRepeats: number; maxRepeats: number };
   correlations: number[]; // per-round Spearman, length = STAGE1_ROUNDS
 }
 
@@ -110,8 +110,8 @@ interface SplitResult {
 
 interface Stage2Result {
   competitiveness: { avgSkillDiff: number; pctBalancedMatches: number };
-  variety: { uniqueRate: number; maxRepeats: number };
-  opponentVariety: { uniqueRate: number; maxRepeats: number };
+  variety: { avgRepeats: number; maxRepeats: number };
+  opponentVariety: { avgRepeats: number; maxRepeats: number };
   correlations: Array<{ g0: number; g1: number; overall: number }>; // length = STAGE2_ROUNDS
   crossGroupMatchCount: number; // should always be 0
 }
@@ -132,8 +132,8 @@ interface AveragedScenarioResult {
   scenario: TwoStageScenario;
   stage1: {
     competitiveness: { avgSkillDiff: MeanStd; pctBalancedMatches: MeanStd };
-    variety: { uniqueRate: MeanStd; maxRepeats: MeanStd };
-    opponentVariety: { uniqueRate: MeanStd; maxRepeats: MeanStd };
+    variety: { avgRepeats: MeanStd; maxRepeats: MeanStd };
+    opponentVariety: { avgRepeats: MeanStd; maxRepeats: MeanStd };
     correlationsPerRound: MeanStd[]; // length = STAGE1_ROUNDS
   };
   split: {
@@ -143,8 +143,8 @@ interface AveragedScenarioResult {
   };
   stage2: {
     competitiveness: { avgSkillDiff: MeanStd; pctBalancedMatches: MeanStd };
-    variety: { uniqueRate: MeanStd; maxRepeats: MeanStd };
-    opponentVariety: { uniqueRate: MeanStd; maxRepeats: MeanStd };
+    variety: { avgRepeats: MeanStd; maxRepeats: MeanStd };
+    opponentVariety: { avgRepeats: MeanStd; maxRepeats: MeanStd };
     correlationsPerRound: Array<{ g0: MeanStd; g1: MeanStd; overall: MeanStd }>; // length = STAGE2_ROUNDS
     crossGroupMatchCount: MeanStd; // should always be mean=0, std=0
   };
@@ -315,9 +315,9 @@ function averageRuns(scenario: TwoStageScenario, runs: RunResult[]): AveragedSce
 
   const s1AvgSkillDiffs: number[] = [];
   const s1PctBalanced: number[] = [];
-  const s1UniqueRates: number[] = [];
+  const s1AvgRepeats: number[] = [];
   const s1MaxRepeats: number[] = [];
-  const s1OppUniqueRates: number[] = [];
+  const s1OppAvgRepeats: number[] = [];
   const s1OppMaxRepeats: number[] = [];
 
   const splitSpearman: number[] = [];
@@ -326,18 +326,18 @@ function averageRuns(scenario: TwoStageScenario, runs: RunResult[]): AveragedSce
 
   const s2AvgSkillDiffs: number[] = [];
   const s2PctBalanced: number[] = [];
-  const s2UniqueRates: number[] = [];
+  const s2AvgRepeats: number[] = [];
   const s2MaxRepeats: number[] = [];
-  const s2OppUniqueRates: number[] = [];
+  const s2OppAvgRepeats: number[] = [];
   const s2OppMaxRepeats: number[] = [];
   const s2CrossGroupCounts: number[] = [];
 
   for (const run of runs) {
     s1AvgSkillDiffs.push(run.stage1.competitiveness.avgSkillDiff);
     s1PctBalanced.push(run.stage1.competitiveness.pctBalancedMatches);
-    s1UniqueRates.push(run.stage1.variety.uniqueRate);
+    s1AvgRepeats.push(run.stage1.variety.avgRepeats);
     s1MaxRepeats.push(run.stage1.variety.maxRepeats);
-    s1OppUniqueRates.push(run.stage1.opponentVariety.uniqueRate);
+    s1OppAvgRepeats.push(run.stage1.opponentVariety.avgRepeats);
     s1OppMaxRepeats.push(run.stage1.opponentVariety.maxRepeats);
 
     run.stage1.correlations.forEach((c, i) => s1CorrsPerRound[i].push(c));
@@ -348,9 +348,9 @@ function averageRuns(scenario: TwoStageScenario, runs: RunResult[]): AveragedSce
 
     s2AvgSkillDiffs.push(run.stage2.competitiveness.avgSkillDiff);
     s2PctBalanced.push(run.stage2.competitiveness.pctBalancedMatches);
-    s2UniqueRates.push(run.stage2.variety.uniqueRate);
+    s2AvgRepeats.push(run.stage2.variety.avgRepeats);
     s2MaxRepeats.push(run.stage2.variety.maxRepeats);
-    s2OppUniqueRates.push(run.stage2.opponentVariety.uniqueRate);
+    s2OppAvgRepeats.push(run.stage2.opponentVariety.avgRepeats);
     s2OppMaxRepeats.push(run.stage2.opponentVariety.maxRepeats);
     s2CrossGroupCounts.push(run.stage2.crossGroupMatchCount);
 
@@ -369,11 +369,11 @@ function averageRuns(scenario: TwoStageScenario, runs: RunResult[]): AveragedSce
         pctBalancedMatches: meanStd(s1PctBalanced),
       },
       variety: {
-        uniqueRate: meanStd(s1UniqueRates),
+        avgRepeats: meanStd(s1AvgRepeats),
         maxRepeats: meanStd(s1MaxRepeats),
       },
       opponentVariety: {
-        uniqueRate: meanStd(s1OppUniqueRates),
+        avgRepeats: meanStd(s1OppAvgRepeats),
         maxRepeats: meanStd(s1OppMaxRepeats),
       },
       correlationsPerRound: s1CorrsPerRound.map(meanStd),
@@ -389,11 +389,11 @@ function averageRuns(scenario: TwoStageScenario, runs: RunResult[]): AveragedSce
         pctBalancedMatches: meanStd(s2PctBalanced),
       },
       variety: {
-        uniqueRate: meanStd(s2UniqueRates),
+        avgRepeats: meanStd(s2AvgRepeats),
         maxRepeats: meanStd(s2MaxRepeats),
       },
       opponentVariety: {
-        uniqueRate: meanStd(s2OppUniqueRates),
+        avgRepeats: meanStd(s2OppAvgRepeats),
         maxRepeats: meanStd(s2OppMaxRepeats),
       },
       correlationsPerRound: s2CorrsPerRound.map((c) => ({
@@ -443,9 +443,9 @@ function printScenarioReport(r: AveragedScenarioResult): void {
   printSubHeader(`STAGE 1 — ${scenario.stage1Name}`);
   console.log(`  AvgSkillDiff     : ${fmt(stage1.competitiveness.avgSkillDiff, 2)}`);
   console.log(`  Balanced%        : ${fmtPct(stage1.competitiveness.pctBalancedMatches)}  (skill diff ≤ 2)`);
-  console.log(`  UniquePartner%   : ${fmtPct(stage1.variety.uniqueRate)}`);
+  console.log(`  AvgPartRepeats   : ${fmt(stage1.variety.avgRepeats, 2)}`);
   console.log(`  MaxRepeats       : ${fmt(stage1.variety.maxRepeats, 1)}`);
-  console.log(`  UniqueOpponent%  : ${fmtPct(stage1.opponentVariety.uniqueRate)}`);
+  console.log(`  AvgOppRepeats    : ${fmt(stage1.opponentVariety.avgRepeats, 2)}`);
   console.log(`  OppMaxRepeats    : ${fmt(stage1.opponentVariety.maxRepeats, 1)}`);
 
   // --- Stage 1 per-round Spearman ---
@@ -467,9 +467,9 @@ function printScenarioReport(r: AveragedScenarioResult): void {
   printSubHeader(`STAGE 2 — ${scenario.stage2Name}`);
   console.log(`  AvgSkillDiff     : ${fmt(stage2.competitiveness.avgSkillDiff, 2)}`);
   console.log(`  Balanced%        : ${fmtPct(stage2.competitiveness.pctBalancedMatches)}  (skill diff ≤ 2)`);
-  console.log(`  UniquePartner%   : ${fmtPct(stage2.variety.uniqueRate)}`);
+  console.log(`  AvgPartRepeats   : ${fmt(stage2.variety.avgRepeats, 2)}`);
   console.log(`  MaxRepeats       : ${fmt(stage2.variety.maxRepeats, 1)}`);
-  console.log(`  UniqueOpponent%  : ${fmtPct(stage2.opponentVariety.uniqueRate)}`);
+  console.log(`  AvgOppRepeats    : ${fmt(stage2.opponentVariety.avgRepeats, 2)}`);
   console.log(`  OppMaxRepeats    : ${fmt(stage2.opponentVariety.maxRepeats, 1)}`);
   console.log(`  CrossGroupMatches: ${fmt(stage2.crossGroupMatchCount, 1)}  (should always be 0)`);
 
@@ -513,8 +513,8 @@ function printSummaryTable(results: AveragedScenarioResult[]): void {
     pad("S1Spear", COL_N, "right"),
     pad("Split%", COL_N, "right"),
     pad("Misplace", COL_N, "right"),
-    pad("S1Uniq%", COL_N, "right"),
-    pad("S1OppUniq%", COL_N, "right"),
+    pad("S1AvgPartRep", COL_N, "right"),
+    pad("S1AvgOppRep", COL_N, "right"),
     pad("S2Spear", COL_N, "right"),
     pad("S2G0", COL_N, "right"),
     pad("S2G1", COL_N, "right"),
@@ -527,8 +527,8 @@ function printSummaryTable(results: AveragedScenarioResult[]): void {
     const s1Corr = r.split.stage1FinalSpearman.mean;
     const splitPct = r.split.overallAccuracy.mean * 100;
     const misplace = r.split.misplacedCount.mean;
-    const s1Uniq = r.stage1.variety.uniqueRate.mean * 100;
-    const s1OppUniq = r.stage1.opponentVariety.uniqueRate.mean * 100;
+    const s1AvgPartRep = r.stage1.variety.avgRepeats.mean;
+    const s1OppAvgRep = r.stage1.opponentVariety.avgRepeats.mean;
     const lastS2 = r.stage2.correlationsPerRound[r.stage2.correlationsPerRound.length - 1];
 
     if (prevStage1 && prevStage1 !== r.scenario.stage1Name) {
@@ -541,8 +541,8 @@ function printSummaryTable(results: AveragedScenarioResult[]): void {
       pad(s1Corr.toFixed(3), COL_N, "right"),
       pad(splitPct.toFixed(0) + "%", COL_N, "right"),
       pad(misplace.toFixed(1), COL_N, "right"),
-      pad(s1Uniq.toFixed(1) + "%", COL_N, "right"),
-      pad(s1OppUniq.toFixed(1) + "%", COL_N, "right"),
+      pad(s1AvgPartRep.toFixed(2), COL_N, "right"),
+      pad(s1OppAvgRep.toFixed(2), COL_N, "right"),
       pad(lastS2.overall.mean.toFixed(3), COL_N, "right"),
       pad(lastS2.g0.mean.toFixed(3), COL_N, "right"),
       pad(lastS2.g1.mean.toFixed(3), COL_N, "right"),
@@ -555,8 +555,8 @@ function printSummaryTable(results: AveragedScenarioResult[]): void {
   console.log("  S1Spear  : Stage-1 final Spearman mean (overall standings vs true skill)");
   console.log("  Split%   : mean % of players assigned to the correct skill group after Stage 1");
   console.log("  Misplace : mean number of players in the wrong group after the split");
-  console.log("  S1Uniq%  : mean % of Stage-1 partnerships that were unique (variety)");
-  console.log("  S1OppUniq%: mean % of Stage-1 opponents that were unique (opponent variety)");
+  console.log("  S1AvgPartRep: mean avg times any two players were partners in Stage-1 (lower = more variety)");
+  console.log("  S1AvgOppRep: mean avg times any two players faced each other in Stage-1 (lower = more variety)");
   console.log("  S2Spear  : Stage-2 final Spearman mean (overall standings vs true skill)");
   console.log("  S2G0     : Stage-2 final Spearman within Group 0 (top group)");
   console.log("  S2G1     : Stage-2 final Spearman within Group 1 (bottom group)");
@@ -569,9 +569,9 @@ function printSummaryTable(results: AveragedScenarioResult[]): void {
 
 function printMetricExplanations(): void {
   printSubHeader("Metric Explanations");
-  console.log("  UniquePartner%   : % of all partnerships that occurred exactly once (higher = more variety)");
+  console.log("  AvgPartRepeats   : avg times any two players were partners (lower = more variety)");
   console.log("  MaxRepeats       : max times any two players were partners (lower = better variety)");
-  console.log("  UniqueOpponent%  : % of all opponent pairings that occurred exactly once (higher = more variety)");
+  console.log("  AvgOppRepeats    : avg times any two players faced each other (lower = more variety)");
   console.log("  OppMaxRepeats    : max times any two players faced each other (lower = better variety)");
   console.log("  AvgSkillDiff     : avg absolute combined team skill difference per match (lower = more competitive)");
   console.log("  Balanced%        : % of matches where skill diff ≤ 2 (higher = more balanced)");

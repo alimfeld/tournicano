@@ -98,10 +98,11 @@ export function spearmanCorrelation(skillOrderDesc: string[], standingOrderDesc:
 }
 
 /**
- * Analyze partner variety: unique partner rate and max repeat count.
+ * Analyze partner variety: avg repeat count and max repeat count.
+ * Lower avgRepeats means more variety (each partner is played with fewer times on average).
  */
 export function analyzePartnerVariety(players: ParticipatingPlayer[]): {
-  uniqueRate: number;
+  avgRepeats: number;
   maxRepeats: number;
 } {
   const partnerCounts = new Map<string, number>();
@@ -113,20 +114,19 @@ export function analyzePartnerVariety(players: ParticipatingPlayer[]): {
   });
 
   const counts = Array.from(partnerCounts.values());
-  if (counts.length === 0) return { uniqueRate: 1, maxRepeats: 0 };
+  if (counts.length === 0) return { avgRepeats: 0, maxRepeats: 0 };
 
-  const uniqueCount = counts.filter((c) => c === 1).length;
-  const uniqueRate = uniqueCount / counts.length;
+  const avgRepeats = counts.reduce((s, v) => s + v, 0) / counts.length;
   const maxRepeats = Math.max(...counts);
-  return { uniqueRate, maxRepeats };
+  return { avgRepeats, maxRepeats };
 }
 
 /**
- * Analyze opponent variety: unique opponent pair rate and max repeat count.
- * A pair of opponents is the set of two players on the opposing team in a match.
+ * Analyze opponent variety: avg repeat count and max repeat count.
+ * Lower avgRepeats means more variety (each opponent is faced fewer times on average).
  */
 export function analyzeOpponentVariety(players: ParticipatingPlayer[]): {
-  uniqueRate: number;
+  avgRepeats: number;
   maxRepeats: number;
 } {
   const opponentCounts = new Map<string, number>();
@@ -138,12 +138,11 @@ export function analyzeOpponentVariety(players: ParticipatingPlayer[]): {
   });
 
   const counts = Array.from(opponentCounts.values());
-  if (counts.length === 0) return { uniqueRate: 1, maxRepeats: 0 };
+  if (counts.length === 0) return { avgRepeats: 0, maxRepeats: 0 };
 
-  const uniqueCount = counts.filter((c) => c === 1).length;
-  const uniqueRate = uniqueCount / counts.length;
+  const avgRepeats = counts.reduce((s, v) => s + v, 0) / counts.length;
   const maxRepeats = Math.max(...counts);
-  return { uniqueRate, maxRepeats };
+  return { avgRepeats, maxRepeats };
 }
 
 /**

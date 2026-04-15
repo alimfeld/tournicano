@@ -33,6 +33,7 @@ import {
   generateScore,
   spearmanCorrelation,
   analyzePartnerVariety,
+  analyzeOpponentVariety,
   analyzeMatchCompetitiveness,
   printSeparator,
   pad,
@@ -50,10 +51,11 @@ interface Scenario {
 }
 
 const scenarios: Scenario[] = [
-  { playerCount:  8, courts: 2, rounds:  7, runsPerSpec: 50 },
+  { playerCount: 8, courts: 2, rounds: 7, runsPerSpec: 50 },
   { playerCount: 12, courts: 3, rounds: 11, runsPerSpec: 40 },
   { playerCount: 16, courts: 4, rounds: 15, runsPerSpec: 30 },
   { playerCount: 20, courts: 5, rounds: 19, runsPerSpec: 30 },
+  { playerCount: 30, courts: 5, rounds: 20, runsPerSpec: 30 },
 ];
 
 const CONVERGENCE_TARGET = 0.8; // Spearman correlation threshold for "converged"
@@ -72,7 +74,7 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
     spec: Mexicano,
   },
   {
-    name: "Tournicano (teamPerf=0)",
+    name: "100/0 - 0/100",
     spec: {
       teamUp: {
         varietyFactor: 100,
@@ -90,7 +92,7 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
     },
   },
   {
-    name: "Tournicano (teamPerf=50/EQUAL)",
+    name: "100/50 - 0/100",
     spec: {
       teamUp: {
         varietyFactor: 100,
@@ -108,43 +110,7 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
     },
   },
   {
-    name: "Tournicano (teamPerf=50/AVERAGE)",
-    spec: {
-      teamUp: {
-        varietyFactor: 100,
-        performanceFactor: 50,
-        performanceMode: TeamUpPerformanceMode.AVERAGE,
-        groupFactor: 0,
-        groupMode: TeamUpGroupMode.PAIRED,
-      },
-      matchUp: {
-        varietyFactor: 0,
-        performanceFactor: 100,
-        groupFactor: 0,
-        groupMode: MatchUpGroupMode.SAME,
-      },
-    },
-  },
-  {
-    name: "Tournicano (teamPerf=50/MEXICANO)",
-    spec: {
-      teamUp: {
-        varietyFactor: 100,
-        performanceFactor: 50,
-        performanceMode: TeamUpPerformanceMode.MEXICANO,
-        groupFactor: 0,
-        groupMode: TeamUpGroupMode.PAIRED,
-      },
-      matchUp: {
-        varietyFactor: 0,
-        performanceFactor: 100,
-        groupFactor: 0,
-        groupMode: MatchUpGroupMode.SAME,
-      },
-    },
-  },
-  {
-    name: "Tournicano (teamPerf=100/EQUAL)",
+    name: "100/100 0/100",
     spec: {
       teamUp: {
         varietyFactor: 100,
@@ -162,17 +128,17 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
     },
   },
   {
-    name: "Tournicano (teamPerf=100/AVERAGE)",
+    name: "100/0 50/100",
     spec: {
       teamUp: {
         varietyFactor: 100,
-        performanceFactor: 100,
-        performanceMode: TeamUpPerformanceMode.AVERAGE,
+        performanceFactor: 0,
+        performanceMode: TeamUpPerformanceMode.EQUAL,
         groupFactor: 0,
         groupMode: TeamUpGroupMode.PAIRED,
       },
       matchUp: {
-        varietyFactor: 0,
+        varietyFactor: 50,
         performanceFactor: 100,
         groupFactor: 0,
         groupMode: MatchUpGroupMode.SAME,
@@ -180,17 +146,17 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
     },
   },
   {
-    name: "Tournicano (teamPerf=100/MEXICANO)",
+    name: "100/0 100/100",
     spec: {
       teamUp: {
         varietyFactor: 100,
-        performanceFactor: 100,
-        performanceMode: TeamUpPerformanceMode.MEXICANO,
+        performanceFactor: 0,
+        performanceMode: TeamUpPerformanceMode.EQUAL,
         groupFactor: 0,
         groupMode: TeamUpGroupMode.PAIRED,
       },
       matchUp: {
-        varietyFactor: 0,
+        varietyFactor: 100,
         performanceFactor: 100,
         groupFactor: 0,
         groupMode: MatchUpGroupMode.SAME,
@@ -207,8 +173,11 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
 
 interface RunResult {
   // Partner variety (from final round)
-  uniquePartnerRate: number;
+  avgPartnerRepeats: number;
   maxRepeats: number;
+  // Opponent variety (from final round)
+  avgOpponentRepeats: number;
+  maxOpponentRepeats: number;
   // Match competitiveness (across all rounds)
   avgSkillDiff: number;
   pctBalancedMatches: number;
@@ -281,12 +250,15 @@ function runSingleSimulation(spec: MatchingSpec, scenario: Scenario): RunResult 
   const lastRound = tournament.rounds[tournament.rounds.length - 1];
   const participatingPlayers = lastRound.getParticipatingPlayers();
   const partnerVariety = analyzePartnerVariety(participatingPlayers);
+  const opponentVariety = analyzeOpponentVariety(participatingPlayers);
   const competitiveness = analyzeMatchCompetitiveness(allRoundMatchData);
   const finalCorrelation = roundCorrelations[roundCorrelations.length - 1] ?? 0;
 
   return {
-    uniquePartnerRate: partnerVariety.uniqueRate,
+    avgPartnerRepeats: partnerVariety.avgRepeats,
     maxRepeats: partnerVariety.maxRepeats,
+    avgOpponentRepeats: opponentVariety.avgRepeats,
+    maxOpponentRepeats: opponentVariety.maxRepeats,
     avgSkillDiff: competitiveness.avgSkillDiff,
     pctBalancedMatches: competitiveness.pctBalancedMatches,
     spearmanCorrelation: finalCorrelation,
@@ -301,8 +273,10 @@ function runSingleSimulation(spec: MatchingSpec, scenario: Scenario): RunResult 
 
 interface AggregatedResult {
   specName: string;
-  avgUniquePartnerRate: number;
+  avgPartnerRepeats: number;
   avgMaxRepeats: number;
+  avgOpponentRepeats: number;
+  avgMaxOpponentRepeats: number;
   avgSkillDiff: number;
   avgPctBalancedMatches: number;
   avgSpearmanCorrelation: number;
@@ -331,8 +305,10 @@ function aggregateResults(specName: string, results: RunResult[]): AggregatedRes
 
   return {
     specName,
-    avgUniquePartnerRate: avg(results.map((r) => r.uniquePartnerRate)),
+    avgPartnerRepeats: avg(results.map((r) => r.avgPartnerRepeats)),
     avgMaxRepeats: avg(results.map((r) => r.maxRepeats)),
+    avgOpponentRepeats: avg(results.map((r) => r.avgOpponentRepeats)),
+    avgMaxOpponentRepeats: avg(results.map((r) => r.maxOpponentRepeats)),
     avgSkillDiff: avg(results.map((r) => r.avgSkillDiff)),
     avgPctBalancedMatches: avg(results.map((r) => r.pctBalancedMatches)),
     avgSpearmanCorrelation: avg(results.map((r) => r.spearmanCorrelation)),
@@ -350,12 +326,14 @@ function printResultsTable(results: AggregatedResult[], scenario: Scenario) {
   const { playerCount, courts, rounds, runsPerSpec } = scenario;
   const COL_NAME = 42;
   const COL_NUM = 10;
-  const TOTAL = COL_NAME + COL_NUM * 6 + 1;
+  const TOTAL = COL_NAME + COL_NUM * 8 + 1;
 
   const header = [
     pad("Spec", COL_NAME),
-    pad("UniquePartner%", COL_NUM, "right"),
+    pad("AvgPartRep", COL_NUM, "right"),
     pad("MaxRepeats", COL_NUM, "right"),
+    pad("AvgOppRep", COL_NUM, "right"),
+    pad("MaxOppRep", COL_NUM, "right"),
     pad("AvgSkillDiff", COL_NUM, "right"),
     pad("Balanced%", COL_NUM, "right"),
     pad("Spearman", COL_NUM, "right"),
@@ -379,8 +357,10 @@ function printResultsTable(results: AggregatedResult[], scenario: Scenario) {
 
     const row = [
       pad(r.specName, COL_NAME),
-      pad((r.avgUniquePartnerRate * 100).toFixed(1) + "%", COL_NUM, "right"),
+      pad(r.avgPartnerRepeats.toFixed(2), COL_NUM, "right"),
       pad(r.avgMaxRepeats.toFixed(1), COL_NUM, "right"),
+      pad(r.avgOpponentRepeats.toFixed(2), COL_NUM, "right"),
+      pad(r.avgMaxOpponentRepeats.toFixed(1), COL_NUM, "right"),
       pad(r.avgSkillDiff.toFixed(2), COL_NUM, "right"),
       pad((r.avgPctBalancedMatches * 100).toFixed(1) + "%", COL_NUM, "right"),
       pad(r.avgSpearmanCorrelation.toFixed(3), COL_NUM, "right"),
@@ -414,8 +394,10 @@ function printCorrelationCurves(results: AggregatedResult[]) {
 
 function printMetricExplanations() {
   console.log("\n METRIC EXPLANATIONS");
-  console.log("  UniquePartner%  : % of all partnerships that occurred exactly once (higher = more variety)");
+  console.log("  AvgPartRep      : avg times any two players were partners (lower = more variety)");
   console.log("  MaxRepeats      : avg maximum times any two players were partners (lower = better variety)");
+  console.log("  AvgOppRep       : avg times any two players faced each other (lower = more variety)");
+  console.log("  MaxOppRep       : avg maximum times any two players faced each other (lower = better variety)");
   console.log("  AvgSkillDiff    : avg absolute difference in combined team skill per match (lower = more competitive)");
   console.log("  Balanced%       : % of matches with skill diff <= 2 (higher = more balanced)");
   console.log("  Spearman        : Spearman rank correlation of final standings vs true skill (higher = more accurate)");

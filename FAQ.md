@@ -225,12 +225,9 @@ The required margin depends on the mode:
 - **Mixed group modes** (Americano Mixed, Group Battle Mixed): teams must pair across specific groups (e.g. men with women). Here, a same-group pairing scores 50 — not 0 — so variety must also stay below 50. These modes use `variety=40`.
 
 **Examples:**
-- **Americano Groups / Group Battle:** `variety=90, group=100` — group always wins
+- **Americano Groups / Tournicano Groups / Group Battle:** `variety=90, group=100` — group always wins
 - **Mexicano Groups:** `performance=90, group=100` — group always wins
-- **Tournicano Groups:** `variety=60, performance=30, group=100` — group always wins (60+30=90 < 100)
 - **Americano Mixed / Group Battle Mixed:** `variety=40, group=100` — group always wins (40 < 50)
-
-The Tournicano Groups split of 60/30 mirrors the regular Tournicano ratio of variety=100/performance=50, keeping the same balance between partner rotation and skill-based matchups.
 
 ---
 
