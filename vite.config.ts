@@ -1,13 +1,17 @@
 import { defineConfig } from "vitest/config";
 import { VitePWA } from "vite-plugin-pwa";
 import { minimal2023Preset } from "@vite-pwa/assets-generator/config"
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   base: "/tournicano/",
   resolve: {
     alias: {
       "@graph-algorithm/maximum-matching":
-        "./node_modules/@graph-algorithm/maximum-matching/dist/module/index.js",
+        resolve(__dirname, 'node_modules/@graph-algorithm/maximum-matching/dist/module/index.js'),
     },
   },
   optimizeDeps: {
