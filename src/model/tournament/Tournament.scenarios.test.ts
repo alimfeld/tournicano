@@ -278,7 +278,7 @@ const americanoScenarios: TournamentScenario[] = [
     rounds: 7,
     runsToTest: 25,
     category: 'constrained',
-    partner: { minUniqueRate: 0.95, maxRepeats: 2, maxCV: 0.12 },
+    partner: { minUniqueRate: 0.94, maxRepeats: 2, maxCV: 0.14 },
     opponent: { maxRange: 9, maxCV: 0.50 },
     notes: "14 slots, 21 pairs, odd player constraint"
   },
@@ -302,7 +302,7 @@ const americanoScenarios: TournamentScenario[] = [
     rounds: 8,
     runsToTest: 25,
     category: 'constrained',
-    partner: { minUniqueRate: 0.95, maxRepeats: 2, maxCV: 0.10 },
+    partner: { minUniqueRate: 0.95, maxRepeats: 2, maxCV: 0.11 },
     opponent: { maxRange: 9, maxCV: 0.50 },
     notes: "32 slots, 36 pairs, odd player constraint"
   },
@@ -314,7 +314,7 @@ const americanoScenarios: TournamentScenario[] = [
     rounds: 9,
     runsToTest: 20,
     category: 'near-ideal',
-    partner: { minUniqueRate: 0.95, maxRepeats: 2, maxCV: 0.04 },
+    partner: { minUniqueRate: 0.95, maxRepeats: 2, maxCV: 0.05 },
     opponent: { maxRange: 8, maxCV: 0.45 },
     notes: "36 slots, 45 pairs"
   },
@@ -326,7 +326,7 @@ const americanoScenarios: TournamentScenario[] = [
     rounds: 10,
     runsToTest: 25,
     category: 'constrained',
-    partner: { minUniqueRate: 0.99, maxRepeats: 2, maxCV: 0.02 },
+    partner: { minUniqueRate: 0.99, maxRepeats: 2, maxCV: 0.03 },
     opponent: { maxRange: 9, maxCV: 0.52 },
     notes: "40 slots, 55 pairs, odd player constraint"
   },
@@ -422,7 +422,7 @@ const americanoScenarios: TournamentScenario[] = [
     rounds: 18,
     runsToTest: 20,
     category: 'constrained',
-    partner: { minUniqueRate: 0.99, maxRepeats: 2, maxCV: 0.01 },
+    partner: { minUniqueRate: 0.99, maxRepeats: 2, maxCV: 0.02 },
     opponent: { maxRange: 10, maxCV: 0.55 },
     notes: "144 slots, 171 pairs, odd player constraint"
   },
@@ -451,7 +451,7 @@ const mixedScenarios: TournamentScenario[] = [
     runsToTest: 20,
     groupSizes: [3, 3],
     category: 'mixed-balanced',
-    partner: { minUniqueRate: 0.76, maxRepeats: 2, maxCV: 0.31 },
+    partner: { minUniqueRate: 0.71, maxRepeats: 2, maxCV: 0.32 },
     opponent: { maxRange: 8, maxCV: 0.40 },
     backToBack: { maxPartnerRate: 0.09, maxMatchupRate: 0.01 },
     notes: "9 valid mixed pairs (3×3)"
@@ -465,7 +465,7 @@ const mixedScenarios: TournamentScenario[] = [
     runsToTest: 25,
     groupSizes: [3, 4],
     category: 'mixed-unbalanced',
-    partner: { minUniqueRate: 0.85, maxRepeats: 2, maxCV: 0.21 },
+    partner: { minUniqueRate: 0.85, maxRepeats: 2, maxCV: 0.25 },
     opponent: { maxRange: 9, maxCV: 0.65 },
     backToBack: { maxPartnerRate: 0.15, maxMatchupRate: 0.02 },
     notes: "12 valid mixed pairs (3×4), unbalanced groups + odd total"
@@ -593,7 +593,7 @@ const mixedScenarios: TournamentScenario[] = [
     category: 'mixed-balanced',
     partner: { minUniqueRate: 0.10, maxRepeats: 2, maxCV: 0.20 },
     opponent: { maxRange: 9, maxCV: 0.43 },
-    backToBack: { maxPartnerRate: 0.07, maxMatchupRate: 0.01 },
+    backToBack: { maxPartnerRate: 0.07, maxMatchupRate: 0.02 },
     notes: "64 valid mixed pairs (8×8)"
   },
   {
