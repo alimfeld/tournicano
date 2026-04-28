@@ -339,6 +339,22 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
           }
         }, "Customize..."),
         m("hr"),
+        m("h2", "Text Zoom"),
+        m("input.text-zoom", {
+          type: "range",
+          id: "text-zoom",
+          name: "text-zoom",
+          min: 0.8,
+          max: 1.5,
+          step: 0.1,
+          value: settings.textZoom,
+          oninput: (event: InputEvent) =>
+            settings.setTextZoom(
+              parseFloat((event.target as HTMLInputElement).value),
+            ),
+        }),
+        m("small", `${Math.round(settings.textZoom * 100)}%`),
+        m("hr"),
         m("h2", "Theme"),
         m(
           "fieldset",

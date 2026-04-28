@@ -2,8 +2,14 @@
   /* Base font size multiplier - scales all Pico CSS responsive breakpoints */
   --font-size-multiplier: 1.2;
 
+  /* Text zoom - scales all text sizes */
+  --text-zoom: 1;
+
+  /* Pico font size base percentage per responsive breakpoint */
+  --pico-font-size-base: 100%;
+
   /* Pico variables */
-  --pico-font-size: calc(100% * var(--font-size-multiplier));
+  --pico-font-size: calc(var(--pico-font-size-base) * var(--font-size-multiplier) * var(--text-zoom));
   --pico-font-weight: 500;
   --pico-spacing: 0.8rem;
   --pico-form-element-spacing-vertical: 0.6rem;
@@ -52,18 +58,16 @@
 
 /* Apply multiplier to all Pico CSS responsive breakpoints */
 @media (min-width: 576px) {
-
-  :root {
-    --pico-font-size: calc(106.25% * var(--font-size-multiplier));
+  :root { 
+    --pico-font-size-base: 106.25%;
     --toast-card-max-width: 510px;
     --help-card-max-width: 510px;
   }
 }
 
 @media (min-width: 768px) {
-
   :root {
-    --pico-font-size: calc(112.5% * var(--font-size-multiplier));
+    --pico-font-size-base: 112.5%;
     --player-card-avatar-size: 3.2rem;
     --score-entry-keyboard-max-width: 60%;
     --toast-card-max-width: 700px;
@@ -72,26 +76,19 @@
 }
 
 @media (min-width: 1024px) {
-
   :root {
-    --pico-font-size: calc(118.75% * var(--font-size-multiplier));
+    --pico-font-size-base: 118.75%;
     --player-card-avatar-size: 3.4rem;
     --score-entry-keyboard-max-width: 50%;
   }
 }
 
 @media (min-width: 1280px) {
-
-  :root {
-    --pico-font-size: calc(125% * var(--font-size-multiplier));
-  }
+  :root { --pico-font-size-base: 125%; }
 }
 
 @media (min-width: 1536px) {
-
-  :root {
-    --pico-font-size: calc(131.25% * var(--font-size-multiplier));
-  }
+  :root { --pico-font-size-base: 131.25%; }
 }
 
 /* Heading size overrides - conservative scaling */

@@ -20,6 +20,7 @@ class SettingsImpl implements Mutable<Settings> {
   courts = 2;
   theme: Theme = "auto";
   wakeLock: boolean = false;
+  textZoom = 1.0;
   matchingSpec: MatchingSpec = Americano;
   avatarSpec: AvatarSpec = "bottts";
 
@@ -29,6 +30,7 @@ class SettingsImpl implements Mutable<Settings> {
       this.courts = data.courts;
       this.theme = data.theme;
       this.wakeLock = data.wakeLock;
+      this.textZoom = data.textZoom ?? 1.0;
       this.matchingSpec = data.matchingSpec;
       this.avatarSpec = data.avatarSpec ?? "bottts";
     }
@@ -39,6 +41,7 @@ class SettingsImpl implements Mutable<Settings> {
       courts: this.courts,
       theme: this.theme,
       wakeLock: this.wakeLock,
+      textZoom: this.textZoom,
       matchingSpec: this.matchingSpec,
       avatarSpec: this.avatarSpec,
     } as SettingsData);
@@ -56,6 +59,11 @@ class SettingsImpl implements Mutable<Settings> {
 
   enableWakeLock(enable: boolean): void {
     this.wakeLock = enable;
+    this.notifyChange();
+  }
+
+  setTextZoom(zoom: number): void {
+    this.textZoom = zoom;
     this.notifyChange();
   }
 

@@ -65,6 +65,10 @@ const syncTheme = (theme: Theme) => {
   metaThemeColor.setAttribute('content', primaryBgColor);
 };
 
+const syncTextZoom = (textZoom: number) => {
+  document.documentElement.style.setProperty('--text-zoom', textZoom.toString());
+};
+
 const createState: () => State = () => {
   const tournament = tournamentFactory.create(
     localStorage.getItem(TOURNAMENT_KEY) || undefined,
@@ -102,6 +106,8 @@ const createState: () => State = () => {
   };
   // theme state is synced to DOM
   syncTheme(state.settings.theme);
+  // text zoom is synced to DOM
+  syncTextZoom(state.settings.textZoom);
   // avatar spec is synced to the avatar cache
   setAvatarSpec(state.settings.avatarSpec);
   return state;
@@ -110,6 +116,7 @@ const createState: () => State = () => {
 const debouncedSettingsSave = debounce((settings: Settings) => {
   localStorage.setItem(SETTINGS_KEY, settings.serialize());
   syncTheme(settings.theme);
+  syncTextZoom(settings.textZoom);
   setAvatarSpec(settings.avatarSpec);
 }, 500);
 

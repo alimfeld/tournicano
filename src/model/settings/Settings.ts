@@ -12,6 +12,7 @@ export interface SettingsData {
   readonly courts: number;
   readonly theme: Theme;
   readonly wakeLock: boolean;
+  readonly textZoom: number;
   readonly matchingSpec: MatchingSpec;
   readonly avatarSpec: AvatarSpec;
 }
@@ -21,6 +22,7 @@ export interface Settings extends SettingsData {
   setCourts(courts: number): void;
   setTheme(theme: Theme): void;
   enableWakeLock(enable: boolean): void;
+  setTextZoom(zoom: number): void;
   setMatchingSpec(matchingSpec: MatchingSpec): void;
   setAvatarSpec(spec: AvatarSpec): void;
   addListener(listener: SettingsListener): void;
