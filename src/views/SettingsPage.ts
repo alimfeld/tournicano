@@ -1,19 +1,8 @@
 import m from "mithril";
 import {
-  Americano,
-  AmericanoGroups,
-  AmericanoMixed,
-  AmericanoMixedBalanced,
-  TeamAmericano,
-  GroupBattle,
-  GroupBattleMixed,
+  PREDEFINED_MODES,
+  getMatchingSpecName,
   matchingSpecEquals,
-  Mexicano,
-  MexicanoGroups,
-  TeamMexicano,
-  Tournicano,
-  TournicanoGroups,
-  isMatchingSpecMode,
 } from "../model/matching/MatchingSpec.ts";
 import { MatchingSpecModal } from "./MatchingSpecModal.ts";
 import { BUILD_VERSION } from "../version.ts";
@@ -62,20 +51,9 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
   view: ({ state }) => {
     const { state: appState, showToast, checkForUpdates, changeRound, resetFilters } = appContext;
     const { settings, tournament } = appState;
-    const isAmericano = isMatchingSpecMode(settings.matchingSpec, Americano);
-    const isAmericanoMixed = isMatchingSpecMode(settings.matchingSpec, AmericanoMixed);
-    const isAmericanoMixedBalanced = isMatchingSpecMode(settings.matchingSpec, AmericanoMixedBalanced);
-    const isTeamAmericano = isMatchingSpecMode(settings.matchingSpec, TeamAmericano);
-    const isMexicano = isMatchingSpecMode(settings.matchingSpec, Mexicano);
-    const isTeamMexicano = isMatchingSpecMode(settings.matchingSpec, TeamMexicano);
-    const isTournicano = isMatchingSpecMode(settings.matchingSpec, Tournicano);
-    const isTournicanoGroups = isMatchingSpecMode(settings.matchingSpec, TournicanoGroups);
-    const isAmericanoGroups = isMatchingSpecMode(settings.matchingSpec, AmericanoGroups);
-    const isMexicanoGroups = isMatchingSpecMode(settings.matchingSpec, MexicanoGroups);
-    const isGroupBattle = isMatchingSpecMode(settings.matchingSpec, GroupBattle);
-    const isGroupBattleMixed = isMatchingSpecMode(settings.matchingSpec, GroupBattleMixed);
+    const currentSpecName = getMatchingSpecName(settings.matchingSpec);
 
-    const handleMatchingSpecChange = (matchingSpec: typeof Americano) => {
+    const handleMatchingSpecChange = (matchingSpec: typeof PREDEFINED_MODES[number]["spec"]) => {
       settings.setMatchingSpec(matchingSpec);
       if (tournament.rounds.length > 0 && showToast) {
         showToast("Mode change affects ongoing tournament", { type: "error" });
@@ -165,173 +143,33 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
         m("h2", "Matching"),
         m(
           "fieldset.matching",
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "americano",
-              checked: isAmericano,
-              onchange: () => handleMatchingSpecChange(Americano),
-            }),
-            "Americano",
-            m("small", "Maximizes partner and opponent rotation."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "americano-mixed",
-              checked: isAmericanoMixed,
-              onchange: () => handleMatchingSpecChange(AmericanoMixed),
-            }),
-            "Americano Mixed",
-            m("small", "Designed for 2 groups. Mixed doubles with rotating partners."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "americano-mixed-balanced",
-              checked: isAmericanoMixedBalanced,
-              onchange: () => handleMatchingSpecChange(AmericanoMixedBalanced),
-            }),
-            "Americano Mixed Balanced",
-            m("small", "Designed for 2 groups. Mixed doubles with equal group participation."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "americano-groups",
-              checked: isAmericanoGroups,
-              onchange: () => handleMatchingSpecChange(AmericanoGroups),
-            }),
-            "Americano Groups",
-            m("small", "Americano within groups. Works with 2 or 4 groups."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "team-americano",
-              checked: isTeamAmericano,
-              onchange: () => handleMatchingSpecChange(TeamAmericano),
-            }),
-            "Team Americano",
-            m("small", "Americano mode with fixed teams."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "mexicano",
-              checked: isMexicano,
-              onchange: () => handleMatchingSpecChange(Mexicano),
-            }),
-            "Mexicano",
-            m("small", "Skill-based team formation and competitive balance."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "mexicano-groups",
-              checked: isMexicanoGroups,
-              onchange: () => handleMatchingSpecChange(MexicanoGroups),
-            }),
-            "Mexicano Groups",
-            m("small", "Mexicano within groups. Works with 2 or 4 groups."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "team-mexicano",
-              checked: isTeamMexicano,
-              onchange: () => handleMatchingSpecChange(TeamMexicano),
-            }),
-            "Team Mexicano",
-            m("small", "Mexicano mode with fixed teams."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "tournicano",
-              checked: isTournicano,
-              onchange: () => handleMatchingSpecChange(Tournicano),
-            }),
-            "Tournicano",
-            m("small", "Maximum partner variety with competitive, skill-based matchups."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "tournicano-groups",
-              checked: isTournicanoGroups,
-              onchange: () => handleMatchingSpecChange(TournicanoGroups),
-            }),
-            "Tournicano Groups",
-            m("small", "Tournicano within groups. Works with 2 or 4 groups."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "group-battle",
-              checked: isGroupBattle,
-              onchange: () => handleMatchingSpecChange(GroupBattle),
-            }),
-            "Group Battle",
-            m("small", "Designed for 2 groups. Competition between two sides."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "group-battle-mixed",
-              checked: isGroupBattleMixed,
-              onchange: () => handleMatchingSpecChange(GroupBattleMixed),
-            }),
-            "Group Battle Mixed",
-            m("small", "Designed for 4 groups. Mixed doubles team battle."),
-          ),
-          m(
-            "label",
-            m("input", {
-              type: "radio",
-              name: "matching-spec",
-              id: "custom",
-              checked:
-                !isAmericano &&
-                !isAmericanoMixed &&
-                !isAmericanoMixedBalanced &&
-                !isTeamAmericano &&
-                !isMexicano &&
-                !isTeamMexicano &&
-                !isTournicano &&
-                !isTournicanoGroups &&
-                !isAmericanoGroups &&
-                !isMexicanoGroups &&
-                !isGroupBattle &&
-                !isGroupBattleMixed,
-              disabled: true,
-            }),
-            "Custom",
-          ),
+          [
+            ...PREDEFINED_MODES.map(({ name, spec, description }) =>
+              m(
+                "label",
+                m("input", {
+                  type: "radio",
+                  name: "matching-spec",
+                  id: name.toLowerCase().replace(/ /g, "-"),
+                  checked: currentSpecName === name,
+                  onchange: () => handleMatchingSpecChange(spec),
+                }),
+                name,
+                m("small", description),
+              )
+            ),
+            m(
+              "label",
+              m("input", {
+                type: "radio",
+                name: "matching-spec",
+                id: "custom",
+                checked: currentSpecName === "Custom",
+                disabled: true,
+              }),
+              "Custom",
+            ),
+          ]
         ),
         m("button", {
           onclick: () => {

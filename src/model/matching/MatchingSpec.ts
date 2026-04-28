@@ -154,6 +154,22 @@ export const TournicanoGroups: MatchingSpec = {
   balanceGroups: true,
 };
 
+export const Swiss: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 100,
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
+    groupFactor: 0,
+    groupMode: TeamUpGroupMode.PAIRED, // not relevant
+  },
+  matchUp: {
+    varietyFactor: 100,
+    performanceFactor: 90,
+    groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
+  },
+};
+
 export const AmericanoGroups: MatchingSpec = {
   teamUp: {
     varietyFactor: 90, // 90 < 100 → groupFactor always dominates
@@ -223,19 +239,20 @@ export const GroupBattleMixed: MatchingSpec = {
 };
 
 // Registry of predefined modes with their names
-const PREDEFINED_MODES = [
-  { name: "Americano", spec: Americano },
-  { name: "Americano Mixed", spec: AmericanoMixed },
-  { name: "Americano Mixed Balanced", spec: AmericanoMixedBalanced },
-  { name: "Americano Groups", spec: AmericanoGroups },
-  { name: "Team Americano", spec: TeamAmericano },
-  { name: "Mexicano", spec: Mexicano },
-  { name: "Mexicano Groups", spec: MexicanoGroups },
-  { name: "Team Mexicano", spec: TeamMexicano },
-  { name: "Tournicano", spec: Tournicano },
-  { name: "Tournicano Groups", spec: TournicanoGroups },
-  { name: "Group Battle", spec: GroupBattle },
-  { name: "Group Battle Mixed", spec: GroupBattleMixed },
+export const PREDEFINED_MODES = [
+  { name: "Americano", spec: Americano, description: "Maximum partner variety." },
+  { name: "Americano Mixed", spec: AmericanoMixed, description: "Mixed doubles with partner variety." },
+  { name: "Americano Mixed Balanced", spec: AmericanoMixedBalanced, description: "Balanced mixed doubles." },
+  { name: "Americano Groups", spec: AmericanoGroups, description: "Americano within groups." },
+  { name: "Team Americano", spec: TeamAmericano, description: "Fixed teams, maximum variety." },
+  { name: "Mexicano", spec: Mexicano, description: "Skill-based competitive matchups." },
+  { name: "Mexicano Groups", spec: MexicanoGroups, description: "Mexicano within groups." },
+  { name: "Team Mexicano", spec: TeamMexicano, description: "Fixed teams, skill-based." },
+  { name: "Tournicano", spec: Tournicano, description: "Maximum partner variety with competitive matchups." },
+  { name: "Tournicano Groups", spec: TournicanoGroups, description: "Tournicano within groups. Works with 2 or 4 groups." },
+  { name: "Swiss", spec: Swiss, description: "Maximum variety with competitive matchups." },
+  { name: "Group Battle", spec: GroupBattle, description: "Designed for 2 groups. Competition between two sides." },
+  { name: "Group Battle Mixed", spec: GroupBattleMixed, description: "Designed for 4 groups. Mixed doubles team battle." },
 ] as const;
 
 // Utility functions
@@ -265,9 +282,4 @@ export function getMatchingSpecName(spec: MatchingSpec): string {
     }
   }
   return "Custom";
-}
-
-// Check if spec matches a specific predefined mode
-export function isMatchingSpecMode(spec: MatchingSpec, mode: MatchingSpec): boolean {
-  return matchingSpecEquals(spec, mode);
 }
