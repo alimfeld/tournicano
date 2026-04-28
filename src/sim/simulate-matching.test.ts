@@ -27,6 +27,8 @@ import {
   MatchUpGroupMode,
   Americano,
   Mexicano,
+  Swiss,
+  Tournicano,
 } from "../model/matching/MatchingSpec.ts";
 import {
   assignSkills,
@@ -74,22 +76,12 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
     spec: Mexicano,
   },
   {
-    name: "100/0 - 0/100",
-    spec: {
-      teamUp: {
-        varietyFactor: 100,
-        performanceFactor: 0,
-        performanceMode: TeamUpPerformanceMode.EQUAL, // irrelevant at factor=0
-        groupFactor: 0,
-        groupMode: TeamUpGroupMode.PAIRED,
-      },
-      matchUp: {
-        varietyFactor: 0,
-        performanceFactor: 100,
-        groupFactor: 0,
-        groupMode: MatchUpGroupMode.SAME,
-      },
-    },
+    name: "Swiss",
+    spec: Swiss,
+  },
+  {
+    name: "Tournicano",
+    spec: Tournicano,
   },
   {
     name: "100/50 - 0/100",
@@ -139,24 +131,6 @@ const candidateSpecs: Array<{ name: string; spec: MatchingSpec }> = [
       },
       matchUp: {
         varietyFactor: 50,
-        performanceFactor: 100,
-        groupFactor: 0,
-        groupMode: MatchUpGroupMode.SAME,
-      },
-    },
-  },
-  {
-    name: "100/0 100/100",
-    spec: {
-      teamUp: {
-        varietyFactor: 100,
-        performanceFactor: 0,
-        performanceMode: TeamUpPerformanceMode.EQUAL,
-        groupFactor: 0,
-        groupMode: TeamUpGroupMode.PAIRED,
-      },
-      matchUp: {
-        varietyFactor: 100,
         performanceFactor: 100,
         groupFactor: 0,
         groupMode: MatchUpGroupMode.SAME,

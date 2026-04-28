@@ -164,7 +164,7 @@ export const Swiss: MatchingSpec = {
   },
   matchUp: {
     varietyFactor: 100,
-    performanceFactor: 90,
+    performanceFactor: 100,
     groupFactor: 0,
     groupMode: MatchUpGroupMode.SAME, // not relevant
   },
