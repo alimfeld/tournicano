@@ -21,6 +21,7 @@ export interface Player {
 export interface Matchings {
   readonly partners: Map<string, number[]>;
   readonly opponents: Map<string, number[]>;
+  readonly partnerGroups: number[];
 }
 
 // Stats based on round participation

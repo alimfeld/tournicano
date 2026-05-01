@@ -6,7 +6,7 @@ import { ParticipatingPlayer } from "./Tournament.ts";
 function createMockPlayer(wins: number, losses: number, draws: number): ParticipatingPlayer {
   const totalGames = wins + losses + draws;
   const winRatio = totalGames === 0 ? 0 : wins / totalGames;
-  
+
   return {
     wins,
     losses,
@@ -20,6 +20,7 @@ function createMockPlayer(wins: number, losses: number, draws: number): Particip
     pointsAgainst: 0,
     partners: new Map(),
     opponents: new Map(),
+    partnerGroups: [],
     id: "test",
     name: "Test Player",
     group: 0,

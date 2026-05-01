@@ -1,6 +1,6 @@
 /**
  * @fileoverview Internal implementation classes for Tournament rounds, matches, and teams.
- * 
+ *
  * WARNING: This file contains internal implementation details.
  * DO NOT import from this file outside of src/model/Tournament*.ts files.
  * Use the public Tournament interface from Tournament.ts instead.
@@ -59,13 +59,13 @@ export class MatchImpl implements Mutable<Match> {
     this.round.addPerformance(this.teamA.player2.id, diffA);
     this.round.addPerformance(this.teamB.player1.id, diffB);
     this.round.addPerformance(this.teamB.player2.id, diffB);
-    
+
     // Track team performance
     const teamAKey = createTeamKey(this.teamA.player1.id, this.teamA.player2.id);
     const teamBKey = createTeamKey(this.teamB.player1.id, this.teamB.player2.id);
     this.round.addTeamPerformance(teamAKey, diffA);
     this.round.addTeamPerformance(teamBKey, diffB);
-    
+
     this.round.tournament.notifyChange();
   }
 }
@@ -80,14 +80,14 @@ export class RoundImpl implements Round, RoundContext {
   inactive!: ParticipatingPlayerImpl[];
   playerMap!: Map<PlayerId, ParticipatingPlayerImpl>;
   teamMap!: Map<TeamKey, ParticipatingTeamImpl>;
-  
+
   // Store references for round reconstruction (used by switchPlayers)
   private originalParticipating: ParticipatingPlayerImpl[];
   private originalParticipatingTeams: ParticipatingTeamImpl[];
 
   /**
    * Creates a new round with the given matches and participating players.
-   * 
+   *
    * @param tournament - Tournament context for accessing player data
    * @param index - Zero-based round number
    * @param participating - Players participating from previous rounds (carries over stats).
@@ -100,7 +100,7 @@ export class RoundImpl implements Round, RoundContext {
    *                 These players wanted to play but couldn't be matched (e.g., odd number out).
    * @param inactive - Player IDs who were INACTIVE at round creation time.
    *                   These players were participating in previous rounds but are now inactive.
-   * 
+   *
    * Note: The paused and inactive arrays capture historical player active state at the moment
    * this round was created. They cannot be derived from current player.active state during
    * deserialization, as players may have been activated/deactivated between rounds or after
@@ -108,7 +108,7 @@ export class RoundImpl implements Round, RoundContext {
    * - Round 1: Alice is active → gets paused (unmatched)
    * - Round 2: Alice is deactivated → appears in inactive
    * - Save & reload: Alice's current state is inactive, but Round 1 still shows her as paused
-   * 
+   *
    * This historical record is essential for:
    * - Displaying correct paused/inactive badges in the UI
    * - Preserving pauseCount and lastPause statistics
@@ -141,10 +141,10 @@ export class RoundImpl implements Round, RoundContext {
   ): void {
     // Deep copy player stats from previous round
     this.playerMap = new Map(participating.map((p) => [p.id, p.deepCopy()]));
-    
+
     // Deep copy team stats from previous round
     this.teamMap = new Map(participatingTeams.map((t) => [t.teamKey, t.deepCopy()]));
-    
+
     const getOrCreate = (id: PlayerId) => {
       let result = this.playerMap.get(id);
       if (!result) {
@@ -153,7 +153,7 @@ export class RoundImpl implements Round, RoundContext {
       }
       return result;
     };
-    
+
     const getOrCreateTeam = (p1Id: PlayerId, p2Id: PlayerId) => {
       const key = createTeamKey(p1Id, p2Id);
       let result = this.teamMap.get(key);
@@ -179,34 +179,34 @@ export class RoundImpl implements Round, RoundContext {
       const a2 = getOrCreate(m[0][1]);
       const b1 = getOrCreate(m[1][0]);
       const b2 = getOrCreate(m[1][1]);
-      
+
       // Build team A
       const teamA = new TeamImpl(a1, a2);
-      a1.incPartner(a2.id, this.index);
-      a2.incPartner(a1.id, this.index);
-      
+      a1.registerPartner(a2, this.index);
+      a2.registerPartner(a1, this.index);
+
       // Track team A (for performance tracking)
       getOrCreateTeam(a1.id, a2.id);
-      
+
       // Build team B
       const teamB = new TeamImpl(b1, b2);
-      b1.incPartner(b2.id, this.index);
-      b2.incPartner(b1.id, this.index);
-      
+      b1.registerPartner(b2, this.index);
+      b2.registerPartner(b1, this.index);
+
       // Track team B (for performance tracking)
       getOrCreateTeam(b1.id, b2.id);
-      
+
       const match = new MatchImpl(this, teamA, teamB);
-      
+
       // Track player stats
       [a1, a2, b1, b2].forEach((p) => (p.matchCount += 1));
       [a1, a2].forEach((p) => {
         [b1, b2].forEach((q) => {
-          p.incOpponent(q.id, this.index);
-          q.incOpponent(p.id, this.index);
+          p.registerOpponent(q, this.index);
+          q.registerOpponent(p, this.index);
         });
       });
-      
+
       return match;
     });
   }
@@ -227,16 +227,16 @@ export class RoundImpl implements Round, RoundContext {
   switchPlayers(id1: PlayerId, id2: PlayerId): boolean {
     // Validate: Must be last round
     if (!this.isLast()) return false;
-    
+
     // Validate: Cannot switch same player
     if (id1 === id2) return false;
-    
+
     // Validate: Both players must exist in round
     if (!this.playerMap.has(id1) || !this.playerMap.has(id2)) return false;
-    
+
     // Validate: Neither can be inactive
     if (this.inactive.some(p => p.id === id1 || p.id === id2)) return false;
-    
+
     // Validate: Neither player can be in a match with a score
     const match1 = this.matches.find(m =>
       m.teamA.player1.id === id1 || m.teamA.player2.id === id1 ||
@@ -246,11 +246,11 @@ export class RoundImpl implements Round, RoundContext {
       m.teamA.player1.id === id2 || m.teamA.player2.id === id2 ||
       m.teamB.player1.id === id2 || m.teamB.player2.id === id2
     );
-    
+
     if (match1?.score !== undefined || match2?.score !== undefined) {
       return false;
     }
-    
+
     // Extract current structure AND scores from round state
     const matchesWithScores = this.matches.map(m => ({
       teamA: [m.teamA.player1.id, m.teamA.player2.id] as [PlayerId, PlayerId],
@@ -258,7 +258,7 @@ export class RoundImpl implements Round, RoundContext {
       score: m.score
     }));
     const paused = this.paused.map(p => p.id);
-    
+
     // Swap player IDs in arrays (including in score tracking structure)
     for (const matchData of matchesWithScores) {
       for (const team of [matchData.teamA, matchData.teamB]) {
@@ -272,7 +272,7 @@ export class RoundImpl implements Round, RoundContext {
       if (paused[i] === id1) paused[i] = id2;
       else if (paused[i] === id2) paused[i] = id1;
     }
-    
+
     // Rebuild round with swapped configuration
     const matched = matchesWithScores.map(m => [m.teamA, m.teamB] as [[PlayerId, PlayerId], [PlayerId, PlayerId]]);
     this.buildRound(
@@ -282,14 +282,14 @@ export class RoundImpl implements Round, RoundContext {
       paused,
       this.inactive.map(p => p.id)
     );
-    
+
     // Restore scores to reconstructed matches
     matchesWithScores.forEach((oldMatch, index) => {
       if (oldMatch.score !== undefined) {
         this.matches[index].submitScore(oldMatch.score);
       }
     });
-    
+
     this.tournament.notifyChange();
     return true;
   }

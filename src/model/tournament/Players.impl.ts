@@ -1,6 +1,6 @@
 /**
  * @fileoverview Internal implementation classes for Tournament players.
- * 
+ *
  * WARNING: This file contains internal implementation details.
  * DO NOT import from this file outside of src/model/Tournament*.ts files.
  * Use the public Tournament interface from Tournament.ts instead.
@@ -44,7 +44,7 @@ export class PlayerImpl implements Mutable<Player> {
     const existingNames = this.tournament.players()
       .filter(p => p.id !== this.id)
       .map(p => p.name);
-    
+
     return !existingNames.includes(name);
   }
 
@@ -157,6 +157,7 @@ export class PerformanceImpl implements Mutable<Performance> {
 export class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<ParticipatingPlayer> {
   partners: Map<string, number[]> = new Map();
   opponents: Map<string, number[]> = new Map();
+  partnerGroups: number[] = [];
 
   matchCount: number = 0;
   pauseCount: number = 0;
@@ -213,16 +214,18 @@ export class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<
     return this.matchCount / roundCount;
   }
 
-  incPartner(id: PlayerId, roundIndex: number) {
-    const rounds = this.partners.get(id) || [];
+  registerPartner(player: ParticipatingPlayer, roundIndex: number) {
+    const rounds = this.partners.get(player.id) || [];
     rounds.push(roundIndex);
-    this.partners.set(id, rounds);
+    this.partners.set(player.id, rounds);
+    const count = this.partnerGroups[player.group] || 0;
+    this.partnerGroups[player.group] = count + 1;
   }
 
-  incOpponent(id: PlayerId, roundIndex: number) {
-    const rounds = this.opponents.get(id) || [];
+  registerOpponent(player: ParticipatingPlayer, roundIndex: number) {
+    const rounds = this.opponents.get(player.id) || [];
     rounds.push(roundIndex);
-    this.opponents.set(id, rounds);
+    this.opponents.set(player.id, rounds);
   }
 
   deepCopy(): ParticipatingPlayerImpl {
@@ -248,7 +251,7 @@ export class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<
 /**
  * @internal - Implementation class, not part of public API
  * Only exported for use within Tournament model files
- * 
+ *
  * Parallel structure to ParticipatingPlayerImpl:
  * - Extends PerformanceImpl for wins/losses/points
  * - Tracks opponents (no partners - teams ARE the partnership)

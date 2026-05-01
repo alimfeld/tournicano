@@ -34,33 +34,64 @@ const OPPONENT_SATURATION_SCALE = 1;
 // Group pairing penalties
 const TEAM_UP_GROUP_SAME_PENALTY = -1; // Penalty for same group pairing
 const TEAM_UP_GROUP_WRONG_PAIRING_PENALTY = -2; // Penalty for wrong group pairing
+const GROUP_VIOLATION_SCALE = 1; // Scales penalty based on past violations
 
 // ============================================================================
 // Team Up Weight Functions
 // ============================================================================
 
+export enum PairingType { PAIRED, SAME_GROUP, WRONG_PAIRING }
+
+export const getPairingType = (groupA: number, groupB: number): PairingType => {
+  const diff = Math.abs(groupA - groupB);
+  const pairBlockA = Math.floor(groupA / 2);
+  const pairBlockB = Math.floor(groupB / 2);
+
+  if (diff === 1 && pairBlockA === pairBlockB) {
+    return PairingType.PAIRED;
+  } else if (diff === 0) {
+    return PairingType.SAME_GROUP;
+  }
+  return PairingType.WRONG_PAIRING;
+};
+
+export const calculateViolationCount = (player: Player, mode: TeamUpGroupMode): number => {
+  const group = player.group;
+  let violations = 0;
+  for (let g = 0; g < player.partnerGroups.length; g++) {
+    const count = player.partnerGroups[g] || 0;
+    if (mode === TeamUpGroupMode.SAME) {
+      if (g !== group) {
+        violations += count;
+      }
+    } else {
+      const pairingType = getPairingType(group, g);
+      if (pairingType === PairingType.SAME_GROUP || pairingType === PairingType.WRONG_PAIRING) {
+        violations += count;
+      }
+    }
+  }
+  return violations;
+};
+
 export const curriedTeamUpGroupWeight = (mode: TeamUpGroupMode) => {
   return (a: { entity: Player }, b: { entity: Player }): number => {
+    const violationsA = calculateViolationCount(a.entity, mode);
+    const violationsB = calculateViolationCount(b.entity, mode);
+    const multiplier = 1 + ((violationsA + violationsB) / 2) * GROUP_VIOLATION_SCALE;
+
     switch (mode) {
       case TeamUpGroupMode.SAME:
-        return -Math.abs(a.entity.group - b.entity.group);
+        return -Math.abs(a.entity.group - b.entity.group) * multiplier;
       case TeamUpGroupMode.PAIRED:
-        // Favor pairs: (0,1) and (2,3) i.e. (A,B) and (C,D)
-        // Penalize wrong pairings like (1,2) i.e. (B,C)
-        const groupDiff = Math.abs(a.entity.group - b.entity.group);
-        const pairBlockA = Math.floor(a.entity.group / 2);
-        const pairBlockB = Math.floor(b.entity.group / 2);
-        const samePairBlock = pairBlockA === pairBlockB;
-        const pairOffset = Math.abs((a.entity.group % 2) - (b.entity.group % 2));
-        if (groupDiff === 1 && pairOffset === 1 && samePairBlock) {
-          // Perfect pair: 0-1 or 2-3 (A&B or C&D) within same pair block
-          return 0;
-        } else if (groupDiff === 0) {
-          // Same group: moderate penalty
-          return TEAM_UP_GROUP_SAME_PENALTY;
-        } else {
-          // Wrong pairing (e.g., 1-2 / B&C) or distant groups: heavy penalty
-          return TEAM_UP_GROUP_WRONG_PAIRING_PENALTY;
+        const pairingType = getPairingType(a.entity.group, b.entity.group);
+        switch (pairingType) {
+          case PairingType.PAIRED:
+            return 0;
+          case PairingType.SAME_GROUP:
+            return TEAM_UP_GROUP_SAME_PENALTY * multiplier;
+          case PairingType.WRONG_PAIRING:
+            return TEAM_UP_GROUP_WRONG_PAIRING_PENALTY * multiplier;
         }
     }
   };

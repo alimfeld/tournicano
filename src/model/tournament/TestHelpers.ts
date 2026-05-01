@@ -13,6 +13,7 @@ export class Player {
   lastPause: number = -1;
   partners: Map<string, number[]> = new Map();
   opponents: Map<string, number[]> = new Map();
+  partnerGroups: number[] = [];
   constructor(
     readonly id: string,
     readonly name: string,

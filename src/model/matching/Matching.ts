@@ -31,6 +31,7 @@ export interface Player {
   readonly lastPause: number;
   readonly partners: Map<string, number[]>;
   readonly opponents: Map<string, number[]>;
+  readonly partnerGroups: number[];
 }
 
 export type Team = [Player, Player];
