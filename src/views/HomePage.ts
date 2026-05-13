@@ -1,4 +1,5 @@
 import m from "mithril";
+import "./HomePage.css";
 import { Header } from "./Header.ts";
 
 export const HomePage: m.Component = {
@@ -22,65 +23,31 @@ export const HomePage: m.Component = {
           "p",
           "Organize doubles tournaments with automatic player pairing and fair rotation in minutes. Perfect for padel, pickleball, tennis, or any doubles sport. Supports Americano, Mexicano, and other formats."
         ),
-        m("h2", "✨ Key Features"),
+        m("h2", "Quick Start"),
         m(
-          "ul",
-          m("li", "🚀 Automatic pairing ensures variety and fair competition"),
-          m("li", "⚙️ Flexible formats: Americano, Mexicano, mixed doubles, and custom modes"),
-          m("li", "🏆 Live standings with win percentage and point differential"),
-          m("li", "📲 Works offline - install as an app, no internet required"),
-          m("li", "🔒 Privacy-first - no accounts needed, all data stays on your device")
+          "ol.quick-start",
+          m("li", "⚙️ Configure courts and format"),
+          m("li", "🤖 Add players"),
+          m("li", "🚀 Generate rounds → play → enter scores"),
+          m("li", "🏆 View live standings"),
         ),
-        m("h2", "⚡ Quick Start"),
+        m("h2", "Key Features"),
         m(
-          "ol",
-          m("li", "⚙️ Configure number of courts and tournament format"),
-          m("li", "🤖 Add your players"),
-          m("li", "🚀 Generate rounds automatically, play matches, track scores"),
-          m("li", "🏆 View live standings and stats"),
-        ),
-        m("h2", "🤖 Players"),
-        m(
-          "p",
-          "Add players anytime, even during the tournament. Organize them into groups for mixed doubles or team-based formats."
-        ),
-        m(
-          "p",
-          "Mark players as active or inactive to control who plays in each round. Players who participate in rounds appear in standings with their scores and stats."
-        ),
-        m("h2", "🚀 Rounds & Scoring"),
-        m(
-          "p",
-          "Generate rounds automatically based on available courts, active players, and your chosen format. The system prioritizes players with fewer matches to ensure everyone gets equal playing time."
-        ),
-        m(
-          "p",
-          "Enter and modify scores anytime - standings update instantly."
-        ),
-        m("h2", "🏆 Standings"),
-        m(
-          "p",
-          "Players are ranked by win percentage, with point differential (+/-) as the tiebreaker."
-        ),
-        m("h2", "⚙️ Tournament Formats"),
-        m(
-          "p",
-          "Tournicano creates matches by balancing three factors:"
-        ),
-        m(
-          "ul",
-          m("li", m("strong", "Variety"), " - Rotate partners and opponents"),
-          m("li", m("strong", "Performance"), " - Pair by skill level"),
-          m("li", m("strong", "Groups"), " - Control team composition")
-        ),
-        m(
-          "p",
-          "Select from predefined formats or create custom strategies in Settings."
-        ),
-        m("h2", "📲 Installation & Updates"),
-        m(
-          "p",
-          "Install Tournicano on any device for offline use. Updates are detected automatically when online and can be applied when convenient."
+          "dl.key-features",
+          m("dt", "Flexible formats"),
+          m("dd", "Choose from predefined formats like Americano and Mexicano, or create custom matching strategies based on variety, performance, or group constraints."),
+          m("dt", "Quick player management"),
+          m("dd", "Add or remove players anytime, even mid-tournament, and organize them into groups for mixed doubles, group battles, or multi-division tournaments."),
+          m("dt", "Smart round scheduling"),
+          m("dd", "Create rounds with players paired based on your chosen format, prioritizing variety, performance, or group constraints while ensuring fair court time for all."),
+          m("dt", "Score tracking"),
+          m("dd", "Enter and modify scores anytime, and the standings update instantly."),
+          m("dt", "Player toggling"),
+          m("dd", "Pause and resume players per round as they want to take a break or rejoin."),
+          m("dt", "Live standings"),
+          m("dd", "View rankings by win percentage with point differential as tiebreaker."),
+          m("dt", "Offline support"),
+          m("dd", "Install as a web app for offline use — no account needed, data stays on your device, and updates happen automatically when online."),
         ),
       ),
     ];
