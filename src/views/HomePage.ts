@@ -1,9 +1,44 @@
 import m from "mithril";
 import "./HomePage.css";
 import { Header } from "./Header.ts";
+import { HelpCard } from "./HelpCard.ts";
+
+/** Detects iOS or Android for platform-specific install guidance */
+function getMobilePlatform(): "ios" | "android" | "unknown" {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/iphone|ipad|ipod/i.test(ua)) return "ios";
+  if (/android/i.test(ua)) return "android";
+  return "unknown";
+}
+
+/** Returns platform-specific install guidance */
+function getInstallGuidance(platform: string): m.Children {
+  if (platform === "ios") {
+    return [
+      "Tap the ",
+      m("strong", "Share button"),
+      " in Safari, then tap ",
+      m("strong", "Add to Home Screen"),
+    ];
+  }
+  if (platform === "android") {
+    return [
+      "Tap the ",
+      m("strong", "menu"),
+      " (three dots), then tap ",
+      m("strong", "Add to Home Screen"),
+      " or ",
+      m("strong", "Install App"),
+    ];
+  }
+  return "Look for \"Add to Home Screen\" in your browser menu";
+}
 
 export const HomePage: m.Component = {
-  view: () => {
+  view() {
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    const mobilePlatform = getMobilePlatform();
+
     return [
       m(Header, {
         title: "Tournicano",
@@ -23,6 +58,16 @@ export const HomePage: m.Component = {
           "p",
           "Organize doubles tournaments with automatic player pairing and fair rotation in minutes. Perfect for padel, pickleball, tennis, or any doubles sport. Supports Americano, Mexicano, and other formats."
         ),
+        !isStandalone && mobilePlatform !== "unknown"
+          ? m(HelpCard, {
+              title: "📱 Add to Home Screen",
+              message: [
+                "For the best experience, add Tournicano to your home screen:",
+                m("br"),
+                getInstallGuidance(mobilePlatform),
+              ],
+            })
+          : null,
         m("h2", "Quick Start"),
         m(
           "ol.quick-start",
