@@ -1,5 +1,4 @@
 import m from "mithril";
-import "./HomePage.css";
 import { Header } from "./Header.ts";
 import { HelpCard } from "./HelpCard.ts";
 
@@ -12,7 +11,7 @@ function getMobilePlatform(): "ios" | "android" | "unknown" {
 }
 
 /** Returns platform-specific install guidance */
-function getInstallGuidance(platform: string): m.Children {
+function getInstallGuidance(platform: "ios" | "android" | "unknown"): m.Children {
   if (platform === "ios") {
     return [
       "Tap the ",
@@ -56,43 +55,30 @@ export const HomePage: m.Component = {
         "main.home.container",
         m(
           "p",
-          "Organize doubles tournaments with automatic player pairing and fair rotation in minutes. Perfect for padel, pickleball, tennis, or any doubles sport. Supports Americano, Mexicano, and other formats."
+          "Run doubles tournaments with automatic pairing."
         ),
         !isStandalone && mobilePlatform !== "unknown"
           ? m(HelpCard, {
-              title: "📱 Add to Home Screen",
-              message: [
-                "For the best experience, add Tournicano to your home screen:",
-                m("br"),
-                getInstallGuidance(mobilePlatform),
-              ],
-            })
+            title: "📱 Add to Home Screen",
+            message: [
+              "For the best experience, add Tournicano to your home screen: ",
+              getInstallGuidance(mobilePlatform),
+            ],
+          })
           : null,
         m("h2", "Quick Start"),
         m(
-          "ol.quick-start",
-          m("li", "⚙️ Configure courts and format"),
-          m("li", "🤖 Add players"),
-          m("li", "🚀 Generate rounds → play → enter scores"),
-          m("li", "🏆 View live standings"),
+          "p",
+          "⚙️ Configure → 🤖 Add Players → 🚀 Play Rounds → 🏆 View Standings"
         ),
         m("h2", "Key Features"),
         m(
-          "dl.key-features",
-          m("dt", "Flexible formats"),
-          m("dd", "Choose from predefined formats like Americano and Mexicano, or create custom matching strategies based on variety, performance, or group constraints."),
-          m("dt", "Quick player management"),
-          m("dd", "Add or remove players anytime, even mid-tournament, and organize them into groups for mixed doubles, group battles, or multi-division tournaments."),
-          m("dt", "Smart round scheduling"),
-          m("dd", "Create rounds with players paired based on your chosen format, prioritizing variety, performance, or group constraints while ensuring fair court time for all."),
-          m("dt", "Score tracking"),
-          m("dd", "Enter and modify scores anytime, and the standings update instantly."),
-          m("dt", "Player toggling"),
-          m("dd", "Pause and resume players per round as they want to take a break or rejoin."),
-          m("dt", "Live standings"),
-          m("dd", "View rankings by win percentage with point differential as tiebreaker."),
-          m("dt", "Offline support"),
-          m("dd", "Install as a web app for offline use — no account needed, data stays on your device, and updates happen automatically when online."),
+          "ul",
+          m("li", [m("strong", "Flexible formats"), " — Various formats with matching based on variety, performance, and group constraints"]),
+          m("li", [m("strong", "Player management"), " — Add players in bulk, organize them into groups, and toggle participation anytime"]),
+          m("li", [m("strong", "Smart scheduling"), " — Fair round scheduling based on available courts, active players and the chosen format"]),
+          m("li", [m("strong", "Score tracking"), " — Quick score entry and instant update of standings"]),
+          m("li", [m("strong", "Offline ready"), " — Works without internet"]),
         ),
       ),
     ];
