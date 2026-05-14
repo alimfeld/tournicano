@@ -69,7 +69,7 @@ export const HomePage: m.Component = {
         m("h2", "Quick Start"),
         m(
           "p",
-          "Setup ⚙️ → Add 🤖 → Play 🚀 → View 🏆"
+          "⚙️ → 🤖 → 🚀 → 🏆"
         ),
         m("h2", "Key Features"),
         m(
