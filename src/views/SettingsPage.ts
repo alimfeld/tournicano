@@ -1,6 +1,6 @@
 import m from "mithril";
 import {
-  PREDEFINED_MODES,
+  PREDEFINED_FORMATS,
   getMatchingSpecName,
   matchingSpecEquals,
 } from "../model/matching/MatchingSpec.ts";
@@ -53,10 +53,10 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
     const { settings, tournament } = appState;
     const currentSpecName = getMatchingSpecName(settings.matchingSpec);
 
-    const handleMatchingSpecChange = (matchingSpec: typeof PREDEFINED_MODES[number]["spec"]) => {
+    const handleMatchingSpecChange = (matchingSpec: typeof PREDEFINED_FORMATS[number]["spec"]) => {
       settings.setMatchingSpec(matchingSpec);
       if (tournament.rounds.length > 0 && showToast) {
-        showToast("Mode change affects ongoing tournament", { type: "error" });
+        showToast("Tournament format change affects ongoing tournament", { type: "error" });
       }
     };
 
@@ -138,13 +138,13 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
               (event.target as HTMLInputElement).valueAsNumber,
             ),
         }),
-        m("small", "How many matches can be played at the same time"),
+        m("small", "determines max matches per round"),
         m("hr"),
-        m("h2", "Matching"),
+        m("h2", "Tournament Format"),
         m(
           "fieldset.matching",
           [
-            ...PREDEFINED_MODES.map(({ name, spec, description }) =>
+            ...PREDEFINED_FORMATS.map(({ name, spec, description }) =>
               m(
                 "label",
                 m("input", {

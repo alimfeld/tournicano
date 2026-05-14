@@ -521,19 +521,19 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       effectiveSpec.matchUp.groupFactor > 0;
     const groupCount = roundInfo.groupDistribution.size;
 
-    // Case A: Mode uses groups, but all active players are in one group
+    // Case A: Tournament format uses groups, but all active players are in one group
     if (specUsesGroups && groupCount === 1 && roundInfo.activePlayerCount >= 4) {
       warnings.push({
         type: "groupMismatch",
-        message: "Mode uses groups but all active players are in one group - consider organizing players into groups or switch tournament mode."
+        message: "Tournament format uses groups but all active players are in one group - consider organizing players into groups or switching the format."
       });
     }
 
-    // Case B: Active players in multiple groups, but mode doesn't use groups
+    // Case B: Active players in multiple groups, but tournament format doesn't use groups
     if (!specUsesGroups && groupCount > 1) {
       warnings.push({
         type: "groupMismatch",
-        message: "Active players are in multiple groups but mode ignores them."
+        message: "Active players are in multiple groups but tournament format ignores them."
       });
     }
 

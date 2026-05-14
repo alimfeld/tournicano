@@ -594,7 +594,7 @@ validationTest("validateConfiguration warns for Americano with mixed groups", ({
   const warnings = tournament.validateConfiguration(Americano);
   expect(warnings).toHaveLength(1);
   expect(warnings[0].type).toBe("groupMismatch");
-  expect(warnings[0].message).toContain("mode ignores them");
+  expect(warnings[0].message).toContain("but tournament format ignores them");
 });
 
 validationTest("validateConfiguration warns when AmericanoMixed used with one group", ({ tournament }) => {
@@ -612,7 +612,7 @@ validationTest("validateConfiguration warns when mode ignores groups but players
   const warnings = tournament.validateConfiguration(Americano);
   expect(warnings).toHaveLength(1);
   expect(warnings[0].type).toBe("groupMismatch");
-  expect(warnings[0].message).toContain("mode ignores them");
+  expect(warnings[0].message).toContain("but tournament format ignores them");
 });
 
 validationTest("validateConfiguration returns no warnings for AmericanoMixed with multiple groups", ({ tournament }) => {

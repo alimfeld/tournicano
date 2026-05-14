@@ -43,7 +43,7 @@ export const SplitGroupsModal: m.Component<SplitGroupsModalAttrs, SplitGroupsMod
 
         m("p",
           "Splits players into groups based on current standings. Top-ranked players go to Group A, the next to Group B, and so on. ",
-          "After splitting, switch to a group-based format to use the new groups for match generation."
+          "After splitting, switch to a group-based tournament format to use the new groups for match generation."
         ),
 
         m("form", { onsubmit: (e: SubmitEvent) => e.preventDefault() },

@@ -141,7 +141,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
           m("button[aria-label=Close][rel=prev]", {
             onclick: onClose,
           }),
-          m("h2", "Customize Matching")
+          m("h2", "Customize Tournament Format")
         ),
 
         // Form content
@@ -160,7 +160,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
               }),
               "Fixed Teams"
             ]),
-            m("small", "Preserve teams from round 1. Settings below are ignored when enabled."),
+            m("small", "Preserve teams across rounds. Settings below are ignored when enabled."),
             m("hr"),
             m("fieldset", {
               disabled: state.fixedTeams
@@ -343,7 +343,7 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
               }),
               "Balance groups"
             ),
-            m("small", "Players are selected each round so that group constraints can be satisfied (equal counts per group for most modes, multiples of 4 per group for same-group-only matches).")
+            m("small", "Players are selected each round so that group constraints can be satisfied.")
           ),
         ),
 

@@ -37,7 +37,7 @@ export interface MatchingSpec {
   balanceGroups?: boolean;
 }
 
-// Predefined matching modes
+// Predefined tournament formats
 export const Americano: MatchingSpec = {
   teamUp: {
     varietyFactor: 100,
@@ -87,7 +87,24 @@ export const AmericanoMixedBalanced: MatchingSpec = {
   balanceGroups: true,
 };
 
-export const TeamAmericano: MatchingSpec = {
+export const AmericanoGroups: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
+    performanceFactor: 0,
+    performanceMode: TeamUpPerformanceMode.AVERAGE, // not relevant
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.SAME,
+  },
+  matchUp: {
+    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
+    performanceFactor: 0,
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
+  },
+  balanceGroups: true,
+};
+
+export const AmericanoTeams: MatchingSpec = {
   matchUp: {
     varietyFactor: 100,
     performanceFactor: 0,
@@ -112,13 +129,21 @@ export const Mexicano: MatchingSpec = {
   },
 };
 
-export const TeamMexicano: MatchingSpec = {
+export const MexicanoGroups: MatchingSpec = {
+  teamUp: {
+    varietyFactor: 0,
+    performanceFactor: 90, // 90 < 100 → groupFactor always dominates
+    performanceMode: TeamUpPerformanceMode.MEXICANO,
+    groupFactor: 100,
+    groupMode: TeamUpGroupMode.SAME,
+  },
   matchUp: {
     varietyFactor: 0,
-    performanceFactor: 100,
-    groupFactor: 0,
-    groupMode: MatchUpGroupMode.SAME, // not relevant
+    performanceFactor: 90, // 90 < 100 → groupFactor always dominates
+    groupFactor: 100,
+    groupMode: MatchUpGroupMode.SAME,
   },
+  balanceGroups: true,
 };
 
 export const Tournicano: MatchingSpec = {
@@ -154,6 +179,15 @@ export const TournicanoGroups: MatchingSpec = {
   balanceGroups: true,
 };
 
+export const TournicanoTeams: MatchingSpec = {
+  matchUp: {
+    varietyFactor: 0,
+    performanceFactor: 100,
+    groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
+  },
+};
+
 export const Swiss: MatchingSpec = {
   teamUp: {
     varietyFactor: 100,
@@ -170,7 +204,7 @@ export const Swiss: MatchingSpec = {
   },
 };
 
-export const AmericanoGroups: MatchingSpec = {
+export const SwissGroups: MatchingSpec = {
   teamUp: {
     varietyFactor: 90, // 90 < 100 → groupFactor always dominates
     performanceFactor: 0,
@@ -179,29 +213,21 @@ export const AmericanoGroups: MatchingSpec = {
     groupMode: TeamUpGroupMode.SAME,
   },
   matchUp: {
-    varietyFactor: 90, // 90 < 100 → groupFactor always dominates
-    performanceFactor: 0,
-    groupFactor: 100,
+    varietyFactor: 45,
+    performanceFactor: 45,
+    groupFactor: 100, // 100 > 45+45 → groupFactor always dominates
     groupMode: MatchUpGroupMode.SAME,
   },
   balanceGroups: true,
 };
 
-export const MexicanoGroups: MatchingSpec = {
-  teamUp: {
-    varietyFactor: 0,
-    performanceFactor: 90, // 90 < 100 → groupFactor always dominates
-    performanceMode: TeamUpPerformanceMode.MEXICANO,
-    groupFactor: 100,
-    groupMode: TeamUpGroupMode.SAME,
-  },
+export const SwissTeams: MatchingSpec = {
   matchUp: {
-    varietyFactor: 0,
-    performanceFactor: 90, // 90 < 100 → groupFactor always dominates
-    groupFactor: 100,
-    groupMode: MatchUpGroupMode.SAME,
+    varietyFactor: 100,
+    performanceFactor: 100,
+    groupFactor: 0,
+    groupMode: MatchUpGroupMode.SAME, // not relevant
   },
-  balanceGroups: true,
 };
 
 export const GroupBattle: MatchingSpec = {
@@ -238,21 +264,23 @@ export const GroupBattleMixed: MatchingSpec = {
   balanceGroups: true,
 };
 
-// Registry of predefined modes with their names
-export const PREDEFINED_MODES = [
-  { name: "Americano", spec: Americano, description: "Maximum partner variety." },
-  { name: "Americano Mixed", spec: AmericanoMixed, description: "Mixed doubles with partner variety." },
-  { name: "Americano Mixed Balanced", spec: AmericanoMixedBalanced, description: "Balanced mixed doubles." },
-  { name: "Americano Groups", spec: AmericanoGroups, description: "Americano within groups." },
-  { name: "Team Americano", spec: TeamAmericano, description: "Fixed teams, maximum variety." },
-  { name: "Mexicano", spec: Mexicano, description: "Skill-based competitive matchups." },
-  { name: "Mexicano Groups", spec: MexicanoGroups, description: "Mexicano within groups." },
-  { name: "Team Mexicano", spec: TeamMexicano, description: "Fixed teams, skill-based." },
+// Registry of predefined tournament formats with their names
+export const PREDEFINED_FORMATS = [
+  { name: "Americano", spec: Americano, description: "Maximum variety." },
+  { name: "Americano Mixed", spec: AmericanoMixed, description: "Americano with mixed teams (designed for 2 groups)." },
+  { name: "Americano Mixed Balanced", spec: AmericanoMixedBalanced, description: "Americano with mixed teams (designed for 2 balanced groups)." },
+  { name: "Americano Groups", spec: AmericanoGroups, description: "Americano within groups (designed for multiple balanced groups)." },
+  { name: "Americano Teams", spec: AmericanoTeams, description: "Americano with fixed teams." },
+  { name: "Mexicano", spec: Mexicano, description: "1 & 3 vs. 2 & 4." },
+  { name: "Mexicano Groups", spec: MexicanoGroups, description: "Mexicano within groups (designed for multiple balanced groups)." },
   { name: "Tournicano", spec: Tournicano, description: "Maximum partner variety with competitive matchups." },
-  { name: "Tournicano Groups", spec: TournicanoGroups, description: "Tournicano within groups. Works with 2 or 4 groups." },
+  { name: "Tournicano Groups", spec: TournicanoGroups, description: "Tournicano within groups (designed for multiple balanced groups)." },
+  { name: "Tournicano Teams", spec: TournicanoTeams, description: "Tournicano with fixed teams." },
   { name: "Swiss", spec: Swiss, description: "Maximum variety with competitive matchups." },
-  { name: "Group Battle", spec: GroupBattle, description: "Designed for 2 groups. Competition between two sides." },
-  { name: "Group Battle Mixed", spec: GroupBattleMixed, description: "Designed for 4 groups. Mixed doubles team battle." },
+  { name: "Swiss Groups", spec: SwissGroups, description: "Swiss within groups (designed for multiple balanced groups)." },
+  { name: "Swiss Teams", spec: SwissTeams, description: "Swiss with fixed teams." },
+  { name: "Group Battle", spec: GroupBattle, description: "Competition between two sides (designed for 2 groups)." },
+  { name: "Group Battle Mixed", spec: GroupBattleMixed, description: "Mixed doubles group battle (designed for 4 groups)." },
 ] as const;
 
 // Utility functions
@@ -274,11 +302,11 @@ export function matchingSpecEquals(a: MatchingSpec, b: MatchingSpec): boolean {
     (a.balanceGroups ?? false) === (b.balanceGroups ?? false);
 }
 
-// Get mode name from spec configuration
+// Get tournament format name from spec configuration
 export function getMatchingSpecName(spec: MatchingSpec): string {
-  for (const mode of PREDEFINED_MODES) {
-    if (matchingSpecEquals(spec, mode.spec)) {
-      return mode.name;
+  for (const format of PREDEFINED_FORMATS) {
+    if (matchingSpecEquals(spec, format.spec)) {
+      return format.name;
     }
   }
   return "Custom";

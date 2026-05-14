@@ -57,7 +57,7 @@ test("matchingSpecEquals should return true for same object", () => {
   expect(matchingSpecEquals(spec, spec)).toBe(true);
 });
 
-test("matchingSpecEquals should return true for predefined modes", () => {
+test("matchingSpecEquals should return true for predefined formats", () => {
   expect(matchingSpecEquals(Americano, Americano)).toBe(true);
   expect(matchingSpecEquals(Mexicano, Mexicano)).toBe(true);
   expect(matchingSpecEquals(Tournicano, Tournicano)).toBe(true);
@@ -147,7 +147,7 @@ test("matchingSpecEquals should return false when matchUp.groupMode differs", ()
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
 });
 
-test("matchingSpecEquals should distinguish between different predefined modes", () => {
+test("matchingSpecEquals should distinguish between different predefined formats", () => {
   expect(matchingSpecEquals(Americano, Mexicano)).toBe(false);
   expect(matchingSpecEquals(Americano, AmericanoMixed)).toBe(false);
   expect(matchingSpecEquals(Mexicano, Tournicano)).toBe(false);
