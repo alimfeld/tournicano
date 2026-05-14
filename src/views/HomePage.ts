@@ -55,7 +55,7 @@ export const HomePage: m.Component = {
         "main.home.container",
         m(
           "p",
-          "Run doubles tournaments with automatic pairing."
+          "Quickly set up and run doubles tournaments with flexible formats and automatic pairings."
         ),
         !isStandalone && mobilePlatform !== "unknown"
           ? m(HelpCard, {
@@ -69,7 +69,7 @@ export const HomePage: m.Component = {
         m("h2", "Quick Start"),
         m(
           "p",
-          "⚙️ Configure → 🤖 Add Players → 🚀 Play Rounds → 🏆 View Standings"
+          "Setup ⚙️ → Add 🤖 → Play 🚀 → View 🏆"
         ),
         m("h2", "Key Features"),
         m(
