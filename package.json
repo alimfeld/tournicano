@@ -14,20 +14,20 @@
     "simulate": "npx vitest run --reporter=verbose --config vitest.simulate.config.ts"
   },
   "dependencies": {
-    "@dicebear/collection": "^9.2.4",
-    "@dicebear/core": "^9.2.4",
+    "@dicebear/core": "^10.3.0",
+    "@dicebear/styles": "^10.2.0",
     "@graph-algorithm/maximum-matching": "^3.0.0",
     "@picocss/pico": "^2.1.1",
     "mithril": "^2.3.8",
     "regenerator-runtime": "^0.14.1"
   },
   "devDependencies": {
-    "@types/mithril": "^2.2.7",
-    "@types/node": "^25.6.0",
+    "@types/mithril": "^2.2.8",
+    "@types/node": "^26.1.1",
     "@vite-pwa/assets-generator": "^1.0.2",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.10",
-    "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^4.0.16"
+    "typescript": "^7.0.2",
+    "vite": "^8.1.3",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.10"
   }
 }

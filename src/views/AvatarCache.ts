@@ -1,36 +1,40 @@
-import { createAvatar, Style } from "@dicebear/core";
-import { bottts, botttsNeutral } from "@dicebear/collection";
-import type { Options as BotttsOptions } from "@dicebear/bottts";
-import type { Options as BotttsNeutralOptions } from "@dicebear/bottts-neutral";
+import { Style, Avatar } from "@dicebear/core";
+import type { StyleOptions } from "@dicebear/core";
+import botttsDefinition from "@dicebear/styles/bottts.json";
+import botttsNeutralDefinition from "@dicebear/styles/bottts-neutral.json";
 import { AvatarSpec } from "../model/settings/Settings.ts";
 
-type CoreOptions = { radius?: number };
+type BotttsStyle = Style<typeof botttsDefinition>;
+type BotttsNeutralStyle = Style<typeof botttsNeutralDefinition>;
 
 type AvatarSpecEntry =
-  | { style: Style<BotttsOptions>; options: BotttsOptions & CoreOptions }
-  | { style: Style<BotttsNeutralOptions>; options: BotttsNeutralOptions & CoreOptions };
+  | { style: BotttsStyle; options: StyleOptions<typeof botttsDefinition> }
+  | { style: BotttsNeutralStyle; options: StyleOptions<typeof botttsNeutralDefinition> };
+
+const botttsStyle = new Style(botttsDefinition);
+const botttsNeutralStyle = new Style(botttsNeutralDefinition);
 
 /**
  * Predefined avatar specs with their associated DiceBear style and options.
  */
 const AVATAR_SPECS: Record<AvatarSpec, AvatarSpecEntry> = {
   "bottts": {
-    style: bottts,
+    style: botttsStyle,
     options: {},
   },
   "bottts-neutral": {
-    style: botttsNeutral,
+    style: botttsNeutralStyle,
     options: {
-      radius: 10,
+      borderRadius: 10,
     },
   },
   "bottts-clean": {
-    style: bottts,
+    style: botttsStyle,
     options: {
-      eyes: ["bulging", "dizzy", "eva", "frame1", "frame2", "happy", "robocop", "roundFrame01", "roundFrame02", "sensor", "shade01"],
-      mouth: ["bite", "diagram", "grill01", "grill02", "grill03", "smile01", "smile02", "square01", "square02"],
+      eyesVariant: ["bulging", "dizzy", "eva", "frame1", "frame2", "happy", "robocop", "roundFrame01", "roundFrame02", "sensor", "shade01"],
+      mouthVariant: ["bite", "diagram", "grill01", "grill02", "grill03", "smile01", "smile02", "square01", "square02"],
       textureProbability: 0,
-      top: ["antenna", "antennaCrooked", "bulb01", "lights", "pyramid", "radar"],
+      topVariant: ["antenna", "antennaCrooked", "bulb01", "lights", "pyramid", "radar"],
     },
   },
 };
@@ -73,8 +77,7 @@ export const getAvatar = (playerName: string): string => {
     }
 
     const { style, options } = AVATAR_SPECS[currentSpec];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const avatar = createAvatar(style as Style<any>, { seed: playerName, ...options });
+    const avatar = new Avatar(style, { seed: playerName, ...options });
     avatarCache.set(key, avatar.toDataUri());
   }
   return avatarCache.get(key)!;
