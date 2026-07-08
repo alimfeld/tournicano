@@ -15,13 +15,6 @@ section.team {
   border-radius: var(--pico-border-radius);
 }
 
-section.team.winner {
-  outline-width: var(--pico-border-width);
-  outline-style: solid;
-  outline-color: var(--pico-form-element-valid-border-color);
-  outline-offset: calc(var(--pico-spacing) / 2);
-}
-
 section.team article.player {
   margin: 0;
 }
@@ -41,11 +34,6 @@ section.vs small.match {
   line-height: 1.4;
 }
 
-section.vs small.match.valid {
-  color: var(--pico-form-element-valid-border-color);
-  border-color: var(--pico-form-element-valid-border-color);
-}
-
 section.vs.interactive {
   cursor: pointer;
   border-radius: var(--pico-border-radius);
@@ -56,6 +44,10 @@ section.vs.interactive {
 
 section.vs span.score {
   text-align: center;
+}
+
+section.vs span.score .winner {
+  font-weight: 800;
 }
 
 @media (min-width: 768px) {

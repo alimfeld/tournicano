@@ -349,7 +349,6 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 openPlayerModal: handlePlayerClick,
                 playerCardClass: (player: ParticipatingPlayer) => getPlayerCardClass(player),
                 playerBadge: (player: ParticipatingPlayer) => getPlayerBadge(player),
-                showResult: true,
               }),
             ),
             round.paused.length > 0 || round.inactive.length > 0
