@@ -83,10 +83,18 @@ dialog.score-entry-modal section.vs span.score::after {
 
 /* Button press feedback */
 dialog.score-entry-modal section.keyboard button {
+  will-change: transform;
   transition: transform 120ms ease, opacity 120ms ease;
 }
 
 dialog.score-entry-modal section.keyboard button:active {
   transform: scale(0.97);
   opacity: 0.85;
+}
+
+/* Explicit disabled state to work around Safari repaint bug with button[disabled] in grid */
+dialog.score-entry-modal section.keyboard button:disabled,
+dialog.score-entry-modal section.keyboard button.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }

@@ -132,24 +132,26 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
 
         m("section.keyboard", [
           // Row 1: 1-3
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("1"); }, disabled: areNumbersDisabled }, "1"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("2"); }, disabled: areNumbersDisabled }, "2"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("3"); }, disabled: areNumbersDisabled }, "3"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("1"); }, disabled: areNumbersDisabled }, "1"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("2"); }, disabled: areNumbersDisabled }, "2"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("3"); }, disabled: areNumbersDisabled }, "3"),
           // Row 2: 4-6
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("4"); }, disabled: areNumbersDisabled }, "4"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("5"); }, disabled: areNumbersDisabled }, "5"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("6"); }, disabled: areNumbersDisabled }, "6"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("4"); }, disabled: areNumbersDisabled }, "4"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("5"); }, disabled: areNumbersDisabled }, "5"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("6"); }, disabled: areNumbersDisabled }, "6"),
           // Row 3: 7-9
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("7"); }, disabled: areNumbersDisabled }, "7"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("8"); }, disabled: areNumbersDisabled }, "8"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("9"); }, disabled: areNumbersDisabled }, "9"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("7"); }, disabled: areNumbersDisabled }, "7"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("8"); }, disabled: areNumbersDisabled }, "8"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("9"); }, disabled: areNumbersDisabled }, "9"),
           // Row 4: Colon, 0, Backspace
           m("button.key-action.secondary", {
+            class: isColonDisabled ? "disabled" : "",
             onpointerdown: (e: PointerEvent) => { e.preventDefault(); addColon(); },
             disabled: isColonDisabled,
           }, ":"),
-          m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("0"); }, disabled: areNumbersDisabled }, "0"),
+          m("button.key-number", { class: areNumbersDisabled ? "disabled" : "", onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("0"); }, disabled: areNumbersDisabled }, "0"),
           m("button.key-action.backspace", {
+            class: isBackspaceDisabled ? "disabled" : "",
             onpointerdown: (e: PointerEvent) => { e.preventDefault(); backspace(); },
             disabled: isBackspaceDisabled,
           }, "⌫"),
@@ -159,6 +161,7 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
             m(
               "button.accept",
               {
+                class: !isValid ? "disabled" : "",
                 disabled: !isValid,
                 onclick: accept,
               },
