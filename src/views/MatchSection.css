@@ -49,7 +49,9 @@ section.vs small.match.valid {
 section.vs.interactive {
   cursor: pointer;
   border-radius: var(--pico-border-radius);
-  border: var(--pico-border-width) dashed var(--pico-muted-border-color);
+  border: var(--pico-border-width) solid var(--pico-form-element-border-color);
+  background: var(--pico-form-element-background-color);
+  padding: var(--pico-form-element-spacing-vertical) var(--pico-form-element-spacing-horizontal);
 }
 
 section.vs span.score {
