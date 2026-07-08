@@ -131,18 +131,6 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
         }),
 
         m("section.keyboard", [
-          // Row 0: Actions (Cancel and Submit at 50% each)
-          m("div.action-row", [
-            m("button.secondary", { onclick: onClose }, "Cancel"),
-            m(
-              "button.accept",
-              {
-                disabled: !isValid,
-                onclick: accept,
-              },
-              "Submit",
-            ),
-          ]),
           // Row 1: 1-3
           m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("1"); }, disabled: areNumbersDisabled }, "1"),
           m("button.key-number", { onpointerdown: (e: PointerEvent) => { e.preventDefault(); addDigit("2"); }, disabled: areNumbersDisabled }, "2"),
@@ -165,6 +153,18 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
             onpointerdown: (e: PointerEvent) => { e.preventDefault(); backspace(); },
             disabled: isBackspaceDisabled,
           }, "⌫"),
+          // Action row at bottom (Cancel left, Submit right)
+          m("div.action-row", [
+            m("button.secondary", { onclick: onClose }, "Cancel"),
+            m(
+              "button.accept",
+              {
+                disabled: !isValid,
+                onclick: accept,
+              },
+              "Submit",
+            ),
+          ]),
         ]),
       )
     );
