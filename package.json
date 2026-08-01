@@ -18,8 +18,7 @@
     "@dicebear/styles": "^10.2.0",
     "@graph-algorithm/maximum-matching": "^3.0.0",
     "@picocss/pico": "^2.1.1",
-    "mithril": "^2.3.8",
-    "regenerator-runtime": "^0.14.1"
+    "mithril": "^2.3.8"
   },
   "devDependencies": {
     "@types/mithril": "^2.2.8",
