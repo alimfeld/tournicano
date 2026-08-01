@@ -68,49 +68,29 @@ export const MatchingSpecModal: m.Component<MatchingSpecModalAttrs, MatchingSpec
   },
 
   view: ({ attrs: { onconfirm, onClose, matchingSpec }, state }) => {
-    const hasChanges = () => {
-      const currentSpec: MatchingSpec = {
-        ...(state.fixedTeams ? { teamUp: undefined } : {
-          teamUp: {
-            varietyFactor: state.teamUpVarietyFactor,
-            performanceFactor: state.teamUpPerformanceFactor,
-            performanceMode: state.teamUpPerformanceMode,
-            groupFactor: state.teamUpGroupFactor,
-            groupMode: state.teamUpGroupMode,
-          }
-        }),
-        matchUp: {
-          varietyFactor: state.matchUpVarietyFactor,
-          performanceFactor: state.matchUpPerformanceFactor,
-          groupFactor: state.matchUpGroupFactor,
-          groupMode: state.matchUpGroupMode,
-        },
-        balanceGroups: state.balanceGroups,
-      };
-      return !matchingSpecEquals(currentSpec, matchingSpec);
-    };
+    const getSpec = (): MatchingSpec => ({
+      ...(state.fixedTeams ? { teamUp: undefined } : {
+        teamUp: {
+          varietyFactor: state.teamUpVarietyFactor,
+          performanceFactor: state.teamUpPerformanceFactor,
+          performanceMode: state.teamUpPerformanceMode,
+          groupFactor: state.teamUpGroupFactor,
+          groupMode: state.teamUpGroupMode,
+        }
+      }),
+      matchUp: {
+        varietyFactor: state.matchUpVarietyFactor,
+        performanceFactor: state.matchUpPerformanceFactor,
+        groupFactor: state.matchUpGroupFactor,
+        groupMode: state.matchUpGroupMode,
+      },
+      balanceGroups: state.balanceGroups,
+    });
+
+    const hasChanges = () => !matchingSpecEquals(getSpec(), matchingSpec);
 
     const handleApply = () => {
-      const spec = {
-        ...(state.fixedTeams ? { teamUp: undefined } : {
-          teamUp: {
-            varietyFactor: state.teamUpVarietyFactor,
-            performanceFactor: state.teamUpPerformanceFactor,
-            performanceMode: state.teamUpPerformanceMode,
-            groupFactor: state.teamUpGroupFactor,
-            groupMode: state.teamUpGroupMode,
-          }
-        }),
-        matchUp: {
-          varietyFactor: state.matchUpVarietyFactor,
-          performanceFactor: state.matchUpPerformanceFactor,
-          groupFactor: state.matchUpGroupFactor,
-          groupMode: state.matchUpGroupMode,
-        },
-        balanceGroups: state.balanceGroups,
-      } as MatchingSpec;
-
-      onconfirm(spec);
+      onconfirm(getSpec());
       onClose();
     };
 

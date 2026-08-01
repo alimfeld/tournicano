@@ -1,5 +1,4 @@
 export interface OperationDetails {
-  affected?: number;
   added?: number;
   duplicates?: number;
   ignored?: number;
@@ -12,15 +11,6 @@ export interface OperationResult {
   message: string;
   type: "success" | "error" | "info" | "warning";
   details?: OperationDetails;
-}
-
-/**
- * Creates a formatted operation result message
- * @param result - The operation result to format
- * @returns A formatted message string
- */
-export function formatOperationMessage(result: OperationResult): string {
-  return result.message;
 }
 
 /**

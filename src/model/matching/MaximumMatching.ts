@@ -16,7 +16,6 @@ const MIN_EDGE_WEIGHT = 1; // Minimum weight for maximum matching algorithm
  * @param entities - Array of entities to match (players or teams)
  * @param perf - Function to extract performance metrics for ranking
  * @param weights - Array of weight functions with their factors
- * @param debug - Enable debug logging
  * @returns Array of matched pairs
  */
 export const match = <Type>(
@@ -29,15 +28,10 @@ export const match = <Type>(
       b: { rank: number; entity: Type },
     ) => number;
   }[],
-  debug = false,
 ): [Type, Type][] => {
   const ranks = perfToRanks(entities.map(entity => perf(entity)));
-  if (debug) {
-    console.log("\n=== MATCH DEBUG ===");
-    console.log("Ranks:", ranks);
-  }
   let totalWeights: number[] = [];
-  weights.forEach((weight, weightIdx) => {
+  weights.forEach((weight) => {
     if (weight.factor !== 0) {
       let weights: number[] = [];
       for (let i = 0; i < entities.length - 1; i++) {
@@ -46,20 +40,12 @@ export const match = <Type>(
           const b = entities[j];
           const w = weight.fn({ rank: ranks[i], entity: a }, { rank: ranks[j], entity: b });
           weights.push(w);
-          if (debug) {
-            console.log(`Weight ${weightIdx} for pair (${i},${j}) ranks (${ranks[i]},${ranks[j]}): ${w}`);
-          }
         }
       }
       // normalize weights between 0 and 1 and apply factor
       const min = Math.min(...weights);
       weights = weights.map((w) => w - min);
       const max = Math.max(...weights);
-      if (debug) {
-        console.log(`  Raw weights: ${weights.map(w => (w + min).toFixed(2))}`);
-        console.log(`  Min: ${min.toFixed(2)}, Max after shift: ${max.toFixed(2)}`);
-        console.log(`  After normalization (factor=${weight.factor}):`, weights.map(w => ((weight.factor * w) / max).toFixed(2)));
-      }
       if (max !== 0) {
         weights = weights.map((w) => (weight.factor * w) / max);
         // and add weights to total weights
@@ -71,16 +57,6 @@ export const match = <Type>(
       }
     }
   });
-  if (debug) {
-    console.log("\nTotal weights:", totalWeights.map(w => w.toFixed(2)));
-    console.log("Edges for maximum matching:");
-    let pos = 0;
-    for (let i = 0; i < entities.length - 1; i++) {
-      for (let j = i + 1; j < entities.length; j++) {
-        console.log(`  Edge (${i},${j}): weight ${((totalWeights[pos++] || 0) + MIN_EDGE_WEIGHT).toFixed(2)}`);
-      }
-    }
-  }
   const edges = [];
   let pos = 0;
   for (let i = 0; i < entities.length - 1; i++) {

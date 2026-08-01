@@ -5,7 +5,7 @@ import {
   MatchUpGroupMode,
   TeamUpPerformanceMode,
 } from "./MatchingSpec.ts";
-import { partitionPlayers, partitionFixedTeams, PartitionResult } from "./Partitioning.ts";
+import { partitionPlayers, partitionFixedTeams } from "./Partitioning.ts";
 import { match } from "./MaximumMatching.ts";
 import {
   curriedTeamUpGroupWeight,
@@ -15,9 +15,6 @@ import {
   curriedMatchUpVarietyWeight,
   matchUpPerformanceWeight,
 } from "./WeightFunctions.ts";
-
-// Re-export PartitionResult for backward compatibility
-export type { PartitionResult };
 
 export type PlayerId = string;
 
@@ -47,7 +44,6 @@ const matchUpTeams = (
   teams: Team[],
   spec: MatchingSpec,
   currentRoundIndex: number,
-  debug: boolean
 ): Match[] => {
   return match(
     teams,
@@ -68,7 +64,6 @@ const matchUpTeams = (
         fn: matchUpPerformanceWeight,
       },
     ],
-    debug,
   );
 };
 
@@ -99,7 +94,6 @@ export const matching = (
   currentRoundIndex: number,
   maxMatches?: number,
   teams?: Array<{ player1Id: PlayerId; player2Id: PlayerId }>,
-  debug = false,
 ): [matches: Match[], paused: Player[]] => {
   let competingTeams: Team[];
   let paused: Player[];
@@ -162,7 +156,6 @@ export const matching = (
           ),
         },
       ],
-      debug,
     );
 
     paused = pausedPlayers;
@@ -175,7 +168,7 @@ export const matching = (
   }
 
   // PHASE 2: MATCH-UP (team vs team matching - shared by both modes)
-  let matches = matchUpTeams(competingTeams, spec, currentRoundIndex, debug);
+  let matches = matchUpTeams(competingTeams, spec, currentRoundIndex);
 
   // PHASE 3: PERFORMANCE SORTING (optional - shared by both modes)
   if (spec.matchUp.performanceFactor > 0) {

@@ -312,28 +312,6 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     this.notifyChange();
   }
 
-  activatePlayers(players: Player[], active: boolean): number {
-    let count = 0;
-    players.forEach((player) => {
-      // Only count players that can be activated/deactivated
-      if (active) {
-        if (!player.active) {
-          (player as PlayerImpl).activate(active, false);
-          count++;
-        }
-      } else {
-        if (player.active) {
-          (player as PlayerImpl).activate(active, false);
-          count++;
-        }
-      }
-    });
-    if (count > 0) {
-      this.notifyChange();
-    }
-    return count;
-  }
-
   toggleActivePlayers(players: Player[]): OperationResult {
     // Count active players in the set
     const activeCount = players.filter(p => p.active).length;
@@ -416,21 +394,6 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     return totalAssigned;
   }
 
-  deletePlayers(players: Player[]): number {
-    let count = 0;
-    players.forEach((player) => {
-      if (!player.inAnyRound()) {
-        if (this.playerMap.delete(player.id)) {
-          count++;
-        }
-      }
-    });
-    if (count > 0) {
-      this.notifyChange();
-    }
-    return count;
-  }
-
   private getPlayersForNextRound(shouldShuffle: boolean = false): {
     participating: ParticipatingPlayerImpl[];
     active: ParticipatingPlayerImpl[];
@@ -486,19 +449,11 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
     const { competing, groupDistribution } = partitionPlayers(active, effectiveSpec, maxMatches);
 
-    // Calculate competing and paused counts
-    let competingPlayerCount = 0;
-    let pausedPlayerCount = 0;
-    groupDistribution.forEach(counts => {
-      competingPlayerCount += counts.competing;
-      pausedPlayerCount += counts.paused;
-    });
-
     return {
       matchCount: Math.floor(competing.length / 4),
       activePlayerCount: active.length,
-      competingPlayerCount,
-      pausedPlayerCount,
+      competingPlayerCount: competing.length,
+      pausedPlayerCount: active.length - competing.length,
       matchingSpecName: getMatchingSpecName(effectiveSpec),
       groupDistribution,
       balancingEnabled: effectiveSpec.balanceGroups || false,
@@ -509,12 +464,6 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     const warnings: ConfigurationWarning[] = [];
     const roundInfo = this.getNextRoundInfo(spec, maxMatches);
     const effectiveSpec = spec || Americano;
-
-    // Check for insufficient players
-    if (roundInfo.activePlayerCount < 4) {
-      // This is handled elsewhere (can't create round), not a configuration warning
-      // but we could add it if needed
-    }
 
     // Check for group configuration mismatch
     const specUsesGroups = effectiveSpec.teamUp && effectiveSpec.teamUp.groupFactor > 0 ||

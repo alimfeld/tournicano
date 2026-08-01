@@ -199,7 +199,7 @@ test("should pair by performance in Mexicano mode", ({ players }) => {
     console.log(`  Player ${p.id}: wr=${p.winRatio}, pm=${p.plusMinus}`);
   });
 
-  const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 0, 2, undefined, true);
+  const [matches, _paused] = matching(players.slice(0, 8), Mexicano, 0, 2);
 
   // Actual ranking by winRatio (descending):
   // Rank 1: player 0 (1.0)
@@ -292,7 +292,7 @@ test("should respect group constraints in AmericanoMixed", ({ players }) => {
   });
 });
 
-test("debug Mexicano rank calculation", ({ players }) => {
+test("should pair ranks 1-3 and 2-4 in Mexicano", ({ players }) => {
   // Simple case with 4 players, clear ranking
   players[0].winRatio = 1.0;   // Rank 1
   players[0].plusMinus = 10;
@@ -303,23 +303,14 @@ test("debug Mexicano rank calculation", ({ players }) => {
   players[3].winRatio = 0.25;  // Rank 4
   players[3].plusMinus = -5;
 
-  console.log("\n=== DEBUG MEXICANO PAIRING ===");
-  console.log("Player 0: winRatio=1.0, plusMinus=10 (expected rank 1)");
-  console.log("Player 1: winRatio=0.75, plusMinus=5 (expected rank 2)");
-  console.log("Player 2: winRatio=0.5, plusMinus=0 (expected rank 3)");
-  console.log("Player 3: winRatio=0.25, plusMinus=-5 (expected rank 4)");
-  console.log("\nExpected Mexicano pairing: 0-2 (rank 1-3) and 1-3 (rank 2-4)");
-
-  const [matches, _paused] = matching(players.slice(0, 4), Mexicano, 0, 1, undefined, true);
+  const [matches, _paused] = matching(players.slice(0, 4), Mexicano, 0, 1);
 
   const teams = matches.flatMap(m => m);
-  console.log("\nActual pairing:");
-  teams.forEach((team, i) => {
-    console.log(`  Team ${i + 1}: ${team[0].id} (wr=${team[0].winRatio}) & ${team[1].id} (wr=${team[1].winRatio})`);
-  });
-
+  // Expected Mexicano pairing: 0-2 (rank 1-3) and 1-3 (rank 2-4)
   const teamPairs = teams.map(team => [team[0].id, team[1].id].sort().join("-"));
-  console.log("\nTeam pairs:", teamPairs);
+
+  expect(teamPairs).toContain("0-2");
+  expect(teamPairs).toContain("1-3");
 });
 
 test("should balance all factors in Tournicano", ({ players }) => {

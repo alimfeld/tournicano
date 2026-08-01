@@ -7,7 +7,6 @@ import {
   parseScore as parseScoreFromInput,
   validateScoreInput,
   addDigitToScore,
-  formatScoreDisplay,
 } from "../model/tournament/Score.ts";
 
 export interface ScoreEntryModalAttrs {
@@ -101,7 +100,7 @@ export const ScoreEntryModal: m.Component<ScoreEntryModalAttrs, ScoreEntryModalS
       }
     };
 
-    const scoreDisplay = formatScoreDisplay(state.scoreInput);
+    const scoreDisplay = state.scoreInput;
 
     // Determine button states using validation
     const validation = validateScoreInput(state.scoreInput);

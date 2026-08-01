@@ -28,12 +28,7 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
     const round =
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
-    const allGroups = tournament.groups;
-    const populatedGroups = [...new Set(
-      tournament.players()
-        .map(p => p.group)
-    )].sort((a, b) => a - b);
-    const groups = populatedGroups.length > 0 ? populatedGroups : allGroups;
+    const groups = tournament.groups;
     const showGroupFilter = groups.length > 1 && groups.length <= 4;
 
     // Convert filters to standings call format

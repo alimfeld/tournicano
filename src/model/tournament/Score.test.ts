@@ -1,10 +1,8 @@
 import { expect, test } from "vitest";
 import {
   parseScore,
-  formatScore,
   validateScoreInput,
   addDigitToScore,
-  formatScoreDisplay,
 } from "./Score.ts";
 
 // parseScore tests
@@ -59,13 +57,6 @@ test("parseScore with multiple colons", () => {
   const result = parseScore("11:9:5");
   expect(result.success).toBe(false);
   expect(result.error).toContain("two parts");
-});
-
-// formatScore tests
-test("formatScore formats correctly", () => {
-  expect(formatScore([11, 9])).toBe("11:9");
-  expect(formatScore([0, 0])).toBe("0:0");
-  expect(formatScore([21, 19])).toBe("21:19");
 });
 
 // validateScoreInput tests
@@ -139,17 +130,6 @@ test("addDigitToScore respects max digits", () => {
 test("addDigitToScore with custom max digits", () => {
   expect(addDigitToScore("111", "2", 3)).toBe("111:");
   expect(addDigitToScore("1", "2", 1)).toBe("1:");
-});
-
-// formatScoreDisplay tests
-test("formatScoreDisplay with empty input", () => {
-  expect(formatScoreDisplay("")).toBe("");
-});
-
-test("formatScoreDisplay with input", () => {
-  expect(formatScoreDisplay("11")).toBe("11");
-  expect(formatScoreDisplay("11:")).toBe("11:");
-  expect(formatScoreDisplay("11:9")).toBe("11:9");
 });
 
 // Integration test: simulating user input

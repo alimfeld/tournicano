@@ -50,8 +50,5 @@ export default defineConfig({
   ],
   test: {
     exclude: ["**/node_modules/**", "src/sim/simulate-*.test.ts"],
-    alias: {
-      "@graph-algorithm/maximum-matching": "@graph-algorithm/maximum-matching",
-    },
   },
 });

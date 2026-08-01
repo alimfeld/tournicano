@@ -1,5 +1,6 @@
 import m from "mithril";
 import "./Header.css";
+import { Modal } from "./Modal.ts";
 
 export interface HeaderAction {
   icon: string;
@@ -63,22 +64,7 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
           // Only render if this confirmation is open
           if (!isOpen) return null;
 
-          return m(
-            "dialog",
-            {
-              oncreate: (vnode) => {
-                (vnode.dom as HTMLDialogElement).showModal();
-                document.documentElement.classList.add('modal-is-open');
-              },
-              onremove: () => {
-                document.documentElement.classList.remove('modal-is-open');
-              },
-              onclick: (e: MouseEvent) => {
-                if (e.target === e.currentTarget) {
-                  cancelAction();
-                }
-              }
-            },
+          return m(Modal, { onClose: cancelAction },
             m(
               "article",
               m("header",

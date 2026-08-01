@@ -64,13 +64,6 @@ export function parseScore(input: string): ScoreParseResult {
 }
 
 /**
- * Format a Score tuple as a string "11:9"
- */
-export function formatScore(score: Score): string {
-  return `${score[0]}:${score[1]}`;
-}
-
-/**
  * Validate the current state of score input
  */
 export function validateScoreInput(input: string, maxDigitsPerSide: number = 2): ScoreInputValidation {
@@ -145,14 +138,4 @@ export function addDigitToScore(currentInput: string, digit: string, maxDigitsPe
 
   // Invalid state
   return currentInput;
-}
-
-/**
- * Format score for display (shows "--:--" for empty input)
- */
-export function formatScoreDisplay(input: string): string {
-  if (input.length === 0) {
-    return "";
-  }
-  return input;
 }
