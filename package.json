@@ -20,6 +20,9 @@
     "@picocss/pico": "^2.1.1",
     "mithril": "^2.3.8"
   },
+  "overrides": {
+    "sharp": "^0.35.0"
+  },
   "devDependencies": {
     "@types/mithril": "^2.2.8",
     "@types/node": "^26.1.1",
