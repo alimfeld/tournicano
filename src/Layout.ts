@@ -6,11 +6,7 @@ import { Nav } from "./views/Nav.ts";
 // Create the app context once
 const appContext = App();
 
-export interface LayoutAttrs {
-  // Page component will be passed as children
-}
-
-export const Layout: m.Component<LayoutAttrs> = {
+export const Layout: m.Component<{}, {}> = {
   view: ({ children }) => {
     const {
       state,
