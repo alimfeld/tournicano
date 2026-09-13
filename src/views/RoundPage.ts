@@ -428,6 +428,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
       ),
       !state.switchMode?.active ? m(FAB, {
         icon: "＋",
+        label: "Create next round",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
         disabled: nextRoundInfo.matchCount === 0 || blockNextRound,

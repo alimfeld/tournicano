@@ -16,9 +16,9 @@ export const ToggleFullscreenButton: m.Component<ToggleFullscreenButtonAttrs> = 
           event.preventDefault();
           onclick();
         },
-        "aria-label": isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen",
+        "aria-label": isFullscreen ? "Show navigation" : "Hide navigation",
         "aria-pressed": isFullscreen.toString(),
-        title: isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen",
+        title: isFullscreen ? "Show navigation" : "Hide navigation",
       },
       "⛶"
     );
