@@ -275,7 +275,7 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
               ? [
                 m("p", "Create rounds and enter match scores to see standings."),
               ]
-              : m("p", "Enter match scores to see standings!"),
+              : m("p", "Standings appear after scores are entered."),
             action: {
               label: "Go to Rounds",
               onclick: () => m.route.set("/rounds")

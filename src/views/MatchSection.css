@@ -50,6 +50,16 @@ section.vs span.score .winner {
   font-weight: 800;
 }
 
+/* Unscored matches that block the next round (performance modes) */
+section.match.missing-score section.vs.interactive {
+  border-color: var(--pico-primary);
+}
+
+section.match.missing-score section.vs span.score {
+  color: var(--pico-primary);
+  font-weight: 800;
+}
+
 @media (min-width: 768px) {
 
   section.match {

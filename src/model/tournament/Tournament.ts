@@ -165,7 +165,7 @@ export interface NameValidationResult {
 /**
  * Type of configuration warning
  */
-export type ConfigurationWarningType = "groupMismatch" | "insufficientPlayers";
+export type ConfigurationWarningType = "groupMismatch";
 
 /**
  * Configuration warning for tournament setup

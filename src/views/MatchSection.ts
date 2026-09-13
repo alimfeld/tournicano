@@ -21,11 +21,15 @@ export interface MatchSectionAttrs {
   playerCardClass?: (player: ParticipatingPlayer) => string | undefined;
   playerBadge?: (player: ParticipatingPlayer) => string | undefined;
 
+  // Highlight unscored matches (e.g. they block the next round in performance modes)
+  missingScore?: boolean;
+
 }
 
 export const MatchSection: m.Component<MatchSectionAttrs> = {
-  view: ({ attrs: { roundIndex, match, matchIndex, matchLabel, openScoreEntry, openPlayerModal, scoreDisplay, playerCardClass, playerBadge } }) => {
+  view: ({ attrs: { roundIndex, match, matchIndex, matchLabel, openScoreEntry, openPlayerModal, scoreDisplay, playerCardClass, playerBadge, missingScore } }) => {
     const isInteractive = !!openScoreEntry;
+    const isMissing = missingScore === true && !match.score;
 
     const renderScore = () => {
       if (scoreDisplay !== undefined) {
@@ -67,6 +71,7 @@ export const MatchSection: m.Component<MatchSectionAttrs> = {
       [
         m(
           "section.match",
+          { class: isMissing ? "missing-score" : undefined },
           renderTeam(match.teamA),
           m(
             "section.vs",

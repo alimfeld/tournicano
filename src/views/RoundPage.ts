@@ -97,6 +97,13 @@ export const RoundPage: m.Component<{}, RoundState> = {
       roundIndex >= 0 ? tournament.rounds.at(roundIndex) : undefined;
     const roundCount = tournament.rounds.length;
 
+    // Performance modes (Mexicano/Swiss) pair the next round from current standings,
+    // so block round creation until all scores are in.
+    const usesPerformanceFactors =
+      (settings.matchingSpec.teamUp?.performanceFactor ?? 0) > 0 ||
+      settings.matchingSpec.matchUp.performanceFactor > 0;
+    const blockNextRound = usesPerformanceFactors && !tournament.hasAllScoresSubmitted;
+
     // Get fullscreen state from app context
     const fullscreen = appState.fullscreen;
 
@@ -105,7 +112,12 @@ export const RoundPage: m.Component<{}, RoundState> = {
 
     // Get configuration warnings from the model
     const configurationWarnings = tournament.validateConfiguration(settings.matchingSpec);
-    const groupMismatchWarning = configurationWarnings.find(w => w.type === "groupMismatch")?.message || null;
+
+    // Notes shown on the ready-to-play card: config warnings + how the mode uses scores
+    const modeNotes: m.Children[] = configurationWarnings.map(w => m("li", ["⚠ ", w.message]));
+    if (usesPerformanceFactors) {
+      modeNotes.push(m("li", ["ⓘ ", "Matchups are based on standings — scores must be entered before creating the next round."]));
+    }
 
     // Score entry handlers
     const openScoreEntry = (roundIndex: number, matchIndex: number, match: Match) => {
@@ -345,6 +357,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 match,
                 matchIndex,
                 matchLabel: fullscreen ? `R${roundIndex + 1}-M${matchIndex + 1}` : `M${matchIndex + 1}`,
+                missingScore: blockNextRound,
                 openScoreEntry: state.switchMode?.active ? undefined : openScoreEntry,
                 openPlayerModal: handlePlayerClick,
                 playerCardClass: (player: ParticipatingPlayer) => getPlayerCardClass(player),
@@ -402,7 +415,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
                   title: "🚀 Ready to play?",
                   message: [
                     renderNextRoundInfo(),
-                    groupMismatchWarning ? m("small", m("mark", groupMismatchWarning)) : null
+                    modeNotes.length > 0 ? m("ul.notes", modeNotes) : null
                   ],
                   action: {
                     label: "Create first Round", onclick: () => {
@@ -417,13 +430,8 @@ export const RoundPage: m.Component<{}, RoundState> = {
         icon: "＋",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
-        disabled: nextRoundInfo.matchCount === 0,
+        disabled: nextRoundInfo.matchCount === 0 || blockNextRound,
         onclick: () => {
-          const spec = settings.matchingSpec;
-          const usesPerformanceFactors = (spec.teamUp?.performanceFactor ?? 0) > 0 || spec.matchUp.performanceFactor > 0;
-          if (tournament.rounds.length > 0 && usesPerformanceFactors && !tournament.hasAllScoresSubmitted) {
-            showToast("Some scores from previous rounds are missing — new matchups use current standings", { type: "info", position: "middle" });
-          }
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);
         },

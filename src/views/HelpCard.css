@@ -5,6 +5,18 @@ article.help-card {
   margin-right: auto;
 }
 
+/* Important notes on the ready-to-play card (warnings + info about the mode) */
+article.help-card ul.notes {
+  padding-left: 0;
+  margin-top: var(--pico-spacing);
+  font-size: 0.9rem;
+}
+
+/* Pico sets li { list-style: square } directly, which beats list-style inherited from the ul */
+article.help-card ul.notes li {
+  list-style: none;
+}
+
 article.help-card footer {
   text-align: right;
 }
