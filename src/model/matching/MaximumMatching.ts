@@ -1,7 +1,6 @@
 import {
   iter,
   weight as maximumMatching,
-  // @ts-ignore
 } from "@graph-algorithm/maximum-matching";
 
 // Constants
@@ -57,7 +56,7 @@ export const match = <Type>(
       }
     }
   });
-  const edges = [];
+  const edges: [number, number, number][] = [];
   let pos = 0;
   for (let i = 0; i < entities.length - 1; i++) {
     for (let j = i + 1; j < entities.length; j++) {

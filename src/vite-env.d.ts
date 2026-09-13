@@ -1,5 +1,11 @@
 /// <reference types="vite/client" />
 
+declare module '@graph-algorithm/maximum-matching' {
+  // The package ships no type declarations; these describe the two exports used.
+  export function weight(graph: Array<[number, number, number]>): Iterable<[number, number]>;
+  export function iter(matching: Iterable<[number, number]>): Generator<[number, number], void, unknown>;
+}
+
 declare module 'virtual:pwa-register' {
   export interface RegisterSWOptions {
     immediate?: boolean;
