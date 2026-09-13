@@ -210,6 +210,13 @@ export class ParticipatingPlayerImpl extends PerformanceImpl implements Mutable<
 
   get playRatio() {
     const roundCount = this.matchCount + this.pauseCount;
+    if (roundCount === 0) {
+      // Defensive: never-participated players are not selectable in the UI.
+      return 0;
+    }
+    // Plain ratio (m / m+p) — what users see. Deliberately differs from
+    // Partitioning.playRatio, which adds +1 smoothing so low-count players
+    // rank fairly when selecting who gets benched.
     return this.matchCount / roundCount;
   }
 
