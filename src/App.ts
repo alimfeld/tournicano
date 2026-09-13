@@ -138,6 +138,13 @@ const tournamentListener: TournamentListener = {
   onchange: debouncedTournamentSave,
 };
 
+// Flush pending debounced writes when the page is torn down so a change
+// followed immediately by closing the tab/app is not silently lost.
+window.addEventListener("pagehide", () => {
+  debouncedSettingsSave.flush();
+  debouncedTournamentSave.flush();
+});
+
 export const App = () => {
   const state = createState();
   state.settings.addListener(settingsListener);

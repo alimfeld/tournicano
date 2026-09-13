@@ -1,5 +1,5 @@
-import { expect, test } from "vitest";
-import { pluralize, pluralizeWithCount } from "./Util.ts";
+import { expect, test, vi } from "vitest";
+import { debounce, pluralize, pluralizeWithCount } from "./Util.ts";
 
 test("pluralize with count of 1 returns singular", () => {
   expect(pluralize(1, "player")).toBe("player");
@@ -34,4 +34,45 @@ test("pluralizeWithCount with custom plural form", () => {
   expect(pluralizeWithCount(1, "match", "matches")).toBe("1 match");
   expect(pluralizeWithCount(2, "match", "matches")).toBe("2 matches");
   expect(pluralizeWithCount(10, "person", "people")).toBe("10 people");
+});
+
+test("debounce runs the pending call synchronously on flush", () => {
+  vi.useFakeTimers();
+  try {
+    const fn = vi.fn();
+    const debounced = debounce(fn, 100);
+
+    debounced("a");
+    expect(fn).not.toHaveBeenCalled();
+
+    debounced.flush();
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith("a");
+
+    // Timer is cancelled: no second fire after the wait elapses
+    vi.advanceTimersByTime(200);
+    expect(fn).toHaveBeenCalledTimes(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("debounce flush is a no-op when nothing is pending", () => {
+  vi.useFakeTimers();
+  try {
+    const fn = vi.fn();
+    const debounced = debounce(fn, 100);
+
+    debounced.flush();
+    expect(fn).not.toHaveBeenCalled();
+
+    // Flush only fires the latest pending call, not stale ones
+    debounced("a");
+    debounced("b");
+    debounced.flush();
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith("b");
+  } finally {
+    vi.useRealTimers();
+  }
 });

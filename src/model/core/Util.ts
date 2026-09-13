@@ -9,21 +9,45 @@ export const shuffle = <T>(array: T[]): T[] => {
 };
 
 // Debounce function - delays execution until after wait ms have elapsed since last call
+export interface DebouncedFunction<T extends (...args: any[]) => void> {
+  (...args: Parameters<T>): void;
+  /** Runs the pending call (if any) synchronously and cancels the timer. */
+  flush(): void;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const debounce = <T extends (...args: any[]) => void>(
   func: T,
   wait: number
-): ((...args: Parameters<T>) => void) => {
+): DebouncedFunction<T> => {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  
-  return (...args: Parameters<T>) => {
+  let lastArgs: Parameters<T> | undefined;
+
+  const debounced: DebouncedFunction<T> = (...args: Parameters<T>) => {
+    lastArgs = args;
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
     }
     timeoutId = setTimeout(() => {
+      timeoutId = undefined;
+      lastArgs = undefined;
       func(...args);
     }, wait);
   };
+
+  debounced.flush = () => {
+    if (timeoutId === undefined) {
+      return; // Nothing pending
+    }
+    clearTimeout(timeoutId);
+    timeoutId = undefined;
+    if (lastArgs !== undefined) {
+      func(...lastArgs);
+      lastArgs = undefined;
+    }
+  };
+
+  return debounced;
 };
 
 /**
