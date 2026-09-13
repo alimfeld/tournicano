@@ -66,13 +66,13 @@ export const StandingsPage: m.Component<{}, StandingsState> = {
       groupPointsFor,
       groupPointsAgainst,
     ] = standings.reduce((acc, ranked) => {
-      acc[0] += ranked.player.wins
-      acc[1] += ranked.player.losses
-      acc[2] += ranked.player.draws
-      acc[3] += ranked.player.pointsFor
-      acc[4] += ranked.player.pointsAgainst
-      return acc
-    }, [0, 0, 0, 0, 0, 0, 0]);
+      acc[0] += ranked.player.wins;
+      acc[1] += ranked.player.losses;
+      acc[2] += ranked.player.draws;
+      acc[3] += ranked.player.pointsFor;
+      acc[4] += ranked.player.pointsAgainst;
+      return acc;
+    }, [0, 0, 0, 0, 0]);
     const matchCount = groupWins + groupLosses + groupDraws;
     const groupWinRatio = matchCount === 0 ? 0.5 : (groupWins + groupDraws / 2) / matchCount;
     const groupPlusMinus = groupPointsFor - groupPointsAgainst;
