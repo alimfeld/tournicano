@@ -22,9 +22,7 @@ export const AddPlayersModal: m.Component<AddPlayersModalAttrs, AddPlayersModalS
 
     const handleAddPlayers = () => {
       const result = tournament.addPlayersFromInput(state.textareaContent);
-      // Map warning to error for toast display
-      const toastType = result.type === "warning" ? "error" : result.type;
-      showToast(result.message, { type: toastType, position: "middle" });
+      showToast(result.message, { type: result.type, position: "middle" });
       onClose();
     };
 

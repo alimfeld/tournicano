@@ -9,7 +9,7 @@ export interface OperationDetails {
 export interface OperationResult {
   success: boolean;
   message: string;
-  type: "success" | "error" | "info" | "warning";
+  type: "success" | "error" | "info";
   details?: OperationDetails;
 }
 
