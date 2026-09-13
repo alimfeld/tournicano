@@ -33,8 +33,15 @@
   right: 0;
 }
 
-/* Hidden state - during swiping */
+/* Hidden state - during swiping or when navigation is unavailable */
 .swipeable-nav-hint.hidden {
   opacity: 0;
   pointer-events: none;
+  /* Remove from tab order so invisible ends can't be focused */
+  visibility: hidden;
+}
+
+/* Only show the focus ring on keyboard focus, not after mouse clicks */
+.swipeable-nav-hint:focus:not(:focus-visible) {
+  box-shadow: none;
 }

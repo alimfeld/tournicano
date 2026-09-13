@@ -24,7 +24,10 @@ export const Swipeable: m.Component<SwipeableAttrs, SwipeableState> = {
     vnode.state.touchStartX = 0;
     vnode.state.touchStartY = 0;
     vnode.state.isSwiping = false;
-    vnode.state.id = crypto.randomUUID();
+    // Stable id derived from the element selector: survives keyed-fragment
+    // re-creation on RoundPage so the slide-in animation can still find the
+    // container after redraw. One Swipeable per page, so no id collisions.
+    vnode.state.id = "swipeable-" + vnode.attrs.element.replace(/[^a-zA-Z0-9]/g, "-");
   },
   
   view: (vnode) => {
@@ -156,24 +159,21 @@ export const Swipeable: m.Component<SwipeableAttrs, SwipeableState> = {
         m("button.swipeable-nav-hint.left", {
           key: "nav-left",
           class: (state.isSwiping || !onswipeleft) ? "hidden" : "",
-          tabindex: -1, // Prevent focus
-          onmousedown: (e: MouseEvent) => {
+          // onclick covers mouse, touch, and keyboard (Enter/Space) activation
+          onclick: () => {
             if (!onswipeleft) return;
-            e.preventDefault(); // Prevent focus on click
             triggerNavigation(onswipeleft, 'right');
           },
-          "aria-label": "Previous"
+          "aria-label": "Previous round",
         }, "‹"),
         m("button.swipeable-nav-hint.right", {
           key: "nav-right",
           class: (state.isSwiping || !onswiperight) ? "hidden" : "",
-          tabindex: -1, // Prevent focus
-          onmousedown: (e: MouseEvent) => {
+          onclick: () => {
             if (!onswiperight) return;
-            e.preventDefault(); // Prevent focus on click
             triggerNavigation(onswiperight, 'left');
           },
-          "aria-label": "Next"
+          "aria-label": "Next round",
         }, "›"),
       ] : null
     ]);
