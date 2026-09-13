@@ -78,6 +78,9 @@ export const Header: m.Component<HeaderAttrs, HeaderState> = {
                 : m("p", action.confirmation.description),
               m(
                 "footer",
+                m("button.secondary", {
+                  onclick: cancelAction,
+                }, "Cancel"),
                 m("button", {
                   onclick: () => confirmAction(action),
                 }, action.confirmation.confirmButtonText || "Confirm"),
