@@ -72,14 +72,13 @@ export class PlayerImpl implements Mutable<Player> {
   }
 
   delete() {
-    let success = false;
-    if (!this.inAnyRound()) {
-      success = this.tournament.unregisterPlayer(this.id);
-      if (success) {
-        this.tournament.notifyChange();
-  }
-}
-
+    if (this.inAnyRound()) {
+      return false;
+    }
+    const success = this.tournament.unregisterPlayer(this.id);
+    if (success) {
+      this.tournament.notifyChange();
+    }
     return success;
   }
 }
