@@ -69,6 +69,9 @@ const syncTextZoom = (textZoom: number) => {
   document.documentElement.style.setProperty('--text-zoom', textZoom.toString());
 };
 
+const defaultStandingsViewMode = (settings: Settings): StandingsFilters["viewMode"] =>
+  settings.matchingSpec.teamUp === undefined ? "team" : "individual";
+
 const createState: () => State = () => {
   const tournament = tournamentFactory.create(
     localStorage.getItem(TOURNAMENT_KEY) || undefined,
@@ -77,14 +80,14 @@ const createState: () => State = () => {
     localStorage.getItem(SETTINGS_KEY) || undefined,
   );
 
-  const state = {
+  const state: State = {
     tournament,
     settings,
     filters: {
-      standings: { 
+      standings: {
         groups: [],
-        // Auto-detect viewMode: if teamUp is undefined -> fixed teams mode -> default to 'team'
-        viewMode: (settings.matchingSpec.teamUp === undefined ? 'team' : 'individual') as 'individual' | 'team'
+        // Auto-detect viewMode: no teamUp -> fixed teams mode -> default to 'team'
+        viewMode: defaultStandingsViewMode(settings),
       },
       players: {}
     },
@@ -92,9 +95,9 @@ const createState: () => State = () => {
     roundIndex: tournament.rounds.length > 0 ? tournament.rounds.length - 1 : -1,
     toast: {
       message: null,
-      type: "info" as "success" | "error" | "info",
+      type: "info",
       timeout: null,
-      position: "bottom" as "top" | "bottom"
+      position: "bottom"
     },
     fullscreen: false,
     pwa: {
@@ -262,9 +265,9 @@ export const App = () => {
   };
 
   const resetFilters = () => {
-    state.filters.standings = { 
+    state.filters.standings = {
       groups: [],
-      viewMode: (state.settings.matchingSpec.teamUp === undefined ? 'team' : 'individual') as 'individual' | 'team'
+      viewMode: defaultStandingsViewMode(state.settings),
     };
     state.filters.players = {};
   };
