@@ -113,12 +113,15 @@ const createState: () => State = () => {
   return state;
 };
 
+// 150ms: coalesces bursts of notifyChange (slider drags, bulk addPlayersFromInput)
+// into one write while keeping the unsaved window small. Any interval >= ~50ms
+// fully batches same-tick bursts and frame-rate slider events.
 const debouncedSettingsSave = debounce((settings: Settings) => {
   localStorage.setItem(SETTINGS_KEY, settings.serialize());
   syncTheme(settings.theme);
   syncTextZoom(settings.textZoom);
   setAvatarSpec(settings.avatarSpec);
-}, 500);
+}, 150);
 
 const settingsListener: SettingsListener = {
   onchange: debouncedSettingsSave,
@@ -126,7 +129,7 @@ const settingsListener: SettingsListener = {
 
 const debouncedTournamentSave = debounce((tournament: Tournament) => {
   localStorage.setItem(TOURNAMENT_KEY, tournament.serialize());
-}, 500);
+}, 150);
 
 const tournamentListener: TournamentListener = {
   onchange: debouncedTournamentSave,
