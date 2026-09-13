@@ -48,15 +48,3 @@ export function createInfoResult(message: string, details?: OperationDetails): O
     details,
   };
 }
-
-/**
- * Creates a warning operation result
- */
-export function createWarningResult(message: string, details?: OperationDetails): OperationResult {
-  return {
-    success: true,
-    message,
-    type: "warning",
-    details,
-  };
-}

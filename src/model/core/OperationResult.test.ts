@@ -4,7 +4,6 @@ import {
   createSuccessResult,
   createErrorResult,
   createInfoResult,
-  createWarningResult,
 } from "./OperationResult.ts";
 
 test("pluralize with count of 1 returns singular", () => {
@@ -80,13 +79,4 @@ test("createInfoResult creates info result", () => {
   expect(result.success).toBe(true);
   expect(result.type).toBe("info");
   expect(result.message).toBe("No changes made");
-});
-
-test("createWarningResult creates warning result", () => {
-  const result = createWarningResult("Partial success", { added: 3, ignored: 2 });
-  expect(result.success).toBe(true);
-  expect(result.type).toBe("warning");
-  expect(result.message).toBe("Partial success");
-  expect(result.details?.added).toBe(3);
-  expect(result.details?.ignored).toBe(2);
 });
