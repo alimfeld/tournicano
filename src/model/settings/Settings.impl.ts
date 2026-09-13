@@ -26,13 +26,17 @@ class SettingsImpl implements Mutable<Settings> {
 
   constructor(serialized?: string) {
     if (serialized) {
-      const data = JSON.parse(serialized) as SettingsData;
-      this.courts = data.courts;
-      this.theme = data.theme;
-      this.wakeLock = data.wakeLock;
-      this.textZoom = data.textZoom ?? 1.0;
-      this.matchingSpec = data.matchingSpec;
-      this.avatarSpec = data.avatarSpec ?? "bottts";
+      try {
+        const data = JSON.parse(serialized) as SettingsData;
+        this.courts = data.courts;
+        this.theme = data.theme;
+        this.wakeLock = data.wakeLock;
+        this.textZoom = data.textZoom ?? 1.0;
+        this.matchingSpec = data.matchingSpec ?? Americano;
+        this.avatarSpec = data.avatarSpec ?? "bottts";
+      } catch {
+        // Corrupt or out-of-version settings fall back to defaults so the app can boot.
+      }
     }
   }
 

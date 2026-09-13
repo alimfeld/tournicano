@@ -41,13 +41,18 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
   constructor(serialized?: string) {
     if (serialized) {
-      deserializeTournament(
-        serialized,
-        this,
-        (id, name, group, active) => new PlayerImpl(this, id, name, group, active),
-        (index, participating, participatingTeams, matched, paused, inactive) =>
-          new RoundImpl(this, index, participating, participatingTeams, matched, paused, inactive)
-      );
+      try {
+        deserializeTournament(
+          serialized,
+          this,
+          (id, name, group, active) => new PlayerImpl(this, id, name, group, active),
+          (index, participating, participatingTeams, matched, paused, inactive) =>
+            new RoundImpl(this, index, participating, participatingTeams, matched, paused, inactive)
+        );
+      } catch {
+        // Corrupt or out-of-version tournament data falls back to an empty
+        // tournament so the app can boot instead of white-screening.
+      }
     }
   }
 

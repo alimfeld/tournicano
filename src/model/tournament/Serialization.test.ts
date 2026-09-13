@@ -85,3 +85,15 @@ test("should serialize and deserialize active status", ({ players }) => {
   expect(fromSerialized.players()[1].active).toBe(true);
   expect(fromSerialized.players()[4].active).toBe(false);
 });
+
+test("create with corrupt data falls back to an empty tournament", () => {
+  // Unparseable string
+  const unparseable = tournamentFactory.create("not json {");
+  expect(unparseable.players()).toHaveLength(0);
+  expect(unparseable.rounds).toHaveLength(0);
+
+  // Valid JSON but wrong shape (deserialization throws mid-way)
+  const wrongShape = tournamentFactory.create('[1, 2, 3]');
+  expect(wrongShape.players()).toHaveLength(0);
+  expect(wrongShape.rounds).toHaveLength(0);
+});
