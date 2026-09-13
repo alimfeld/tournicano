@@ -68,9 +68,13 @@ export const HomePage: m.Component = {
           : null,
         m("h2", "Quick Start"),
         m(
-          "p",
-          "⚙️ → 🤖 → 🚀 → 🏆"
+          "ol",
+          m("li", [m("strong", "Add players"), " — ", "🤖 Players", " tab"]),
+          m("li", [m("strong", "Create rounds"), " — ", "🚀 Rounds", " tab"]),
+          m("li", [m("strong", "Enter scores"), " as matches finish"]),
+          m("li", [m("strong", "Check standings"), " — ", "🏆 Standings", " tab"]),
         ),
+        m("p", "One-time setup: courts and tournament format in the ", "⚙️ Settings", " tab."),
         m("h2", "Key Features"),
         m(
           "ul",

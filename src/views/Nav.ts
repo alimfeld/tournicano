@@ -9,10 +9,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/", icon: "🏠", label: "Home" },
+  { href: "/settings", icon: "⚙️", label: "Settings" },
   { href: "/players", icon: "🤖", label: "Players" },
   { href: "/rounds", icon: "🚀", label: "Rounds" },
   { href: "/standings", icon: "🏆", label: "Standings" },
-  { href: "/settings", icon: "⚙️", label: "Settings" },
 ];
 
 export const Nav: m.Component = {
