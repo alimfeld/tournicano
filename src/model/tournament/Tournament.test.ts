@@ -661,14 +661,32 @@ vitest("assignGroupsByStandings - no rounds returns 0", () => {
   tournament.players().forEach(p => expect(p.group).toBe(0));
 });
 
-vitest("assignGroupsByStandings - no scores submitted returns 0", () => {
+vitest("assignGroupsByStandings - players without scores are still assigned", () => {
   const tournament = tournamentFactory.create();
   tournament.addPlayers(["A", "B", "C", "D", "E", "F", "G", "H"]);
   tournament.createRound(Americano);
-  // No scores submitted — standings() returns empty array
+  // No scores submitted — standings() is empty, but all round participants
+  // (paused / unscored) are still dealt into groups instead of being skipped.
+  const assigned = tournament.assignGroupsByStandings(2);
+  expect(assigned).toBe(8);
+  tournament.players().forEach(p => expect([0, 1]).toContain(p.group));
+});
+
+vitest("assignGroupsByStandings - paused players are included in the split", () => {
+  const tournament = tournamentFactory.create();
+  // 9 players: 8 compete in 1 round, 1 is paused (no completed match)
+  tournament.addPlayers(["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"]);
+  const round = tournament.createRound(Americano);
+  round.matches.forEach((match, i) => match.submitScore([21 - i, 0]));
+
+  expect(round.standings()).toHaveLength(8); // paused player has no standing
+  expect(round.paused).toHaveLength(1);
 
   const assigned = tournament.assignGroupsByStandings(2);
-  expect(assigned).toBe(0);
+  expect(assigned).toBe(9); // paused player is no longer silently skipped
+
+  // Everyone ended up in group 0 or 1
+  tournament.players().forEach(p => expect([0, 1]).toContain(p.group));
 });
 
 vitest("assignGroupsByStandings - even split into 2 groups", () => {

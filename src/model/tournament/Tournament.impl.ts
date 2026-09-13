@@ -354,7 +354,17 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     }
 
     const ranked = lastRound.standings();
-    const n = ranked.length;
+    // Ranked players (with completed matches) first, then the remaining round
+    // participants (paused, or played but not yet scored) ordered by playRatio,
+    // name — the split must not silently leave them behind in their old groups.
+    const rankedIds = new Set(ranked.map(r => r.player.id));
+    const remaining = lastRound
+      .getParticipatingPlayers()
+      .filter(p => !rankedIds.has(p.id))
+      .toSorted((a, b) => a.playRatio - b.playRatio || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    const ordered = [...ranked.map(r => r.player), ...remaining];
+
+    const n = ordered.length;
     if (n === 0) {
       return 0;
     }
@@ -381,7 +391,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
     for (let g = 0; g < groups; g++) {
       const groupPlayers: Player[] = [];
       for (let i = 0; i < sizes[g]; i++) {
-        const participatingPlayer = ranked[playerIndex++].player;
+        const participatingPlayer = ordered[playerIndex++];
         const player = this.getPlayer(participatingPlayer.id);
         if (player) {
           groupPlayers.push(player);
