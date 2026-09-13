@@ -28,9 +28,9 @@ class SettingsImpl implements Mutable<Settings> {
     if (serialized) {
       try {
         const data = JSON.parse(serialized) as SettingsData;
-        this.courts = data.courts;
-        this.theme = data.theme;
-        this.wakeLock = data.wakeLock;
+        this.courts = data.courts ?? 2;
+        this.theme = data.theme ?? "auto";
+        this.wakeLock = data.wakeLock ?? false;
         this.textZoom = data.textZoom ?? 1.0;
         this.matchingSpec = data.matchingSpec ?? Americano;
         this.avatarSpec = data.avatarSpec ?? "bottts";

@@ -41,6 +41,18 @@ test("create with settings missing matchingSpec falls back to Americano", () => 
   expect(settings.matchingSpec).toStrictEqual(Americano);
 });
 
+test("create with null courts (legacy NaN bug) restores defaults", () => {
+  // Saves written before the setCourts guard could contain "courts": null
+  const settings = settingsFactory.create(JSON.stringify({
+    courts: null,
+    theme: null,
+    wakeLock: null,
+  }));
+  expect(settings.courts).toBe(2);
+  expect(settings.theme).toBe("auto");
+  expect(settings.wakeLock).toBe(false);
+});
+
 test("setCourts rejects invalid input (NaN, zero, fractions)", () => {
   const settings = settingsFactory.create();
 
