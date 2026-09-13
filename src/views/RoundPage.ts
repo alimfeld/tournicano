@@ -390,7 +390,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
               // No matches
               : nextRoundInfo.matchCount === 0
                 ? {
-                  title: "⚠️ Check yor Setup",
+                  title: "⚠️ Check your Setup",
                   message: [
                     m("p", "Your current setup does not result in any matches."),
                     renderNextRoundInfo(),
