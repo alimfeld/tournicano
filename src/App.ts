@@ -187,8 +187,8 @@ export const App = () => {
     onOfflineReady() {
       console.log('App ready to work offline');
     },
-    onRegistered(registration) {
-      console.log('SW Registered:', registration);
+    onRegisteredSW(swScriptUrl, registration) {
+      console.log('SW Registered:', swScriptUrl, registration);
       state.pwa.serviceWorkerRegistered = true;
       m.redraw();
     },
