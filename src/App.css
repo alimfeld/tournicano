@@ -26,7 +26,7 @@
 
   /* Navigation */
   --nav-active-border-width: 3px;
-  --nav-icon-font-size: 1.5rem;
+  --nav-icon-font-size: 1.2rem;
 
   /* Overlay buttons (chevrons, toggle fullscreen) */
   --overlay-button-opacity: 0.35;
@@ -58,7 +58,7 @@
 
 /* Apply multiplier to all Pico CSS responsive breakpoints */
 @media (min-width: 576px) {
-  :root { 
+  :root {
     --pico-font-size-base: 106.25%;
     --toast-card-max-width: 510px;
     --help-card-max-width: 510px;
@@ -84,11 +84,15 @@
 }
 
 @media (min-width: 1280px) {
-  :root { --pico-font-size-base: 125%; }
+  :root {
+    --pico-font-size-base: 125%;
+  }
 }
 
 @media (min-width: 1536px) {
-  :root { --pico-font-size-base: 131.25%; }
+  :root {
+    --pico-font-size-base: 131.25%;
+  }
 }
 
 /* Heading size overrides - conservative scaling */
