@@ -17,6 +17,17 @@ const playRatio = (p: Player) => {
   return p.matchCount / (p.pauseCount + p.matchCount + PLAY_RATIO_SMOOTHING);
 };
 
+// Compete by playRatio ascending (played less first); ties broken by more
+// recent pause first (avoids back-to-back pauses).
+const byPlayRatioFairness = (p: Player, q: Player): number => {
+  const ratioP = playRatio(p);
+  const ratioQ = playRatio(q);
+  if (ratioP !== ratioQ) {
+    return ratioP - ratioQ;
+  }
+  return q.lastPause - p.lastPause;
+};
+
 const usesGroupFactors = (spec: MatchingSpec): boolean => {
   return !!(spec.teamUp && spec.teamUp.groupFactor > 0 || spec.matchUp.groupFactor > 0);
 };
@@ -247,17 +258,7 @@ const partitionSimple = (
   // Shuffle first to introduce randomness for tiebreaking
   const shuffled = shuffle(players.slice());
 
-  // Sort by playRatio (ascending - lower ratio plays first)
-  // For equal playRatio, sort by lastPause (descending - MORE RECENT pause plays first)
-  // This matches the existing behavior in partitionGroupAware and prevents back-to-back pauses
-  const sorted = shuffled.toSorted((p, q) => {
-    const ratioP = playRatio(p);
-    const ratioQ = playRatio(q);
-    if (ratioP !== ratioQ) {
-      return ratioP - ratioQ; // Lower ratio first (played less)
-    }
-    return q.lastPause - p.lastPause; // Higher lastPause first (paused more recently)
-  });
+  const sorted = shuffled.toSorted(byPlayRatioFairness);
 
   return [sorted.slice(0, competingCount), sorted.slice(competingCount)];
 };
@@ -275,14 +276,7 @@ const selectFromGroup = (
   groupPlayers: Player[],
   count: number,
 ): [competing: Player[], paused: Player[]] => {
-  const sorted = groupPlayers.toSorted((p, q) => {
-    const ratioP = playRatio(p);
-    const ratioQ = playRatio(q);
-    if (ratioP !== ratioQ) {
-      return ratioP - ratioQ; // Lower ratio first (played less)
-    }
-    return q.lastPause - p.lastPause; // More recent pause plays first
-  });
+  const sorted = groupPlayers.toSorted(byPlayRatioFairness);
   return [sorted.slice(0, count), sorted.slice(count)];
 };
 

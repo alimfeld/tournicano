@@ -1,5 +1,6 @@
 import m from "mithril";
 import { App } from "./App.ts";
+import { Modal } from "./views/Modal.ts";
 import { ToastCard } from "./views/ToastCard.ts";
 import { Nav } from "./views/Nav.ts";
 
@@ -17,7 +18,7 @@ export const Layout: m.Component<{}, {}> = {
 
     return [
       // PWA update dialog
-      state.needRefresh ? m("dialog[open]", [
+      state.needRefresh ? m(Modal, { onClose: dismissUpdate },
         m("article", [
           m("header",
             m("button[aria-label=Close][rel=prev]", {
@@ -43,7 +44,7 @@ export const Layout: m.Component<{}, {}> = {
             }, state.isUpdating ? "Updating..." : "Update Now")
           ])
         ])
-      ]) : null,
+      ) : null,
       // Page content
       children,
       // Toast notifications

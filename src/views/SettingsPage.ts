@@ -5,6 +5,7 @@ import {
   matchingSpecEquals,
 } from "../model/matching/MatchingSpec.ts";
 import { MatchingSpecModal } from "./MatchingSpecModal.ts";
+import { Modal } from "./Modal.ts";
 import { BUILD_VERSION } from "../version.ts";
 import { Header } from "./Header.ts";
 import { appContext } from "../Layout.ts";
@@ -302,7 +303,12 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
       ),
 
       // Import confirmation modal
-      state.showImportConfirmModal ? m("dialog[open]", [
+      state.showImportConfirmModal ? m(Modal, {
+        onClose: () => {
+          state.showImportConfirmModal = false;
+          state.pendingImportFile = null;
+        }
+      },
         m("article", [
           m("header",
             m("button[aria-label=Close][rel=prev]", {
@@ -331,7 +337,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
             }, "Import & Overwrite")
           ])
         ])
-      ]) : null,
+      ) : null,
 
       // Render modal conditionally alongside the page
       state.showMatchingSpecModal ? m(MatchingSpecModal, {

@@ -34,9 +34,6 @@ export interface Player {
 export type Team = [Player, Player];
 export type Match = [Team, Team];
 
-// Re-export partitionPlayers for backward compatibility
-export { partitionPlayers };
-
 /**
  * Helper: Perform match-up phase (team vs team matching)
  */

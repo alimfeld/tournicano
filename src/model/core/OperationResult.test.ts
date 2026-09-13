@@ -10,16 +10,6 @@ test("createSuccessResult creates success result", () => {
   expect(result.success).toBe(true);
   expect(result.type).toBe("success");
   expect(result.message).toBe("Operation successful");
-  expect(result.details).toBeUndefined();
-});
-
-test("createSuccessResult with details", () => {
-  const result = createSuccessResult("Added players", { added: 5, duplicates: 2 });
-  expect(result.success).toBe(true);
-  expect(result.type).toBe("success");
-  expect(result.message).toBe("Added players");
-  expect(result.details?.added).toBe(5);
-  expect(result.details?.duplicates).toBe(2);
 });
 
 test("createErrorResult creates error result", () => {
@@ -27,15 +17,6 @@ test("createErrorResult creates error result", () => {
   expect(result.success).toBe(false);
   expect(result.type).toBe("error");
   expect(result.message).toBe("Operation failed");
-});
-
-test("createErrorResult with details", () => {
-  const result = createErrorResult("Validation errors", {
-    errors: ["Name is required", "Invalid group"],
-  });
-  expect(result.success).toBe(false);
-  expect(result.type).toBe("error");
-  expect(result.details?.errors).toHaveLength(2);
 });
 
 test("createInfoResult creates info result", () => {

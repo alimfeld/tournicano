@@ -23,6 +23,12 @@ interface ToastState {
   position: "top" | "middle" | "bottom";
 }
 
+export interface ToastOptions {
+  type?: "success" | "error" | "info";
+  duration?: number;
+  position?: "top" | "middle" | "bottom";
+}
+
 interface PWAState {
   checkingForUpdates: boolean;
   serviceWorkerRegistered: boolean;
@@ -151,11 +157,7 @@ export const App = () => {
   state.tournament.addListener(tournamentListener);
 
   // Toast management
-  const showToast = (message: string, options?: {
-    type?: "success" | "error" | "info";
-    duration?: number;
-    position?: "top" | "middle" | "bottom";
-  }) => {
+  const showToast = (message: string, options?: ToastOptions) => {
     const type = options?.type ?? "info";
     const duration = options?.duration ?? 3000;
     const position = options?.position ?? "bottom";

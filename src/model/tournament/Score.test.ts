@@ -64,46 +64,36 @@ test("validateScoreInput before colon", () => {
   const validation = validateScoreInput("1");
   expect(validation.canAddDigit).toBe(true);
   expect(validation.canAddColon).toBe(true);
-  expect(validation.needsColon).toBe(false);
-  expect(validation.isComplete).toBe(false);
 });
 
 test("validateScoreInput at 2 digits before colon", () => {
   const validation = validateScoreInput("11");
   expect(validation.canAddDigit).toBe(false);
   expect(validation.canAddColon).toBe(true);
-  expect(validation.needsColon).toBe(true);
-  expect(validation.isComplete).toBe(false);
 });
 
 test("validateScoreInput after colon with no digits", () => {
   const validation = validateScoreInput("11:");
   expect(validation.canAddDigit).toBe(true);
   expect(validation.canAddColon).toBe(false);
-  expect(validation.needsColon).toBe(false);
-  expect(validation.isComplete).toBe(false);
 });
 
 test("validateScoreInput after colon with one digit", () => {
   const validation = validateScoreInput("11:9");
   expect(validation.canAddDigit).toBe(true);
   expect(validation.canAddColon).toBe(false);
-  expect(validation.needsColon).toBe(false);
-  expect(validation.isComplete).toBe(true);
 });
 
 test("validateScoreInput after colon with two digits", () => {
   const validation = validateScoreInput("11:09");
   expect(validation.canAddDigit).toBe(false);
   expect(validation.canAddColon).toBe(false);
-  expect(validation.isComplete).toBe(true);
 });
 
 test("validateScoreInput with empty input", () => {
   const validation = validateScoreInput("");
   expect(validation.canAddDigit).toBe(true);
   expect(validation.canAddColon).toBe(false);
-  expect(validation.isComplete).toBe(false);
 });
 
 // addDigitToScore tests
@@ -150,7 +140,7 @@ test("score input simulation", () => {
   // User types "9"
   input = addDigitToScore(input, "9");
   expect(input).toBe("11:9");
-  expect(validateScoreInput(input).isComplete).toBe(true);
+  expect(parseScore(input).success).toBe(true);
 
   // Parse the final score
   const result = parseScore(input);

@@ -9,8 +9,6 @@ export interface ScoreParseResult {
 export interface ScoreInputValidation {
   canAddDigit: boolean;
   canAddColon: boolean;
-  needsColon: boolean;
-  isComplete: boolean;
 }
 
 /**
@@ -72,24 +70,18 @@ export function validateScoreInput(input: string, maxDigitsPerSide: number = 2):
   if (parts.length === 1) {
     // Before colon
     const canAddDigit = parts[0].length < maxDigitsPerSide;
-    const needsColon = parts[0].length === maxDigitsPerSide;
 
     return {
       canAddDigit,
       canAddColon: input.length > 0,
-      needsColon,
-      isComplete: false,
     };
   } else if (parts.length === 2) {
     // After colon
     const canAddDigit = parts[1].length < maxDigitsPerSide;
-    const isComplete = parts[1].length > 0;
 
     return {
       canAddDigit,
       canAddColon: false,
-      needsColon: false,
-      isComplete,
     };
   }
 
@@ -97,8 +89,6 @@ export function validateScoreInput(input: string, maxDigitsPerSide: number = 2):
   return {
     canAddDigit: false,
     canAddColon: false,
-    needsColon: false,
-    isComplete: false,
   };
 }
 

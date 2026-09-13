@@ -12,7 +12,8 @@ import {
   ConfigurationWarning,
 } from "./Tournament.ts";
 import { Americano, MatchingSpec, getMatchingSpecName } from "../matching/MatchingSpec.ts";
-import { matching, partitionPlayers } from "../matching/Matching.ts";
+import { matching } from "../matching/Matching.ts";
+import { partitionPlayers } from "../matching/Partitioning.ts";
 import { shuffle, pluralizeWithCount } from "../core/Util.ts";
 import { Settings } from "../settings/Settings.ts";
 import {
@@ -26,7 +27,7 @@ import { PlayerImpl, ParticipatingPlayerImpl, ParticipatingTeamImpl } from "./Pl
 import { RoundImpl } from "./Rounds.impl.ts";
 import { serializeTournament, deserializeTournament } from "./Serialization.ts";
 import { exportStandingsText, exportTeamStandingsText, exportBackup } from "./Export.ts";
-import { importBackup as importBackupFunction } from "./Import.ts";
+import { importBackup } from "./Import.ts";
 
 export const tournamentFactory: TournamentFactory = {
   create(serialized?: string) {
@@ -157,10 +158,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
       if (ignoredPlayersCount > 0) {
         errorParts.push(pluralizeWithCount(ignoredPlayersCount, "player"));
       }
-      return createErrorResult(`No players added - ${errorParts.join(" and ")} ignored`, {
-        duplicates: duplicateCount,
-        ignored: ignoredPlayersCount,
-      });
+      return createErrorResult(`No players added - ${errorParts.join(" and ")} ignored`);
     } else if (hasErrors) {
       let message = `Added ${pluralizeWithCount(addedCount, "player")}`;
 
@@ -180,12 +178,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
       message += errorParts.join(" and ") + " ignored";
 
-      return createErrorResult(message, {
-        added: addedCount,
-        duplicates: duplicateCount,
-        ignored: ignoredPlayersCount,
-        groups: groupCount,
-      });
+      return createErrorResult(message);
     } else {
       let message = `Added ${pluralizeWithCount(addedCount, "player")}`;
 
@@ -195,10 +188,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
 
       message += " to the tournament";
 
-      return createSuccessResult(message, {
-        added: addedCount,
-        groups: groupCount,
-      });
+      return createSuccessResult(message);
     }
   }
 
@@ -577,7 +567,7 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
   }
 
   importBackup(backupJson: string, settings: Settings): { success: boolean; error?: string; summary?: string } {
-    return importBackupFunction(
+    return importBackup(
       backupJson,
       settings,
       this,

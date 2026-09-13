@@ -4,11 +4,12 @@ import { Player, validatePlayerName } from "../model/tournament/Tournament.ts";
 import { getAvatar } from "./AvatarCache.ts";
 import { GroupSymbol, getGroupSymbol, getGroupLetter } from "./GroupSymbol.ts";
 import { Modal } from "./Modal.ts";
+import type { ToastOptions } from "../App.ts";
 
 export interface PlayerModalAttrs {
   player: Player;
   onClose: () => void;
-  showToast?: (message: string, options?: { type?: "success" | "error" | "info"; duration?: number; position?: "top" | "middle" | "bottom" }) => void;
+  showToast?: (message: string, options?: ToastOptions) => void;
 }
 
 interface PlayerModalState {

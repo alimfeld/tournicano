@@ -1,11 +1,12 @@
 import m from "mithril";
 import { Tournament } from "../model/tournament/Tournament.ts";
 import { Modal } from "./Modal.ts";
+import type { ToastOptions } from "../App.ts";
 
 export interface AddPlayersModalAttrs {
   tournament: Tournament;
   onClose: () => void;
-  showToast: (message: string, options?: { type?: "success" | "error" | "info"; duration?: number; position?: "top" | "middle" | "bottom" }) => void;
+  showToast: (message: string, options?: ToastOptions) => void;
 }
 
 interface AddPlayersModalState {

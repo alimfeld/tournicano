@@ -11,7 +11,8 @@ import {
   TeamUpGroupMode,
   TeamUpPerformanceMode,
 } from "./MatchingSpec.ts";
-import { matching, partitionPlayers } from "./Matching.ts";
+import { matching } from "./Matching.ts";
+import { partitionPlayers } from "./Partitioning.ts";
 
 // Tests for group balancing in matching algorithm
 test("should balance groups with single group", ({ players }) => {

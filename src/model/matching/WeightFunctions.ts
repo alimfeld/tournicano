@@ -98,22 +98,20 @@ export const curriedTeamUpGroupWeight = (mode: TeamUpGroupMode) => {
 };
 
 /**
- * Calculates the saturation rate of a player's partnership history.
- * This measures how many repeated partnerships occurred relative to participation.
+ * Calculates the saturation rate of a player's history with a set of other
+ * entities (partners or opponents), measured as repeated encounters relative to
+ * participation. High saturation means many repeated encounters — such players
+ * should be pushed toward new partners/opponents.
  *
  * Returns a normalized rate [0, 1]: totalRepetitions / participation
- * where totalRepetitions = sum over all partners of (partnershipCount - 1)
+ * where totalRepetitions = sum over all entities of (encounterCount - 1)
  *
  * Example: If partnered with A(2x), B(1x), C(1x) over 10 rounds participation:
  *   totalRepetitions = (2-1) + (1-1) + (1-1) = 1
  *   saturation rate = 1/10 = 0.1
- *
- * Players with high saturation (many repeated partnerships relative to participation)
- * should be encouraged to find new partners.
  */
-const calculatePartnerSaturation = (player: Player): number => {
-  const partnerCounts = Array.from(player.partners.values());
-  const totalRepetitions = partnerCounts.reduce((acc, rounds) => acc + rounds.length - 1, 0);
+const calculateSaturation = (player: Player, counts: Map<string, number[]>): number => {
+  const totalRepetitions = Array.from(counts.values()).reduce((acc, rounds) => acc + rounds.length - 1, 0);
   const participation = Math.max(1, player.matchCount + player.pauseCount);
   return totalRepetitions / participation;
 };
@@ -164,8 +162,8 @@ const calculatePartnerPenalty = (
 
   // 3. SATURATION: Partner history saturation rate [0, 1]
   //    Average saturation rate of both players
-  const saturationRateA = calculatePartnerSaturation(playerA);
-  const saturationRateB = calculatePartnerSaturation(playerB);
+  const saturationRateA = calculateSaturation(playerA, playerA.partners);
+  const saturationRateB = calculateSaturation(playerB, playerB.partners);
   const saturationFactor = (saturationRateA + saturationRateB) / 2;
 
   // Hierarchical penalty: simple weighted sum of normalized factors
@@ -221,23 +219,6 @@ export const curriedMatchUpGroupWeight = (mode: MatchUpGroupMode) => {
         return Math.abs(diff); // maximize difference (cross-group matching)
     }
   };
-};
-
-/**
- * Calculates the saturation rate of a player's opponent history.
- * This measures how many repeated opponent encounters occurred relative to participation.
- *
- * Returns a normalized rate [0, 1]: totalRepetitions / participation
- * where totalRepetitions = sum over all opponents of (encounterCount - 1)
- *
- * Players with high saturation (many repeated opponent encounters relative to participation)
- * have faced the same opponents multiple times.
- */
-const calculateOpponentSaturation = (player: Player): number => {
-  const opponentCounts = Array.from(player.opponents.values());
-  const totalRepetitions = opponentCounts.reduce((acc, rounds) => acc + rounds.length - 1, 0);
-  const participation = Math.max(1, player.matchCount + player.pauseCount);
-  return totalRepetitions / participation;
 };
 
 /**
@@ -324,10 +305,10 @@ const calculateOpponentTeamPenalty = (
   const recencyFactor = (recencyA0B0 + recencyA0B1 + recencyA1B0 + recencyA1B1) / 4;
 
   // 3. SATURATION: Calculate per-player saturation rates [0, 1]
-  const saturationA0 = calculateOpponentSaturation(teamA[0]);
-  const saturationA1 = calculateOpponentSaturation(teamA[1]);
-  const saturationB0 = calculateOpponentSaturation(teamB[0]);
-  const saturationB1 = calculateOpponentSaturation(teamB[1]);
+  const saturationA0 = calculateSaturation(teamA[0], teamA[0].opponents);
+  const saturationA1 = calculateSaturation(teamA[1], teamA[1].opponents);
+  const saturationB0 = calculateSaturation(teamB[0], teamB[0].opponents);
+  const saturationB1 = calculateSaturation(teamB[1], teamB[1].opponents);
 
   // Average of all 4 players' saturation rates
   const saturationFactor = (saturationA0 + saturationA1 + saturationB0 + saturationB1) / 4;
