@@ -21,6 +21,11 @@ export const Modal: m.Component<ModalAttrs> = {
         if (e.target === e.currentTarget) {
           onClose();
         }
+      },
+      oncancel: (e: Event) => {
+        // Escape key: prevent the native close so app state is reset via onClose
+        e.preventDefault();
+        onClose();
       }
     }, children);
   }
