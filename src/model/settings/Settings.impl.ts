@@ -52,7 +52,10 @@ class SettingsImpl implements Mutable<Settings> {
   }
 
   setCourts(courts: number): void {
-    this.courts = courts;
+    // Guard at the model boundary: emptied (NaN), fractional, or 0 input must
+    // never persist (NaN serializes to JSON null) or silently mean "unlimited".
+    const n = Number.isFinite(courts) ? Math.round(courts) : 2;
+    this.courts = Math.max(1, n);
     this.notifyChange();
   }
 

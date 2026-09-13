@@ -131,7 +131,7 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
           name: "courts",
           inputmode: "numeric",
           value: settings.courts,
-          min: 0,
+          min: 1,
           step: 1,
           onblur: (event: InputEvent) =>
             settings.setCourts(

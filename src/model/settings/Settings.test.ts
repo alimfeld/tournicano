@@ -40,3 +40,20 @@ test("create with settings missing matchingSpec falls back to Americano", () => 
   expect(settings.theme).toBe("light");
   expect(settings.matchingSpec).toStrictEqual(Americano);
 });
+
+test("setCourts rejects invalid input (NaN, zero, fractions)", () => {
+  const settings = settingsFactory.create();
+
+  // Emptied number input → NaN: falls back to default, never persisted as null
+  settings.setCourts(NaN);
+  expect(settings.courts).toBe(2);
+  expect(JSON.parse(settings.serialize()).courts).toBe(2);
+
+  // Zero never meant "unlimited"
+  settings.setCourts(0);
+  expect(settings.courts).toBe(1);
+
+  // Fractions are rounded to whole courts
+  settings.setCourts(3.7);
+  expect(settings.courts).toBe(4);
+});
