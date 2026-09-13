@@ -28,7 +28,12 @@ nav li {
   width: 100%;
   text-align: center;
   cursor: pointer;
-  font-size: var(--nav-icon-font-size);
+  /* Stack icon over label */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
   padding: calc(var(--pico-form-element-spacing-vertical) / 2) 0;
   border-top: var(--nav-active-border-width) solid transparent;
 }
@@ -41,6 +46,15 @@ nav li.active {
 /* Nav icon styling - required for transform */
 nav li span.icon {
   display: inline-block;
+  font-size: var(--nav-icon-font-size);
+  line-height: 1;
+}
+
+/* Nav label - small text under the icon */
+nav li small {
+  font-size: 0.6rem;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 /* Button press feedback - animate icon only, not border */
