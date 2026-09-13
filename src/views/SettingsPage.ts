@@ -55,8 +55,8 @@ export const SettingsPage: m.Component<{}, SettingsPageState> = {
 
     const handleMatchingSpecChange = (matchingSpec: typeof PREDEFINED_FORMATS[number]["spec"]) => {
       settings.setMatchingSpec(matchingSpec);
-      if (tournament.rounds.length > 0 && showToast) {
-        showToast("Tournament format change affects ongoing tournament", { type: "error" });
+      if (tournament.rounds.length > 0) {
+        showToast("Tournament format change affects ongoing tournament", { type: "info" });
       }
     };
 
