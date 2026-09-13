@@ -422,7 +422,7 @@ export const RoundPage: m.Component<{}, RoundState> = {
           const spec = settings.matchingSpec;
           const usesPerformanceFactors = (spec.teamUp?.performanceFactor ?? 0) > 0 || spec.matchUp.performanceFactor > 0;
           if (tournament.rounds.length > 0 && usesPerformanceFactors && !tournament.hasAllScoresSubmitted) {
-            showToast("Not all scores were entered in previous rounds", { type: "error", position: "middle" });
+            showToast("Some scores from previous rounds are missing — new matchups use current standings", { type: "info", position: "middle" });
           }
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);
