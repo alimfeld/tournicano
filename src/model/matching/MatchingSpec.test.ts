@@ -13,6 +13,8 @@ import {
   TeamUpPerformanceMode,
   Tournicano,
   TournicanoGroups,
+  TournicanoTeams,
+  isValidMatchingSpec,
   matchingSpecEquals,
 } from "./MatchingSpec.ts";
 
@@ -165,4 +167,82 @@ test("matchingSpecEquals should compare balanceGroups", () => {
   expect(matchingSpecEquals(spec1, spec2)).toBe(false);
   expect(matchingSpecEquals(spec2, spec3)).toBe(true); // false === undefined treated as false
   expect(matchingSpecEquals(spec1, spec1)).toBe(true);
+});
+
+test("isValidMatchingSpec accepts all predefined formats", () => {
+  expect(isValidMatchingSpec(Americano)).toBe(true);
+  expect(isValidMatchingSpec(AmericanoMixed)).toBe(true);
+  expect(isValidMatchingSpec(Mexicano)).toBe(true);
+  expect(isValidMatchingSpec(Tournicano)).toBe(true);
+  expect(isValidMatchingSpec(TournicanoTeams)).toBe(true); // no teamUp
+  expect(isValidMatchingSpec(GroupBattleMixed)).toBe(true);
+});
+
+test("isValidMatchingSpec rejects malformed specs", () => {
+  // Non-object
+  expect(isValidMatchingSpec(null)).toBe(false);
+  expect(isValidMatchingSpec(undefined)).toBe(false);
+  expect(isValidMatchingSpec("Americano")).toBe(false);
+
+  // Missing matchUp
+  expect(isValidMatchingSpec({})).toBe(false);
+
+  // matchUp missing required fields
+  expect(isValidMatchingSpec({ matchUp: { varietyFactor: 100 } })).toBe(false);
+
+  // Invalid enum values
+  expect(isValidMatchingSpec({
+    matchUp: {
+      varietyFactor: 100,
+      performanceFactor: 0,
+      groupFactor: 0,
+      groupMode: 99,
+    },
+  })).toBe(false);
+
+  // Negative factor
+  expect(isValidMatchingSpec({
+    matchUp: {
+      varietyFactor: -100,
+      performanceFactor: 0,
+      groupFactor: 0,
+      groupMode: MatchUpGroupMode.SAME,
+    },
+  })).toBe(false);
+
+  // Present but incomplete teamUp
+  expect(isValidMatchingSpec({
+    teamUp: { varietyFactor: 100 },
+    matchUp: {
+      varietyFactor: 100,
+      performanceFactor: 0,
+      groupFactor: 0,
+      groupMode: MatchUpGroupMode.SAME,
+    },
+  })).toBe(false);
+
+  // Non-boolean balanceGroups
+  expect(isValidMatchingSpec({
+    ...Americano,
+    balanceGroups: "yes",
+  })).toBe(false);
+});
+
+test("isValidMatchingSpec accepts any valid custom shape without restricting factors", () => {
+  expect(isValidMatchingSpec({
+    teamUp: {
+      varietyFactor: 50,
+      performanceFactor: 20,
+      performanceMode: TeamUpPerformanceMode.AVERAGE,
+      groupFactor: 30,
+      groupMode: TeamUpGroupMode.PAIRED,
+    },
+    matchUp: {
+      varietyFactor: 40,
+      performanceFactor: 10,
+      groupFactor: 50,
+      groupMode: MatchUpGroupMode.CROSS,
+    },
+    balanceGroups: true,
+  })).toBe(true);
 });

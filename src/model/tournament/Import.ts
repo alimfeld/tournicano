@@ -8,6 +8,7 @@
 
 import { PlayerId, Score } from "./Tournament.ts";
 import { Settings } from "../settings/Settings.ts";
+import { isValidMatchingSpec } from "../matching/MatchingSpec.ts";
 import { TournamentBackup } from "./Export.ts";
 import { TournamentContext } from "./Context.ts";
 import { PlayerImpl, ParticipatingPlayerImpl, ParticipatingTeamImpl } from "./Players.impl.ts";
@@ -123,7 +124,8 @@ export function importBackup(
       // Validate score if present
       if (match.score !== undefined) {
         if (!Array.isArray(match.score) || match.score.length !== 2 ||
-            typeof match.score[0] !== "number" || typeof match.score[1] !== "number") {
+            !Number.isInteger(match.score[0]) || !Number.isInteger(match.score[1]) ||
+            match.score[0] < 0 || match.score[1] < 0) {
           return {
             success: false,
             error: "Backup file is corrupted or contains invalid data.",
@@ -151,7 +153,7 @@ export function importBackup(
     };
   }
 
-  if (!backup.settings.matchingSpec || typeof backup.settings.matchingSpec !== "object") {
+  if (!isValidMatchingSpec(backup.settings.matchingSpec)) {
     return {
       success: false,
       error: "Backup file is corrupted or contains invalid data.",

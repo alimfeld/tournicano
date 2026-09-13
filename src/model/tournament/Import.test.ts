@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import { test, runTournament } from "./TestHelpers.ts";
 import { tournamentFactory } from "./Tournament.impl.ts";
 import { settingsFactory } from "../settings/Settings.impl.ts";
-import { Americano, Mexicano, AmericanoMixed, Tournicano } from "../matching/MatchingSpec.ts";
+import { Americano, Mexicano, AmericanoMixed, Tournicano, MatchUpGroupMode, TeamUpGroupMode, TeamUpPerformanceMode } from "../matching/MatchingSpec.ts";
 
 // ==========================================
 // 1. VERSION COMPATIBILITY TESTS
@@ -777,4 +777,99 @@ test("STATS: should accumulate stats when last round has no scores", ({ players,
   expect(player2.matchCount).toBe(2); // Should have accumulated matchCount from both rounds
   expect(player2.partners.size).toBeGreaterThan(0); // Should have partner history
   expect(player2.opponents.size).toBeGreaterThan(0); // Should have opponent history
+});
+
+test("should reject backup with malformed matchingSpec shape", () => {
+  const tournament = tournamentFactory.create();
+  const settings = settingsFactory.create();
+
+  const malformedBackup = JSON.stringify({
+    version: 1,
+    exportDate: new Date().toISOString(),
+    // matchUp missing performanceFactor/groupFactor/groupMode
+    settings: { courts: 2, matchingSpec: { matchUp: { varietyFactor: 100 } } },
+    players: [{ name: "Alice", group: 0, active: true }],
+    rounds: [],
+  });
+
+  const result = tournament.importBackup(malformedBackup, settings);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toContain("corrupted or contains invalid data");
+});
+
+test("should reject backup with negative or fractional match score", () => {
+  const tournament = tournamentFactory.create();
+  const settings = settingsFactory.create();
+
+  const invalidScoreBackup = JSON.stringify({
+    version: 1,
+    exportDate: new Date().toISOString(),
+    settings: { courts: 2, matchingSpec: Americano },
+    players: [
+      { name: "Alice", group: 0, active: true },
+      { name: "Ben", group: 0, active: true },
+      { name: "Cam", group: 0, active: true },
+      { name: "Dan", group: 0, active: true },
+    ],
+    rounds: [
+      {
+        matches: [
+          {
+            teamA: ["Alice", "Ben"],
+            teamB: ["Cam", "Dan"],
+            score: [11, -3],
+          },
+        ],
+        paused: [],
+        inactive: [],
+      },
+    ],
+  });
+
+  const result = tournament.importBackup(invalidScoreBackup, settings);
+
+  expect(result.success).toBe(false);
+  expect(result.error).toContain("corrupted or contains invalid data");
+});
+
+test("should accept backup with a valid custom matchingSpec", () => {
+  const tournament = tournamentFactory.create();
+  const settings = settingsFactory.create();
+
+  const customBackup = JSON.stringify({
+    version: 1,
+    exportDate: new Date().toISOString(),
+    settings: {
+      courts: 2,
+      matchingSpec: {
+        teamUp: {
+          varietyFactor: 50,
+          performanceFactor: 20,
+          performanceMode: TeamUpPerformanceMode.AVERAGE,
+          groupFactor: 30,
+          groupMode: TeamUpGroupMode.PAIRED,
+        },
+        matchUp: {
+          varietyFactor: 40,
+          performanceFactor: 10,
+          groupFactor: 50,
+          groupMode: MatchUpGroupMode.CROSS,
+        },
+        balanceGroups: true,
+      },
+    },
+    players: [
+      { name: "Alice", group: 0, active: true },
+      { name: "Ben", group: 0, active: true },
+      { name: "Cam", group: 0, active: true },
+      { name: "Dan", group: 0, active: true },
+    ],
+    rounds: [],
+  });
+
+  const result = tournament.importBackup(customBackup, settings);
+
+  expect(result.success).toBe(true);
+  expect(result.summary).toContain("4 players");
 });

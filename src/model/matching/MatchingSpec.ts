@@ -311,3 +311,63 @@ export function getMatchingSpecName(spec: MatchingSpec): string {
   }
   return "Custom";
 }
+
+// ============================================================================
+// Structural validation for untrusted/de-serialized specs (e.g. backup imports)
+// ============================================================================
+
+const isFiniteFactor = (v: unknown): v is number =>
+  typeof v === "number" && Number.isFinite(v) && v >= 0;
+
+const isTeamUpGroupMode = (v: unknown): v is TeamUpGroupMode =>
+  v === TeamUpGroupMode.PAIRED || v === TeamUpGroupMode.SAME;
+
+const isMatchUpGroupMode = (v: unknown): v is MatchUpGroupMode =>
+  v === MatchUpGroupMode.SAME || v === MatchUpGroupMode.CROSS;
+
+const isTeamUpPerformanceMode = (v: unknown): v is TeamUpPerformanceMode =>
+  v === TeamUpPerformanceMode.EQUAL ||
+  v === TeamUpPerformanceMode.AVERAGE ||
+  v === TeamUpPerformanceMode.MEXICANO;
+
+/**
+ * Validates the *shape* of a MatchingSpec (field presence, types, enum values).
+ * Deliberately does not restrict numeric factors: any non-negative finite value
+ * is structurally valid, so custom formats survive round-tripping. Missing
+ * teamUp is valid (fixed-teams mode); a present teamUp must be complete.
+ */
+export function isValidMatchingSpec(spec: unknown): spec is MatchingSpec {
+  if (typeof spec !== "object" || spec === null) return false;
+  const s = spec as Record<string, unknown>;
+
+  if (typeof s.matchUp !== "object" || s.matchUp === null) return false;
+  const m = s.matchUp as Record<string, unknown>;
+  if (
+    !isFiniteFactor(m.varietyFactor) ||
+    !isFiniteFactor(m.performanceFactor) ||
+    !isFiniteFactor(m.groupFactor) ||
+    !isMatchUpGroupMode(m.groupMode)
+  ) {
+    return false;
+  }
+
+  if (s.teamUp !== undefined) {
+    if (typeof s.teamUp !== "object" || s.teamUp === null) return false;
+    const t = s.teamUp as Record<string, unknown>;
+    if (
+      !isFiniteFactor(t.varietyFactor) ||
+      !isFiniteFactor(t.performanceFactor) ||
+      !isFiniteFactor(t.groupFactor) ||
+      !isTeamUpGroupMode(t.groupMode) ||
+      !isTeamUpPerformanceMode(t.performanceMode)
+    ) {
+      return false;
+    }
+  }
+
+  if (s.balanceGroups !== undefined && typeof s.balanceGroups !== "boolean") {
+    return false;
+  }
+
+  return true;
+}
