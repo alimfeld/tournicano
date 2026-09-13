@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
+    "pretypecheck": "node scripts/generate-version.js",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
     "//simulate": "Run all simulations, or target one by name: npm run simulate -- matching  |  npm run simulate -- two-stage",
