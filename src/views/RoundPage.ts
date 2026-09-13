@@ -426,12 +426,11 @@ export const RoundPage: m.Component<{}, RoundState> = {
                 }
           )],
       ),
-      !state.switchMode?.active ? m(FAB, {
+      !state.switchMode?.active && nextRoundInfo.matchCount > 0 && !blockNextRound ? m(FAB, {
         icon: "＋",
         label: "Create next round",
         fullscreen: fullscreen,
         variant: tournament.hasAllScoresSubmitted ? "ins" : undefined,
-        disabled: nextRoundInfo.matchCount === 0 || blockNextRound,
         onclick: () => {
           tournament.createRound(settings.matchingSpec, nextRoundInfo.matchCount);
           changeRound(roundCount);

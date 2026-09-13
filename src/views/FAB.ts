@@ -5,13 +5,12 @@ export interface FABAttrs {
   icon: string;
   label: string;
   onclick: () => void;
-  disabled?: boolean;
   variant?: "ins";
   fullscreen?: boolean;
 }
 
 export const FAB: m.Component<FABAttrs> = {
-  view: ({ attrs: { icon, label, onclick, disabled = false, variant, fullscreen = false } }) => {
+  view: ({ attrs: { icon, label, onclick, variant, fullscreen = false } }) => {
     const classes = [
       variant || "",
       fullscreen ? "fullscreen" : ""
@@ -22,7 +21,6 @@ export const FAB: m.Component<FABAttrs> = {
       {
         class: classes,
         "aria-label": label,
-        disabled: disabled,
         onclick: onclick,
       },
       icon,
