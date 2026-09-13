@@ -39,9 +39,10 @@ export const GroupFilter: m.Component<GroupFilterAttrs> = {
           // Selecting a group
           const newGroups = [...selectedGroups, group];
 
-          // If this would select all groups, select only the clicked group instead
+          // Selecting all groups is the same as no filter (shows everyone),
+          // so clear the selection instead of replacing it with one group
           if (newGroups.length === groups.length) {
-            onGroupsChange([group]);
+            onGroupsChange([]);
           } else {
             onGroupsChange(newGroups);
           }
