@@ -94,13 +94,14 @@ class TournamentImpl implements Mutable<Tournament>, TournamentContext {
   addPlayers(names: string[], group: number = 0) {
     const added: string[] = [];
     const duplicates: string[] = [];
+    const existingNames = new Set(this.players().map((p) => p.name));
 
     names.forEach((name) => {
-      const existingNames = new Set(this.players().map((p) => p.name));
       if (!existingNames.has(name)) {
         const id = crypto.randomUUID();
         const player = new PlayerImpl(this, id, name, group, true);
         this.playerMap.set(player.id, player);
+        existingNames.add(name);
         added.push(name);
       } else {
         duplicates.push(name);
