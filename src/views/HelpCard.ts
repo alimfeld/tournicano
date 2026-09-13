@@ -11,10 +11,10 @@ export interface HelpCardAttrs {
 }
 
 export const HelpCard: m.Component<HelpCardAttrs> = {
-  view: ({ attrs: { title: message, message: hint, action } }) => {
+  view: ({ attrs: { title, message, action } }) => {
     return m("article.help-card", [
-      m("header", m("strong", message)),
-      m("div", hint),
+      m("header", m("strong", title)),
+      m("div", message),
       action ? m("footer",
         m("button", { onclick: action.onclick }, action.label)
       ) : null
