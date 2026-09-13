@@ -38,6 +38,14 @@ nav li {
   border-top: var(--nav-active-border-width) solid transparent;
 }
 
+/* Pico injects a floated zero-width-space pseudo-element into nav li. In the
+   previous inline-block layout the float removed it from flow; as a flex
+   container the pseudo becomes a flex item and stacks a full-height chunk
+   inside every tab, pushing the bar past the reserved 4rem. Kill it. */
+nav li::before {
+  content: none;
+}
+
 /* Highlight active nav item with top border (no layout shift) */
 nav li.active {
   border-top-color: var(--pico-primary);
@@ -52,7 +60,7 @@ nav li span.icon {
 
 /* Nav label - small text under the icon */
 nav li small {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   line-height: 1.2;
   white-space: nowrap;
 }
